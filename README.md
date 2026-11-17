@@ -55,6 +55,9 @@ Invitación (QR "A00101-9SUE3")  →  Teléfono con docs/index.html  →  Apps S
 - Funcionario: escanear, panel, alumnos y deshacer su propio ingreso por 3 minutos. Administrador: además anular cualquier ingreso y gestionar el equipo.
 - La primera vez, ejecuta `autorizarCorreo` en el editor de Apps Script para permitir el envío de correos, y publica una **nueva versión** de la implementación.
 
+## Exportar listado en PDF
+Pestaña **Alumnos** (solo administradores): «Lista de invitaciones» o «Con asistencia» (marca en verde las ya utilizadas). Genera un PDF por curso con los 5 códigos de cada alumno; no incluye los tokens secretos.
+
 ## Script independiente (error «Cannot call SpreadsheetApp.getUi()»)
 Ese error aparece cuando el script se creó en script.google.com y no desde la hoja. Dos soluciones: (a) crear el script desde la hoja con **Extensiones → Apps Script**, o (b) en `Code.gs` completar `SHEET_ID` (ID de la hoja) y `PIN_INICIAL`, y ejecutar la función **configurarTodo**. `onOpen` ya no falla en ningún caso.
 

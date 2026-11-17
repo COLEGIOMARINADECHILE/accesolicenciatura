@@ -228,6 +228,14 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
         <button class="sec sm" data-f="completo">Completos</button>
       </div>
     </div>
+    <div class="card" data-admin>
+      <h2>Exportar listado (PDF)</h2>
+      <div class="row">
+        <button id="btnPdfLista">Lista de invitaciones</button>
+        <button id="btnPdfAsist" class="sec">Con asistencia</button>
+      </div>
+      <p class="muted" id="pdfMsg" style="margin:8px 0 0">Alumnos por curso con sus 5 códigos de invitación. «Con asistencia» marca en verde las que ya ingresaron.</p>
+    </div>
     <div class="card" id="aList"></div>
   </section>
 
@@ -279,6 +287,8 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
 
 <script src="config.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script>
 "use strict";
 const $ = (s, r = document) => r.querySelector(s);
@@ -600,6 +610,99 @@ $("#aList").addEventListener("click", async e => {
   const st = e.target.closest(".student"); if (st) st.classList.toggle("open");
 });
 setInterval(() => { if (!document.hidden && state.user && ($("#s-panel").classList.contains("active") || $("#s-scan").classList.contains("active"))) refresh(); }, 8000);
+
+/* ───────── Exportar listado a PDF ───────── */
+function logoDataUrl() {
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => { const w = 240, h = Math.round(w * img.height / img.width), c = document.createElement("canvas"); c.width = w; c.height = h; c.getContext("2d").drawImage(img, 0, 0, w, h); res({ url: c.toDataURL("image/png"), w, h }); };
+    img.onerror = () => res(null); img.src = "logo.png";
+  });
+}
+async function exportPDF(conEstado) {
+  const msg = $("#pdfMsg"); msg.textContent = "Generando PDF…";
+  try {
+    await refresh(true);
+    const s = state.stats; if (!s) throw new Error("Sin datos para exportar");
+    if (!window.jspdf) throw new Error("No se pudo cargar la librería de PDF (¿sin internet?)");
+    const { jsPDF } = window.jspdf, doc = new jsPDF({ unit: "mm", format: "a4" });
+    const NAVY = [11, 31, 58], BLUE = [47, 95, 167], GOLD = [224, 178, 76], PALE = [238, 243, 250], M = 14, PW = 210;
+    const logo = await logoDataUrl();
+    const ahora = new Date(), fecha = ahora.toLocaleDateString("es-CL", { day: "2-digit", month: "long", year: "numeric" }) + " · " + ahora.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" });
+    const cursos = [...new Set(s.alumnos.map(a => a.curso))].sort((a, b) => a.localeCompare(b, "es"));
+    const totalInv = s.total, totalAl = s.alumnos.length;
+
+    // Portada / encabezado
+    doc.setFillColor(...NAVY); doc.rect(0, 0, PW, 46, "F");
+    doc.setFillColor(...GOLD); doc.rect(0, 46, PW, 1.6, "F");
+    if (logo) { doc.setFillColor(255, 255, 255); doc.roundedRect(M, 7, 26, 32, 3, 3, "F"); const lw = 22, lh = lw * logo.h / logo.w; doc.addImage(logo.url, "PNG", M + 2, 7 + (32 - lh) / 2, lw, lh); }
+    const tx = logo ? M + 34 : M;
+    doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(21); doc.text("Listado de invitaciones", tx, 21);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(11.5); doc.text("Licenciatura 2026 · Colegio Marina de Chile, Concepción", tx, 29);
+    doc.setFontSize(9); doc.setTextColor(190, 212, 245); doc.text(fecha + (conEstado ? " · con estado de asistencia" : ""), tx, 36);
+
+    // Indicadores
+    const chips = [["Alumnos", totalAl], ["Invitaciones", totalInv]];
+    if (conEstado) chips.push(["Ya ingresaron", s.ingresados + " (" + pct(s.ingresados, s.total) + "%)"]);
+    const cw = (PW - 2 * M - (chips.length - 1) * 5) / chips.length;
+    chips.forEach(([t, v], i) => {
+      const x = M + i * (cw + 5);
+      doc.setFillColor(...PALE); doc.roundedRect(x, 55, cw, 20, 3, 3, "F"); doc.setFillColor(...BLUE); doc.roundedRect(x, 55, 1.8, 20, 0.9, 0.9, "F");
+      doc.setTextColor(...NAVY); doc.setFont("helvetica", "bold"); doc.setFontSize(17); doc.text(String(v), x + 7, 66);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); doc.setTextColor(91, 107, 130); doc.text(t.toUpperCase(), x + 7, 71.5);
+    });
+    let y = 84;
+    if (conEstado) {
+      doc.setFillColor(220, 252, 231); doc.roundedRect(M, y - 4, 5, 5, 1, 1, "F"); doc.setFontSize(8.5); doc.setTextColor(91, 107, 130);
+      doc.text("Verde: invitación ya utilizada (ingresó)", M + 8, y);
+      doc.setFillColor(255, 255, 255); doc.setDrawColor(200, 210, 225); doc.roundedRect(M + 78, y - 4, 5, 5, 1, 1, "FD"); doc.text("Blanco: aún no utilizada", M + 86, y);
+      y += 8;
+    }
+
+    const headerPag = () => {
+      const n = doc.internal.getCurrentPageInfo().pageNumber; if (n === 1) return;
+      doc.setFillColor(...NAVY); doc.rect(0, 0, PW, 11, "F"); doc.setFillColor(...GOLD); doc.rect(0, 11, PW, .8, "F");
+      doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.text("Licenciatura 2026 · Listado de invitaciones", M, 7.2);
+    };
+    for (const cu of cursos) {
+      const als = s.alumnos.filter(a => a.curso === cu).sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+      if (y > 250) { doc.addPage(); y = 20; }
+      doc.setFillColor(...BLUE); doc.roundedRect(M, y, PW - 2 * M, 9, 2, 2, "F");
+      doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.text(cu, M + 4, y + 6.2);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(9);
+      const inv = als.reduce((t, a) => t + a.total, 0), ing = als.reduce((t, a) => t + a.ingresados, 0);
+      doc.text(als.length + " alumnos · " + inv + " invitaciones" + (conEstado ? " · " + ing + " ingresaron" : ""), PW - M - 4, y + 6.2, { align: "right" });
+      const head = ["N.º", "Alumno", "Invitación 1", "Invitación 2", "Invitación 3", "Invitación 4", "Invitación 5"].concat(conEstado ? ["Ingresos"] : []);
+      const body = als.map((a, i) => [String(i + 1), a.nombre].concat([0, 1, 2, 3, 4].map(k => a.invitaciones[k]?.codigo || "")).concat(conEstado ? [a.ingresados + "/" + a.total] : []));
+      doc.autoTable({
+        startY: y + 11, head: [head], body, margin: { left: M, right: M, top: 17, bottom: 16 }, theme: "plain",
+        styles: { font: "helvetica", fontSize: 8.3, cellPadding: { top: 2.1, bottom: 2.1, left: 2, right: 2 }, textColor: NAVY, lineColor: [221, 230, 242], lineWidth: { bottom: .2 }, valign: "middle" },
+        headStyles: { fillColor: NAVY, textColor: 255, fontStyle: "bold", fontSize: 7.6, halign: "center" },
+        alternateRowStyles: { fillColor: [248, 250, 253] },
+        columnStyles: Object.assign({ 0: { cellWidth: 9, halign: "center" }, 1: { cellWidth: "auto", fontStyle: "bold" } },
+          ...[2, 3, 4, 5, 6].map(c => ({ [c]: { cellWidth: 19, halign: "center", font: "courier", fontStyle: "bold", fontSize: 8.4 } })), conEstado ? { 7: { cellWidth: 15, halign: "center", fontStyle: "bold" } } : {}),
+        didParseCell: d => {
+          if (d.section !== "body" || !conEstado) return;
+          if (d.column.index >= 2 && d.column.index <= 6) { const inv = als[d.row.index].invitaciones[d.column.index - 2]; if (inv?.entro) { d.cell.styles.fillColor = [220, 252, 231]; d.cell.styles.textColor = [21, 128, 61]; } }
+          if (d.column.index === 7) { const a = als[d.row.index]; d.cell.styles.textColor = a.ingresados === a.total ? [21, 128, 61] : a.ingresados ? [180, 83, 9] : [91, 107, 130]; }
+        },
+        didDrawPage: headerPag
+      });
+      y = doc.lastAutoTable.finalY + 9;
+    }
+    const n = doc.getNumberOfPages();
+    for (let i = 1; i <= n; i++) {
+      doc.setPage(i); doc.setDrawColor(221, 230, 242); doc.line(M, 285, PW - M, 285);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(120, 135, 155);
+      doc.text("Documento de uso interno · contiene datos de estudiantes", M, 290); doc.text("Página " + i + " de " + n, PW - M, 290, { align: "right" });
+    }
+    const nombre = "Listado_invitaciones_Licenciatura_2026" + (conEstado ? "_con_asistencia" : "") + ".pdf";
+    if (window.__PDF_PREVIEW || new URLSearchParams(location.search).has("preview")) { window.__pdfUrl = doc.output("bloburl"); window.__pdfPages = n; location.href = window.__pdfUrl; return; }
+    doc.save(nombre); msg.textContent = "✔ PDF generado: " + nombre;
+  } catch (e) { if (!onAuthFail(e)) msg.textContent = "✖ " + e.message; }
+}
+$("#btnPdfLista").onclick = () => exportPDF(false);
+$("#btnPdfAsist").onclick = () => exportPDF(true);
 
 /* ───────── Equipo (administrador) ───────── */
 async function loadFun() {
