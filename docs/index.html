@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0b1f3a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Licenciatura 2027">
+<meta name="apple-mobile-web-app-title" content="Licenciatura 2026">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
@@ -34,11 +34,14 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui
 @keyframes float{0%,100%{transform:translateY(0) rotate(var(--r,0deg))}50%{transform:translateY(-16px) rotate(calc(var(--r,0deg) + 6deg))}}
 @media (prefers-reduced-motion:reduce){#login .bf{animation:none}}
 .lcard{position:relative;width:100%;max-width:380px;background:rgba(255,255,255,.1);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.25);border-radius:26px;padding:28px 22px 24px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
-.lcard img{width:104px;height:104px;border-radius:24px;box-shadow:0 10px 30px rgba(0,0,0,.4);margin-top:-68px}
+.lcard .logo{width:112px;height:auto;display:block;margin:-74px auto 0;background:#fff;border-radius:18px;padding:9px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.pinrow{position:relative}
+#pin{padding-right:70px}
+#togglePin{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(11,31,58,.08);color:#0b1f3a;padding:6px 10px;font-size:12px;border-radius:9px}
 .lcard small{display:block;letter-spacing:3px;font-size:11px;opacity:.8;margin-top:14px}
 .lcard h1{font-family:Georgia,serif;font-size:28px;margin:4px 0 2px;font-weight:700}
 .lcard p{margin:0 0 18px;opacity:.85;font-size:14px}
-#pin{width:100%;text-align:center;font-size:28px;letter-spacing:8px;font-weight:700;text-transform:uppercase;padding:14px 10px;border-radius:14px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.95);color:#0b1f3a}
+#pin{width:100%;text-align:center;font-size:22px;letter-spacing:3px;font-weight:700;padding:14px 10px;border-radius:14px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.95);color:#0b1f3a}
 #pin::placeholder{letter-spacing:4px;font-size:16px;font-weight:500;color:#8aa0bd}
 #pin:focus{outline:3px solid var(--gold);border-color:transparent}
 #btnLogin{width:100%;margin-top:14px;padding:15px;font-size:17px;border-radius:14px;background:linear-gradient(180deg,#f2cf79,#d9a53a);color:#2a1d00;box-shadow:0 8px 20px rgba(0,0,0,.3)}
@@ -151,11 +154,11 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
   <div class="bf" style="width:58px;height:58px;right:14%;bottom:12%;--r:-10deg;animation-delay:-4s"><svg viewBox="0 0 40 40"><g fill="#9cc2fa"><ellipse cx="13" cy="14" rx="11" ry="9"/><ellipse cx="27" cy="14" rx="11" ry="9"/><ellipse cx="15" cy="27" rx="7" ry="8"/><ellipse cx="25" cy="27" rx="7" ry="8"/></g><rect x="19" y="9" width="2" height="26" rx="1" fill="#0b1f3a"/></svg></div>
   <div class="bf" style="width:38px;height:38px;left:12%;bottom:16%;--r:25deg;animation-delay:-1s"><svg viewBox="0 0 40 40"><g fill="#d7e6ff"><ellipse cx="13" cy="14" rx="11" ry="9"/><ellipse cx="27" cy="14" rx="11" ry="9"/><ellipse cx="15" cy="27" rx="7" ry="8"/><ellipse cx="25" cy="27" rx="7" ry="8"/></g><rect x="19" y="9" width="2" height="26" rx="1" fill="#0b1f3a"/></svg></div>
   <form class="lcard" id="loginForm" autocomplete="off">
-    <img src="icons/icon-192.png" alt="Licenciatura">
-    <small>COLEGIO MARINA DE CHILE</small>
+    <img class="logo" src="logo.png" alt="Colegio Marina de Chile">
+    <small>COLEGIO MARINA DE CHILE · CONCEPCIÓN</small>
     <h1>Control de acceso</h1>
-    <p>Ingresa tu PIN personal</p>
-    <input id="pin" placeholder="PIN" maxlength="12" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" inputmode="text">
+    <p>Licenciatura · Ingresa tu PIN o clave</p>
+    <div class="pinrow"><input id="pin" type="password" placeholder="PIN" maxlength="30" autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false"><button type="button" id="togglePin">Mostrar</button></div>
     <button id="btnLogin" type="submit">Ingresar</button>
     <div id="loginMsg" role="alert"></div>
     <div class="lfoot">¿No tienes PIN? Solicítala a la coordinación.<br><a id="btnDemo">Probar modo demo</a></div>
@@ -165,7 +168,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
 <!-- APP -->
 <div id="app" hidden>
 <header>
-  <img src="icons/icon-192.png" alt="">
+  <img src="logo.png" alt="Colegio Marina de Chile" style="width:auto;height:46px;background:#fff;border-radius:9px;padding:3px 5px">
   <div><h1>Control de acceso</h1><small id="who"></small></div>
   <span id="conn" class="dot" title="Conexión"></span>
 </header>
@@ -394,6 +397,7 @@ function enterApp() {
 }
 $("#loginForm").addEventListener("submit", e => { e.preventDefault(); login($("#pin").value); });
 $("#btnDemo").onclick = () => { state.demo = true; store.set("demo", "1"); $("#pin").value = "ADMIN1"; $("#loginMsg").style.color = "#d7e6ff"; $("#loginMsg").textContent = "Demo: ADMIN1 (administrador) o FUNC01 (funcionario). Pulsa Ingresar."; };
+$("#togglePin").onclick = () => { const p = $("#pin"), v = p.type === "password"; p.type = v ? "text" : "password"; $("#togglePin").textContent = v ? "Ocultar" : "Mostrar"; };
 $("#btnLogout").onclick = logout;
 $("#btnSaveUrl").onclick = () => { state.url = $("#cfgUrl").value.trim(); store.set("url", state.url); alert("URL guardada."); };
 $("#cfgSound").onchange = e => { state.sound = e.target.checked; store.set("sound", state.sound ? "1" : "0"); };
@@ -644,3 +648,4 @@ $("#fList").addEventListener("click", async e => {
 </script>
 </body>
 </html>
+

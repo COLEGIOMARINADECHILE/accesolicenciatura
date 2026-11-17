@@ -50,7 +50,7 @@ Invitación (QR "A00101-9SUE3")  →  Teléfono con docs/index.html  →  Apps S
 
 ## Acceso por PIN personal (administrador y funcionarios)
 - La página pide solo una **PIN**; al entrar muestra el nombre y el perfil de la persona.
-- La **PIN maestra** (la definida en el menú «Definir PIN» o `PIN_INICIAL`) entra siempre como **Administrador**.
+- La clave del **Administrador** es `Licenciatura2026` (constante `CLAVE_ADMIN` en `Code.gs`; no distingue mayúsculas). Se escribe en la misma pantalla de acceso. Cámbiala editando esa línea y publicando una nueva versión.
 - En la pestaña **Equipo** (solo administradores) se crean funcionarios con nombre, correo y perfil. El sistema genera una PIN única de 6 caracteres y **la envía por correo** (hoja «Funcionarios»). Se puede reenviar, regenerar, desactivar o eliminar.
 - Funcionario: escanear, panel, alumnos y deshacer su propio ingreso por 3 minutos. Administrador: además anular cualquier ingreso y gestionar el equipo.
 - La primera vez, ejecuta `autorizarCorreo` en el editor de Apps Script para permitir el envío de correos, y publica una **nueva versión** de la implementación.
@@ -65,7 +65,7 @@ Ese error aparece cuando el script se creó en script.google.com y no desde la h
 Tres formas: botón **Deshacer este ingreso** en la pantalla verde tras escanear; botón **Revertir** con el código en la pestaña Escanear; o **Anular** en la pestaña Alumnos. Queda anotado como ANULADO en la hoja «Registro».
 
 ## Ícono de la app
-`docs/icons` + `manifest.webmanifest`: al abrir la página en el celular, «Agregar a pantalla de inicio» crea el ícono **Licenciatura 2027**.
+`docs/icons` + `manifest.webmanifest`: al abrir la página en el celular, «Agregar a pantalla de inicio» crea el ícono **Licenciatura 2026** con la insignia del colegio.
 
 ## Modo demo
 En **Ajustes → Modo demo** (o `index.html?demo=1`) puedes probar todo sin conexión; códigos de prueba `A00101-DEMO1` … `A00105-DEMO1`.
