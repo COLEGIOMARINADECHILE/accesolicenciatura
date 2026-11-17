@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Generador de invitaciones · Licenciatura 2026</title>
+<style id="pgsize">@page{size:A4 landscape;margin:0}</style>
 <style>
-@page{size:A4 portrait;margin:0}
 *{box-sizing:border-box}
 html,body{margin:0;background:#e9eef6;font:15px/1.4 system-ui,"Segoe UI",sans-serif;color:#102744}
 .bar{position:sticky;top:0;background:#102744;color:#fff;padding:12px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;z-index:5}
@@ -14,19 +14,26 @@ html,body{margin:0;background:#e9eef6;font:15px/1.4 system-ui,"Segoe UI",sans-se
 .bar button{background:#8db4f0;color:#102744;font-weight:700;cursor:pointer}
 .bar span{opacity:.8;font-size:13px}
 .hint{max-width:760px;margin:20px auto;padding:0 16px;font-size:14px}
-/* Cada invitación mide 98 × 138,2 mm (proporción original 1240×1748), separadas por 4 mm y con 5 mm de margen.
+
+/* Dos formatos (proporción original de la invitación 1240×1748, separadas 4 mm, 5 mm de margen):
+   por=2 → A4 horizontal, 2 invitaciones de 110 × 150 mm (11 × 15 cm)
+   por=4 → A4 vertical,   4 invitaciones de  98 × 138,2 mm
    Líneas punteadas de corte sobre cada borde + 1,2 mm de sangrado: al cortar sobre ellas todas quedan idénticas. */
-.page{width:210mm;height:297mm;margin:12px auto;background:#fff;display:grid;grid-template-columns:98mm 98mm;grid-template-rows:138.2mm 138.2mm;gap:4mm;justify-content:center;align-content:center;box-shadow:0 2px 12px rgba(0,0,0,.2);page-break-after:always;break-after:page;overflow:hidden;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.card{position:relative;width:98mm;height:138.2mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.card::before{content:"";position:absolute;inset:-1.2mm;background:#f1f1ef url("fondo.jpg") center/100% 100% no-repeat;z-index:0}
+#out.p2{--W:110mm;--H:150mm;--s:1.122;--pw:297mm;--ph:210mm;--cols:2;--rows:1}
+/* 11 × 15 cm es un poco más ancho que el diseño: el fondo se ajusta sin deformarse (recorte de ~2,5 mm arriba y abajo) y se recoloca el QR */
+#out.p2 .qrbox{left:4.2%;top:86.3%;width:15.5%;height:11.3%}
+#out.p2 .info{left:23.5%;top:93.4%}
+#out.p4{--W:98mm;--H:138.2mm;--s:1;--pw:210mm;--ph:297mm;--cols:2;--rows:2}
+.page{position:relative;width:var(--pw);height:var(--ph);margin:12px auto;background:#fff;display:grid;grid-template-columns:repeat(var(--cols),var(--W));grid-template-rows:repeat(var(--rows),var(--H));gap:4mm;justify-content:center;align-content:center;box-shadow:0 2px 12px rgba(0,0,0,.2);page-break-after:always;break-after:page;overflow:hidden;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.card{position:relative;width:var(--W);height:var(--H);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.card::before{content:"";position:absolute;inset:-1.2mm;background:#f1f1ef url("fondo.jpg") center/cover no-repeat;z-index:0}
 .card>*{z-index:1}
-.page{position:relative}
-.cuts{position:absolute;left:0;top:0;width:210mm;height:297mm;z-index:3;pointer-events:none}
-.qrbox{position:absolute;left:4.5%;top:85.2%;width:17.5%;height:12.4%;background:#fff;border-radius:2.2mm;padding:1.6mm;box-shadow:0 0 0 .25mm rgba(16,39,68,.25)}
+.cuts{position:absolute;left:0;top:0;width:var(--pw);height:var(--ph);z-index:3;pointer-events:none}
+.qrbox{position:absolute;left:4.5%;top:85.2%;width:17.5%;height:12.4%;background:#fff;border-radius:calc(2.2mm*var(--s));padding:calc(1.6mm*var(--s));box-shadow:0 0 0 .25mm rgba(16,39,68,.25)}
 .qrbox svg{display:block;width:100%;height:100%}
 .info{position:absolute;left:25.5%;top:92.6%;font-family:Georgia,"Times New Roman",serif;color:#102744;line-height:1.3;white-space:nowrap}
-.info b{display:block;font-size:3mm;letter-spacing:.2mm}
-.info span{display:block;font-size:2.3mm;letter-spacing:.12mm}
+.info b{display:block;font-size:calc(3mm*var(--s));letter-spacing:calc(.2mm*var(--s))}
+.info span{display:block;font-size:calc(2.3mm*var(--s));letter-spacing:calc(.12mm*var(--s))}
 .empty::before{display:none}
 @media print{
   html,body{background:#fff}
@@ -40,17 +47,26 @@ html,body{margin:0;background:#e9eef6;font:15px/1.4 system-ui,"Segoe UI",sans-se
   <h1>Generador de invitaciones</h1>
   <input type="file" id="csv" accept=".csv,text/csv" title="invitaciones_con_tokens.csv">
   <select id="curso"><option value="">Todos los cursos</option></select>
+  <select id="por" title="Invitaciones por hoja">
+    <option value="2">2 por hoja · 11 × 15 cm (A4 horizontal)</option>
+    <option value="4">4 por hoja · medianas (A4 vertical)</option>
+  </select>
   <button id="print">Imprimir / Guardar PDF</button>
   <span id="count"></span>
 </div>
-<div class="hint" id="hint">Carga el archivo <b>invitaciones_con_tokens.csv</b> (columnas: Codigo, Token, Curso, CodEstudiante, Numero, Estudiante). Cada invitación llevará un QR con el texto <code>CODIGO-TOKEN</code>. En el diálogo de impresión elige tamaño A4, márgenes «Ninguno» y activa «Gráficos de fondo».</div>
-<div id="out"></div>
+<div class="hint" id="hint">Carga el archivo <b>invitaciones_con_tokens.csv</b> (columnas: Codigo, Token, Curso, CodEstudiante, Numero, Estudiante). Cada invitación llevará un QR con el texto <code>CODIGO-TOKEN</code>. En el diálogo de impresión elige A4, escala 100 %, márgenes «Ninguno» y activa «Gráficos de fondo».</div>
+<div id="out" class="p2"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script src="../../3_PRIVADO_NO_SUBIR/datos.js" onerror="void 0"></script>
 <script>
 "use strict";
 let DATA = window.INV_DATA || [];
+const $ = id => document.getElementById(id);
+const FORMATOS = {
+  2: { pw: 297, ph: 210, W: 110, H: 150, cols: 2, rows: 1, size: "A4 landscape" },
+  4: { pw: 210, ph: 297, W: 98, H: 138.2, cols: 2, rows: 2, size: "A4 portrait" }
+};
 
 function qrSvg(text) {
   const qr = qrcode(0, "Q");          // versión automática, corrección Q (25 %)
@@ -62,41 +78,41 @@ function qrSvg(text) {
 }
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-// Marcas de corte (unidades = mm): 3,5 mm de largo, separadas 1,8 mm del borde de la invitación.
-const MARKS = (() => {
-  const o = 5.3, g = 1.8, L = 3.5, W = 92, H = 129.7; let d = "";
-  [[o, o, -1, -1], [o + W, o, 1, -1], [o, o + H, -1, 1], [o + W, o + H, 1, 1]].forEach(([x, y, sx, sy]) => {
-    d += `M${x + sx * g},${y}h${sx * L}M${x},${y + sy * g}v${sy * L}`;
-  });
-  return `<svg class="marks" viewBox="0 0 102.6 140.3" xmlns="http://www.w3.org/2000/svg"><path d="${d}" stroke="#000" stroke-width=".2" fill="none"/></svg>`;
-})();
 // Líneas punteadas de corte que cruzan toda la hoja, justo sobre el borde de cada invitación (mm).
-const CUTS = (() => {
-  const xs = [5, 103, 107, 205], ys = [8.3, 146.5, 150.5, 288.7];
-  const d = xs.map(x => `M${x},0V297`).join("") + ys.map(y => `M0,${y}H210`).join("");
-  return `<svg class="cuts" viewBox="0 0 210 297" xmlns="http://www.w3.org/2000/svg"><path d="${d}" stroke="#000" stroke-width=".25" stroke-dasharray="1.6 1.1" fill="none"/></svg>`;
-})();
+function cutsSvg(f) {
+  const gap = 4, mx = (f.pw - (f.cols * f.W + (f.cols - 1) * gap)) / 2, my = (f.ph - (f.rows * f.H + (f.rows - 1) * gap)) / 2;
+  const xs = [], ys = [];
+  for (let c = 0; c < f.cols; c++) { xs.push(mx + c * (f.W + gap), mx + c * (f.W + gap) + f.W); }
+  for (let r = 0; r < f.rows; r++) { ys.push(my + r * (f.H + gap), my + r * (f.H + gap) + f.H); }
+  const d = xs.map(x => `M${x.toFixed(2)},0V${f.ph}`).join("") + ys.map(y => `M0,${y.toFixed(2)}H${f.pw}`).join("");
+  return `<svg class="cuts" viewBox="0 0 ${f.pw} ${f.ph}" xmlns="http://www.w3.org/2000/svg"><path d="${d}" stroke="#000" stroke-width=".25" stroke-dasharray="1.6 1.1" fill="none"/></svg>`;
+}
 function cardHtml(r) {
   const payload = `${r.Codigo}-${r.Token}`.toUpperCase();
   return `<div class="card"><div class="qrbox">${qrSvg(payload)}</div>
     <div class="info"><b>Invitación ${esc(r.Numero)} de 5</b><span>Código ${esc(r.Codigo)} · uso único</span></div></div>`;
 }
 function render() {
-  const cur = document.getElementById("curso").value;
-  const qs = new URLSearchParams(location.search), solo = qs.get("solo"), sin = qs.get("excluir");
+  const cur = $("curso").value, qs = new URLSearchParams(location.search);
+  if (qs.get("por") && !render.init) { $("por").value = qs.get("por"); }
+  render.init = true;
+  const por = +$("por").value, f = FORMATOS[por], n = f.cols * f.rows;
+  const solo = qs.get("solo"), sin = qs.get("excluir");
   const list = DATA.filter(r => (!cur || r.Curso === cur) && (!solo || r.Curso === solo) && (!sin || r.Curso !== sin));
-  let html = "";
-  for (let i = 0; i < list.length; i += 4) {
-    const grp = list.slice(i, i + 4);
-    html += `<div class="page">${CUTS}${grp.map(cardHtml).join("")}${"<div class='card empty' style='background:#fff'></div>".repeat(4 - grp.length)}</div>`;
+  $("out").className = "p" + por;
+  $("pgsize").textContent = `@page{size:${f.size};margin:0}`;
+  const cuts = cutsSvg(f); let html = "";
+  for (let i = 0; i < list.length; i += n) {
+    const grp = list.slice(i, i + n);
+    html += `<div class="page">${cuts}${grp.map(cardHtml).join("")}${"<div class='card empty' style='background:#fff'></div>".repeat(n - grp.length)}</div>`;
   }
-  document.getElementById("out").innerHTML = html;
-  document.getElementById("count").textContent = `${list.length} invitaciones · ${Math.ceil(list.length / 4)} páginas`;
-  document.getElementById("hint").style.display = list.length ? "none" : "";
+  $("out").innerHTML = html;
+  $("count").textContent = `${list.length} invitaciones · ${Math.ceil(list.length / n)} páginas · ${f.W} × ${f.H} mm c/u`;
+  $("hint").style.display = list.length ? "none" : "";
 }
 function fillCursos() {
-  const s = document.getElementById("curso"), cur = [...new Set(DATA.map(r => r.Curso))];
-  s.innerHTML = `<option value="">Todos los cursos</option>` + cur.map(c => `<option>${esc(c)}</option>`).join("");
+  const cur = [...new Set(DATA.map(r => r.Curso))];
+  $("curso").innerHTML = `<option value="">Todos los cursos</option>` + cur.map(c => `<option>${esc(c)}</option>`).join("");
 }
 function parseCSV(t) {
   t = t.replace(/^﻿/, ""); const rows = []; let row = [], f = "", q = false;
@@ -112,14 +128,13 @@ function parseCSV(t) {
   const h = rows.shift();
   return rows.filter(r => r.length === h.length).map(r => Object.fromEntries(h.map((k, i) => [k, r[i]])));
 }
-document.getElementById("csv").onchange = async e => {
+$("csv").onchange = async e => {
   const f = e.target.files[0]; if (!f) return;
   DATA = parseCSV(await f.text()); fillCursos(); render();
 };
-document.getElementById("curso").onchange = render;
-document.getElementById("print").onclick = () => window.print();
+$("curso").onchange = render; $("por").onchange = render;
+$("print").onclick = () => window.print();
 fillCursos(); render();
 </script>
 </body>
 </html>
-
