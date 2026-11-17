@@ -48,6 +48,13 @@ Invitación (QR "A00101-9SUE3")  →  Teléfono con docs/index.html  →  Apps S
 3. Mira el **Panel** para el conteo total y por curso, y **Alumnos** para ver cuántos de los 5 invitados han entrado.
 4. Varios teléfonos pueden escanear a la vez: el servidor usa bloqueo para impedir ingresos dobles.
 
+## Acceso por PIN personal (administrador y funcionarios)
+- La página pide solo una **PIN**; al entrar muestra el nombre y el perfil de la persona.
+- La **PIN maestra** (la definida en el menú «Definir PIN» o `PIN_INICIAL`) entra siempre como **Administrador**.
+- En la pestaña **Equipo** (solo administradores) se crean funcionarios con nombre, correo y perfil. El sistema genera una PIN única de 6 caracteres y **la envía por correo** (hoja «Funcionarios»). Se puede reenviar, regenerar, desactivar o eliminar.
+- Funcionario: escanear, panel, alumnos y deshacer su propio ingreso por 3 minutos. Administrador: además anular cualquier ingreso y gestionar el equipo.
+- La primera vez, ejecuta `autorizarCorreo` en el editor de Apps Script para permitir el envío de correos, y publica una **nueva versión** de la implementación.
+
 ## Script independiente (error «Cannot call SpreadsheetApp.getUi()»)
 Ese error aparece cuando el script se creó en script.google.com y no desde la hoja. Dos soluciones: (a) crear el script desde la hoja con **Extensiones → Apps Script**, o (b) en `Code.gs` completar `SHEET_ID` (ID de la hoja) y `PIN_INICIAL`, y ejecutar la función **configurarTodo**. `onOpen` ya no falla en ningún caso.
 
