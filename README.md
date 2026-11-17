@@ -63,6 +63,8 @@ Invitación (QR "A00101-9SUE3")  →  Teléfono con docs/index.html  →  Apps S
 ## Invitaciones adicionales y especiales (administrador)
 Pestaña **Admin → Invitaciones**: crea un *invitado especial* (código V00001…) o invitaciones *adicionales* de un alumno (A00106…), con nombre y cargo opcionales. Se guardan en la hoja «Invitaciones» (columnas Invitado, Cargo, Tipo), aparecen en el listado y en el PDF, y se descargan como imagen (digital, para enviar por WhatsApp) o PDF 11×15 cm (impresa). Al escanearlas, el funcionario ve el nombre y el cargo.
 
+Al crear una adicional, la página muestra antes cuántas invitaciones ya tiene el alumno y qué códigos se generarán. Cada invitación creada se puede enviar **por correo** (con el nombre del invitado en el saludo y un mensaje opcional) o **eliminar** (solo si aún no ingresó).
+
 ## Exportar listado en PDF
 Pestaña **Alumnos** (solo administradores): «Lista de invitaciones» o «Con asistencia» (marca en verde las ya utilizadas). Genera un PDF por curso con los 5 códigos de cada alumno; no incluye los tokens secretos.
 
@@ -85,6 +87,7 @@ En **Ajustes → Modo demo** (o `index.html?demo=1`) puedes probar todo sin cone
 - QR en modo alfanumérico, corrección de errores Q, versión 1 (21×21 módulos): módulos grandes y lectura rápida en celular.
 - La PIN viaja como parámetro de la consulta HTTPS; es suficiente para un evento escolar, pero no reutilices una clave personal.
 - Hoja **Registro** guarda cada escaneo (ingreso, duplicado, inválido, anulado) con hora y operador.
+
 
 
 

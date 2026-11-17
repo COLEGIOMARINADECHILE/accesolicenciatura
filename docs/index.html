@@ -154,6 +154,10 @@ nav button.active::before{content:"";position:absolute;top:0;width:34px;height:3
 .opt{display:flex;gap:8px}
 .opt label{flex:1;margin:0;display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:11px;color:var(--ink);font-size:14px;cursor:pointer}
 .opt input{width:auto}
+.infobox{background:var(--bg);border:1px solid var(--line);border-left:4px solid var(--brand);border-radius:12px;padding:10px 12px;font-size:14px;margin-top:10px;line-height:1.5}
+.mailrow{display:none;margin-top:8px;gap:6px;flex-direction:column}
+.mailrow.on{display:flex}
+.mailrow input{padding:9px;font-size:14px}
 .invcard{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line)}
 .invcard:last-child{border:0}
 .invcard canvas{width:84px;height:auto;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.25);flex:none;background:#fff}
@@ -297,6 +301,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
           <datalist id="dlAlumnos"></datalist>
           <label>Cantidad de invitaciones</label>
           <input id="iCant" type="number" min="1" max="10" value="1" inputmode="numeric">
+          <div id="iInfo" class="infobox" hidden></div>
         </div>
         <label>Nombre del invitado <span class="muted">(opcional)</span></label>
         <input id="iNom" placeholder="Ej: Juan Pérez" autocomplete="off">
@@ -427,6 +432,8 @@ function demoApi(action, p) {
       return { ok: true, total: demoDB.inv.length, ingresados: demoDB.inv.filter(x => x.entro).length, cursos: Object.values(cursos), alumnos: Object.values(alumnos), recientes: demoDB.log.slice(0, 40), actualizado: nowStr() };
     }
   }
+  if (action === "inv_del") { const i = demoDB.inv.findIndex(x => x.codigo === norm(p.code)); if (i < 0) return { ok: false, error: "La invitación no existe" }; const x = demoDB.inv[i]; if (!x.tipo) return { ok: false, error: "Solo se pueden eliminar invitaciones adicionales o especiales." }; if (x.entro) return { ok: false, error: "Esa invitación ya ingresó. Anula primero el ingreso." }; demoDB.inv.splice(i, 1); return { ok: true }; }
+  if (action === "inv_mail") { if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(p.correo || ""))) return { ok: false, error: "Correo no válido" }; return { ok: true }; }
   if (action === "inv_add" || action === "inv_list") {
     if (user.rol !== "admin") return { ok: false, error: "Solo el administrador puede hacer esto" };
     if (action === "inv_list") return { ok: true, invitaciones: demoDB.inv.filter(x => x.tipo).map(x => ({ codigo: x.codigo, token: x.token, invitado: x.invitado, cargo: x.cargo, estudiante: x.estudiante, curso: x.curso, numero: x.numero, tipo: x.tipo, entro: x.entro })) };
@@ -434,13 +441,13 @@ function demoApi(action, p) {
     const out = [], nombre = String(p.nombre || "").trim(), cargo = String(p.cargo || "").trim();
     if (p.codEst) {
       const base = demoDB.inv.filter(x => x.codEst === p.codEst && x.tipo !== "ESPECIAL"); if (!base.length) return { ok: false, error: "No encuentro al alumno" };
-      let n = Math.max(...base.map(x => x.numero));
+      let n = Math.max(...base.map(x => x.numero)); const antes = { total: base.length, ingresadas: base.filter(x => x.entro).length, adicionales: base.filter(x => x.tipo === "ADICIONAL").length }; antes.despues = antes.total + Math.min(10, +p.cantidad || 1); out.antes = antes;
       for (let k = 0; k < Math.min(10, +p.cantidad || 1); k++) { n++; const t = { codigo: p.codEst + String(n).padStart(2, "0"), token: tk(), curso: base[0].curso, codEst: p.codEst, numero: n, estudiante: base[0].estudiante, entro: false, hora: "", oper: "", invitado: nombre, cargo, tipo: "ADICIONAL" }; demoDB.inv.push(t); out.push({ ...t }); log(t, "CREADA (ADICIONAL)"); }
     } else {
       const m = Math.max(0, ...demoDB.inv.filter(x => /^V\d+$/.test(x.codigo)).map(x => +x.codigo.slice(1)));
       const t = { codigo: "V" + String(m + 1).padStart(5, "0"), token: tk(), curso: CURSO_ESPECIAL, numero: 1, estudiante: nombre || "Invitado especial", entro: false, hora: "", oper: "", invitado: nombre, cargo, tipo: "ESPECIAL" }; t.codEst = t.codigo; demoDB.inv.push(t); out.push({ ...t }); log(t, "CREADA (ESPECIAL)");
     }
-    return { ok: true, invitaciones: out };
+    return { ok: true, invitaciones: out, antes: out.antes };
   }
   if (action.startsWith("func_")) {
     if (user.rol !== "admin") return { ok: false, error: "Solo el administrador puede hacer esto" };
@@ -467,6 +474,12 @@ async function api(action, params = {}) {
   const u = new URL(state.url);
   u.search = new URLSearchParams({ action, pin: state.pin, ...params }).toString();
   const r = await fetch(u, { redirect: "follow" });
+  return unwrap(await r.json());
+}
+async function apiPost(action, body) {
+  if (state.demo) return unwrap(demoApi(action, { pin: state.pin, ...body }));
+  if (!state.url) throw new Error("Falta la URL del Apps Script (Yo → Avanzado).");
+  const r = await fetch(state.url, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action, pin: state.pin, ...body }), redirect: "follow" });
   return unwrap(await r.json());
 }
 function unwrap(j) {
@@ -821,7 +834,7 @@ function render() {
     return `<li><span class="ico ${k[0]}">${k[1]}</span><div class="who"><div><b>${esc(r.estudiante || r.codigo)}</b></div><div class="muted">${esc(r.codigo)} · ${esc(r.resultado.split(" ")[0].toLowerCase())}${r.operador ? " · " + esc(r.operador) : ""}</div></div><div class="tm">${esc(hace(r.fecha))}</div></li>`;
   }).join("") : `<li class="muted">Sin movimientos todavía.</li>`;
   renderAlumnos();
-  const dl = $("#dlAlumnos"); if (dl && isAdmin()) dl.innerHTML = s.alumnos.filter(a => !a.especial).map(a => `<option value="${esc(a.nombre)} · ${esc(a.curso)} · ${esc(a.codEst)}"></option>`).join("");
+  const dl = $("#dlAlumnos"); if (dl && isAdmin()) dl.innerHTML = s.alumnos.filter(a => !a.especial).map(a => `<option value="${esc(a.nombre)} · ${esc(a.curso)} · ${a.total} inv. · ${esc(a.codEst)}"></option>`).join("");
 }
 function renderAlumnos() {
   const s = state.stats; if (!s) return;
@@ -1003,13 +1016,28 @@ async function compartir(inv) {
   }, "image/png");
 }
 async function invCardHtml(inv, cont) {
-  const div = document.createElement("div"); div.className = "invcard";
+  const div = document.createElement("div"); div.className = "invcard"; div.dataset.cod = inv.codigo;
   const cv = await drawInvitation(inv, false); const mini = document.createElement("canvas"); mini.width = 168; mini.height = 237; mini.getContext("2d").drawImage(cv, 0, 0, 168, 237);
   div.appendChild(mini);
   const d = document.createElement("div"); d.style.minWidth = 0; d.style.flex = "1";
   d.innerHTML = `<b>${esc(inv.invitado || (inv.tipo === "ESPECIAL" ? "Invitado especial" : "Invitación adicional"))}</b>${inv.cargo ? `<div class="muted">${esc(inv.cargo)}</div>` : ""}<div class="muted">${inv.tipo === "ESPECIAL" ? "Invitado especial" : "De " + esc(inv.estudiante) + " · " + esc(inv.curso)} · <b>${esc(inv.codigo)}</b>${inv.entro ? " · ✔ ya ingresó" : ""}</div>
-    <div class="acts"><button class="sm" data-a="png">Digital (imagen)</button><button class="sm sec" data-a="pdf">Imprimir (PDF 11×15)</button><button class="sm sec" data-a="share">Compartir</button></div>`;
+    <div class="acts"><button class="sm" data-a="png">Digital (imagen)</button><button class="sm sec" data-a="pdf">Imprimir (PDF 11×15)</button><button class="sm sec" data-a="share">Compartir</button><button class="sm sec" data-a="mail">Correo</button><button class="sm danger" data-a="del">Eliminar</button></div>
+    <div class="mailrow"><input type="email" placeholder="Correo del destinatario" autocomplete="off" inputmode="email"><input placeholder="Mensaje adicional (opcional)" autocomplete="off"><button class="sm" data-a="send">Enviar invitación por correo</button><span class="muted" data-m></span></div>`;
   d.querySelector('[data-a="png"]').onclick = () => descargarPNG(inv); d.querySelector('[data-a="pdf"]').onclick = () => descargarPDF(inv); d.querySelector('[data-a="share"]').onclick = () => compartir(inv);
+  const mr = d.querySelector(".mailrow"), mm = d.querySelector("[data-m]");
+  d.querySelector('[data-a="mail"]').onclick = () => { mr.classList.toggle("on"); mr.querySelector("input").focus(); };
+  d.querySelector('[data-a="send"]').onclick = async ev => {
+    const [ci, cm] = mr.querySelectorAll("input"), correo = ci.value.trim(); if (!correo) { mm.textContent = "Escribe el correo."; return; }
+    const b = ev.currentTarget; b.disabled = true; mm.textContent = "Enviando…";
+    try { const c = await drawInvitation(inv, false); await apiPost("inv_mail", { code: inv.codigo, correo, mensaje: cm.value.trim(), imagen: c.toDataURL("image/jpeg", .86) }); mm.textContent = "✔ Enviada a " + correo + (inv.invitado ? " (" + inv.invitado + ")" : ""); }
+    catch (e) { if (!onAuthFail(e)) mm.textContent = "✖ " + e.message; } finally { b.disabled = false; }
+  };
+  d.querySelector('[data-a="del"]').onclick = async () => {
+    if (inv.entro) { alert("Esa invitación ya ingresó. Anula primero el ingreso (pestaña Alumnos) y luego elimínala."); return; }
+    if (!confirm("¿Eliminar la invitación " + inv.codigo + (inv.invitado ? " de " + inv.invitado : "") + "?\nSu QR dejará de funcionar y no se puede deshacer.")) return;
+    try { await api("inv_del", { code: inv.codigo }); state.inv.delete(String(inv.codigo).toUpperCase()); $$(".invcard").forEach(e => { if (e.dataset.cod === inv.codigo) e.remove(); }); loadInv(); refresh(true); }
+    catch (e) { if (!onAuthFail(e)) alert(e.message); }
+  };
   div.appendChild(d); cont.appendChild(div);
 }
 async function loadInv() {
@@ -1020,7 +1048,17 @@ async function loadInv() {
     for (const inv of r.invitaciones.slice().reverse()) await invCardHtml(inv, box);
   } catch (e) { if (!onAuthFail(e)) $("#iList").innerHTML = `<p class="muted">${esc(e.message)}</p>`; }
 }
-$$('input[name="tipo"]').forEach(r => r.onchange = () => { $("#boxAlumno").hidden = $('input[name="tipo"]:checked').value !== "adicional"; });
+$$('input[name="tipo"]').forEach(r => r.onchange = () => { $("#boxAlumno").hidden = $('input[name="tipo"]:checked').value !== "adicional"; if (!$("#boxAlumno").hidden) infoAlumno(); });
+function infoAlumno() {
+  const box = $("#iInfo"), t = $("#iAlumno").value.trim(), cod = t.split("·").pop().trim(), al = state.stats?.alumnos.find(a => !a.especial && a.codEst === cod);
+  if (!al) { box.hidden = !t; box.textContent = t ? "Elige un alumno de la lista que aparece al escribir." : ""; return; }
+  const ing = al.invitaciones.filter(i => i.entro).length, adi = al.invitaciones.filter(i => Number(i.n) > 5).length;
+  const cant = Math.max(1, Math.min(10, +$("#iCant").value || 1)), next = Math.max(...al.invitaciones.map(i => +i.n)) + 1;
+  const codes = Array.from({ length: cant }, (_, k) => al.codEst + String(next + k).padStart(2, "0"));
+  box.hidden = false;
+  box.innerHTML = `<b>${esc(al.nombre)}</b> · ${esc(al.curso)}<br>Ya tiene <b>${al.total}</b> invitaciones (${ing} ya ingresaron${adi ? `, ${adi} adicional${adi > 1 ? "es" : ""}` : ""}).<br>Se crearán: <b>${codes.join(", ")}</b> → quedará con <b>${al.total + cant}</b>.`;
+}
+$("#iAlumno").addEventListener("input", infoAlumno); $("#iAlumno").addEventListener("change", infoAlumno); $("#iCant").addEventListener("input", infoAlumno);
 $("#btnIAdd").onclick = async () => {
   const msg = $("#iMsg"), tipo = $('input[name="tipo"]:checked').value, nombre = $("#iNom").value.trim(), cargo = $("#iCargo").value.trim();
   const params = { nombre, cargo };
@@ -1032,9 +1070,9 @@ $("#btnIAdd").onclick = async () => {
   const b = $("#btnIAdd"); b.disabled = true; msg.textContent = "Creando…";
   try {
     const r = await api("inv_add", params);
-    msg.textContent = `✔ ${r.invitaciones.length} invitación(es) creada(s) y agregada(s) al listado. Descárgala abajo.`;
+    msg.textContent = `✔ ${r.invitaciones.length} invitación(es) creada(s) y agregada(s) al listado.` + (r.antes ? ` El alumno tenía ${r.antes.total} (${r.antes.ingresadas} ya ingresaron${r.antes.adicionales ? ", " + r.antes.adicionales + " adicionales" : ""}) y ahora tiene ${r.antes.despues}.` : "") + " Descárgala o envíala abajo.";
     $("#iNuevas").hidden = false; const box = $("#iNuevasList"); box.innerHTML = ""; for (const inv of r.invitaciones) await invCardHtml(inv, box);
-    $("#iNom").value = ""; $("#iCargo").value = ""; refresh(true); loadInv();
+    $("#iNom").value = ""; $("#iCargo").value = ""; await refresh(true); infoAlumno(); loadInv(); loadCheck();
   } catch (e) { if (!onAuthFail(e)) msg.textContent = "✖ " + e.message; }
   finally { b.disabled = false; }
 };
