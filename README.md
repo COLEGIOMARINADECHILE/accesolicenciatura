@@ -55,6 +55,11 @@ Invitación (QR "A00101-9SUE3")  →  Teléfono con docs/index.html  →  Apps S
 - Funcionario: escanear, panel, alumnos y deshacer su propio ingreso por 3 minutos. Administrador: además anular cualquier ingreso y gestionar el equipo.
 - La primera vez, ejecuta `autorizarCorreo` en el editor de Apps Script para permitir el envío de correos, y publica una **nueva versión** de la implementación.
 
+## Escaneo rápido con varios teléfonos
+- Cada teléfono descarga una lista de verificación (código + hash del token) y valida el QR **al instante**; el registro viaja al servidor en segundo plano (con cola y reintentos si se corta la señal; el contador ↻ del encabezado muestra los pendientes).
+- Cada 3 s se sincronizan las invitaciones usadas por los demás teléfonos. Si dos teléfonos leen la misma invitación casi a la vez, el servidor (con bloqueo por fila) acepta solo una y el otro recibe un aviso amarillo de inmediato.
+- Lector propio: usa el detector nativo del teléfono (BarcodeDetector) o jsQR.
+
 ## Invitaciones adicionales y especiales (administrador)
 Pestaña **Admin → Invitaciones**: crea un *invitado especial* (código V00001…) o invitaciones *adicionales* de un alumno (A00106…), con nombre y cargo opcionales. Se guardan en la hoja «Invitaciones» (columnas Invitado, Cargo, Tipo), aparecen en el listado y en el PDF, y se descargan como imagen (digital, para enviar por WhatsApp) o PDF 11×15 cm (impresa). Al escanearlas, el funcionario ve el nombre y el cargo.
 
@@ -80,5 +85,6 @@ En **Ajustes → Modo demo** (o `index.html?demo=1`) puedes probar todo sin cone
 - QR en modo alfanumérico, corrección de errores Q, versión 1 (21×21 módulos): módulos grandes y lectura rápida en celular.
 - La PIN viaja como parámetro de la consulta HTTPS; es suficiente para un evento escolar, pero no reutilices una clave personal.
 - Hoja **Registro** guarda cada escaneo (ingreso, duplicado, inválido, anulado) con hora y operador.
+
 
 

@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
@@ -82,9 +82,9 @@ nav button.active::before{content:"";position:absolute;top:0;width:34px;height:3
 
 /* escáner: siempre completo y cuadrado dentro de la pantalla */
 .scanwrap{position:relative;border-radius:18px;overflow:hidden;background:#000;aspect-ratio:1/1;width:min(100%,58vh);max-width:100%;margin:0 auto}
-#reader{position:absolute;inset:0;width:100%;height:100%;border:0!important}
-#reader>div,#reader video,#reader canvas{width:100%!important;height:100%!important;object-fit:cover}
-#reader video{position:absolute;inset:0}
+#reader{position:absolute;inset:0;width:100%;height:100%;background:#000}
+#reader video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#qbadge{background:#e0b24c;color:#2a1d00;font-size:11px;font-weight:700;border-radius:99px;padding:3px 8px;flex:none}
 .scanwrap .c{position:absolute;width:38px;height:38px;border:4px solid var(--gold);pointer-events:none;border-radius:6px;z-index:2}
 .c.tl{top:18px;left:18px;border-right:0;border-bottom:0}.c.tr{top:18px;right:18px;border-left:0;border-bottom:0}
 .c.bl{bottom:18px;left:18px;border-right:0;border-top:0}.c.br{bottom:18px;right:18px;border-left:0;border-top:0}
@@ -211,7 +211,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
 <header>
   <img src="logo.png" alt="Colegio Marina de Chile">
   <div class="tt"><h1>Control de acceso</h1><small id="who"></small></div>
-  <span id="conn" class="dot" title="Conexión"></span>
+  <span id="qbadge" hidden title="Registros pendientes de sincronizar"></span><span id="conn" class="dot" title="Conexión"></span>
 </header>
 
 <main>
@@ -334,7 +334,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
       <h2>Sonido</h2>
       <label style="display:flex;gap:10px;align-items:center;margin:0 0 10px;color:var(--ink)"><input type="checkbox" id="cfgSound" style="width:auto"> Sonido fuerte al escanear</label>
       <label style="display:flex;gap:10px;align-items:center;margin:0 0 12px;color:var(--ink)"><input type="checkbox" id="cfgVoice" style="width:auto"> Voz: «Aprobado» / «Ya utilizada»</label>
-      <div class="row"><button class="sec" id="tOk">▶ Aprobada</button><button class="sec" id="tDup">▶ Ya usada</button><button class="sec" id="tBad">▶ No válida</button></div>
+      <label style="margin-top:0">Volumen</label><input type="range" id="cfgVol" min="0.2" max="1" step="0.05" style="padding:0;margin-bottom:12px"><div class="row"><button class="sec" id="tOk">▶ Aprobada</button><button class="sec" id="tDup">▶ Ya usada</button><button class="sec" id="tBad">▶ No válida</button></div>
     </div>
     <div class="card">
       <details><summary>Avanzado</summary>
@@ -359,7 +359,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
 <button id="ovX" aria-label="Cerrar" title="Cerrar"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
 
 <script src="config.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
@@ -375,9 +375,9 @@ const store = {
 };
 const state = {
   url: store.get("url", "") || CFG.APPS_SCRIPT_URL || "", pin: store.get("pin"), user: null,
-  sound: store.get("sound", "1") === "1", voice: store.get("voice", "1") === "1",
+  sound: store.get("sound", "1") === "1", voice: store.get("voice", "0") === "1", vol: parseFloat(store.get("vol", "0.9")) || 0.9,
   demo: store.get("demo") === "1" || new URLSearchParams(location.search).has("demo"),
-  stats: null, filtro: "todos", scanner: null, busy: false, last: { code: "", t: 0 }
+  stats: null, filtro: "todos", last: { code: "", t: 0 }, inv: new Map(), invReady: false, queue: [], scanSeq: 0, shown: { id: 0, cls: "" }, t1: 0, t2: 0
 };
 const isAdmin = () => state.user?.rol === "admin";
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -458,7 +458,11 @@ function demoApi(action, p) {
 
 /* ───────── API ───────── */
 async function api(action, params = {}) {
-  if (state.demo) return unwrap(demoApi(action, { pin: state.pin, ...params }));
+  if (state.demo) {
+    if (action === "checklist") return { ok: true, l: await Promise.all(demoDB.inv.map(async x => ({ c: x.codigo, h: await sha16(x.codigo + "|" + x.token), s: x.estudiante, u: x.curso, e: x.codEst, n: x.numero, i: x.invitado, k: x.cargo, t: x.tipo }))) };
+    if (action === "used") return { ok: true, n: demoDB.inv.length, u: demoDB.inv.filter(x => x.entro).map(x => ({ c: x.codigo, h: x.hora, o: x.oper })) };
+    return unwrap(demoApi(action, { pin: state.pin, ...params }));
+  }
   if (!state.url) throw new Error("Falta la URL del Apps Script (Yo → Avanzado).");
   const u = new URL(state.url);
   u.search = new URLSearchParams({ action, pin: state.pin, ...params }).toString();
@@ -470,42 +474,40 @@ function unwrap(j) {
   return j;
 }
 
-/* ───────── Sonido fuerte y distinto para cada resultado ───────── */
-let actx, comp;
+/* ───────── Sonidos formales, claros y distintos ─────────
+   Aprobada  → campanilla ascendente suave (sol → do)
+   Ya usada  → dos avisos medios iguales («pi-pi»)
+   No válida → un tono grave descendente                                    */
+let actx, comp, master;
 function audio() {
   if (!actx) {
     const AC = window.AudioContext || window.webkitAudioContext; actx = new AC();
-    comp = actx.createDynamicsCompressor(); comp.threshold.value = -6; comp.ratio.value = 12;
-    const g = actx.createGain(); g.gain.value = 1; comp.connect(g); g.connect(actx.destination);
+    comp = actx.createDynamicsCompressor(); comp.threshold.value = -10; comp.ratio.value = 8;
+    master = actx.createGain(); comp.connect(master); master.connect(actx.destination);
   }
+  master.gain.value = Math.max(.1, state.vol) * 1.7;
   if (actx.state === "suspended") actx.resume();
   return actx;
 }
-function tone(freq, t0, dur, type = "square", vol = 1, freqEnd) {
+function tone(freq, t0, dur, type = "sine", vol = .8, freqEnd) {
   const a = audio(), t = a.currentTime + t0, o = a.createOscillator(), g = a.createGain();
   o.type = type; o.frequency.setValueAtTime(freq, t); if (freqEnd) o.frequency.exponentialRampToValueAtTime(freqEnd, t + dur);
-  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .012); g.gain.setValueAtTime(vol, t + dur * .7); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .012); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
   o.connect(g); g.connect(comp); o.start(t); o.stop(t + dur + .03);
 }
+function bell(freq, t0, dur, vol) { tone(freq, t0, dur, "sine", vol); tone(freq * 2, t0, dur * .7, "sine", vol * .28); tone(freq * 3, t0, dur * .4, "sine", vol * .1); }
 function speak(txt) {
   if (!state.voice || !("speechSynthesis" in window)) return;
-  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(txt); u.lang = "es-ES"; u.rate = 1.05; u.volume = 1; speechSynthesis.speak(u); } catch {}
+  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(txt); u.lang = "es-ES"; u.rate = 1; u.volume = 1; speechSynthesis.speak(u); } catch {}
 }
 function beep(kind) {
   if (!state.sound) return;
   try {
-    if (navigator.vibrate) navigator.vibrate(kind === "ok" ? [90] : kind === "tick" ? 40 : [200, 80, 200, 80, 200]);
-    if (kind === "tick") { tone(1800, 0, .07, "square", .7); return; }
-    if (kind === "ok") {            // APROBADA: campanilla ascendente, alegre y aguda
-      [523, 659, 784, 1047].forEach((f, i) => { tone(f, i * .1, .24, "square", .9); tone(f * 2, i * .1, .24, "triangle", .55); });
-      setTimeout(() => speak("Aprobado"), 480);
-    } else if (kind === "dup") {    // YA USADA: tres zumbidos graves tipo alarma
-      tone(200, 0, .3, "sawtooth", 1); tone(150, .38, .3, "sawtooth", 1); tone(200, .76, .3, "sawtooth", 1);
-      setTimeout(() => speak("Ya utilizada"), 1150);
-    } else {                        // NO VÁLIDA: sirena descendente larga
-      tone(700, 0, .9, "sawtooth", 1, 90); tone(350, 0, .9, "square", .6, 60);
-      setTimeout(() => speak("No válida"), 950);
-    }
+    if (navigator.vibrate) navigator.vibrate(kind === "ok" ? 60 : kind === "tick" ? 25 : [120, 70, 120]);
+    if (kind === "tick") { tone(1400, 0, .05, "sine", .4); return; }
+    if (kind === "ok") { bell(784, 0, .5, .8); bell(1047, .15, .8, .8); setTimeout(() => speak("Aprobado"), 450); }
+    else if (kind === "dup") { tone(587, 0, .2, "triangle", .9); tone(587, .26, .32, "triangle", .9); setTimeout(() => speak("Ya utilizada"), 700); }
+    else { tone(330, 0, .75, "triangle", 1, 165); setTimeout(() => speak("No válida"), 800); }
   } catch {}
 }
 document.addEventListener("pointerdown", () => { try { audio(); } catch {} }, { once: true });
@@ -527,7 +529,7 @@ async function login(pin, silent) {
   } finally { b.disabled = false; b.textContent = "Ingresar"; }
 }
 function logout() {
-  stopCam(); store.del("pin"); store.del("demo"); state.pin = ""; state.user = null; state.demo = false; state.stats = null;
+  stopCam(); store.del("pin"); store.del("demo"); state.pin = ""; state.user = null; state.demo = false; state.stats = null; state.inv = new Map(); state.invReady = false; clearInterval(state.t1); clearInterval(state.t2);
   document.body.classList.remove("in"); $("#app").hidden = true; $("#login").hidden = false; $("#pin").value = ""; $("#loginMsg").textContent = "";
 }
 function enterApp() {
@@ -536,8 +538,8 @@ function enterApp() {
   $("#who").innerHTML = `Hola, <b>${esc(state.user.nombre)}</b><span class="role ${isAdmin() ? "" : "f"}">${rol}</span>`;
   $("#meName").textContent = state.user.nombre; $("#meRol").textContent = rol + (state.demo ? " · modo demo" : "");
   $$("[data-admin]").forEach(e => e.hidden = !isAdmin());
-  $("#cfgUrl").value = state.url; $("#cfgSound").checked = state.sound; $("#cfgVoice").checked = state.voice;
-  goTab("scan"); refresh(true);
+  $("#cfgUrl").value = state.url; $("#cfgSound").checked = state.sound; $("#cfgVoice").checked = state.voice; $("#cfgVol").value = state.vol;
+  saveQueue(); goTab("scan"); refresh(true); startSync();
 }
 $("#loginForm").addEventListener("submit", e => { e.preventDefault(); try { audio(); } catch {} login($("#pin").value); });
 $("#btnDemo").onclick = () => { state.demo = true; store.set("demo", "1"); $("#pin").value = "ADMIN1"; $("#loginMsg").style.color = "#d7e6ff"; $("#loginMsg").textContent = "Demo: ADMIN1 (administrador) o FUNC01 (funcionario). Pulsa Ingresar."; };
@@ -546,6 +548,7 @@ $("#btnLogout").onclick = logout;
 $("#btnSaveUrl").onclick = () => { state.url = $("#cfgUrl").value.trim(); store.set("url", state.url); alert("URL guardada."); };
 $("#cfgSound").onchange = e => { state.sound = e.target.checked; store.set("sound", state.sound ? "1" : "0"); };
 $("#cfgVoice").onchange = e => { state.voice = e.target.checked; store.set("voice", state.voice ? "1" : "0"); };
+$("#cfgVol").oninput = e => { state.vol = parseFloat(e.target.value); store.set("vol", String(state.vol)); try { audio(); } catch {} };
 $("#tOk").onclick = () => beep("ok"); $("#tDup").onclick = () => beep("dup"); $("#tBad").onclick = () => beep("bad");
 
 /* ───────── Pestañas ───────── */
@@ -559,6 +562,70 @@ function goTab(t) {
 }
 $$("nav button").forEach(b => b.onclick = () => goTab(b.dataset.tab));
 
+/* ───────── Verificación instantánea en el teléfono + sincronización ─────────
+   1) El teléfono descarga la lista de verificación (código + hash del token, nunca el token).
+   2) Al leer un QR lo valida al instante, sin esperar al servidor, y muestra el resultado.
+   3) El registro se envía al servidor en segundo plano (cola con reintentos, también sin señal).
+   4) Cada pocos segundos consulta qué invitaciones ya usaron los demás teléfonos.
+   5) Si el servidor detecta que otro teléfono la registró primero, avisa de inmediato.            */
+async function sha16(s) {
+  try { const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)); return [...new Uint8Array(b)].slice(0, 8).map(x => x.toString(16).padStart(2, "0")).join(""); }
+  catch { return ""; }
+}
+async function loadCheck() {
+  try {
+    const r = await api("checklist"), m = new Map(), old = state.inv;
+    r.l.forEach(x => m.set(String(x.c).toUpperCase(), { c: x.c, h: x.h, s: x.s, cu: x.u, ce: String(x.e), n: x.n, i: x.i || "", k: x.k || "", t: x.t || "", used: old.get(String(x.c).toUpperCase())?.used || null }));
+    state.inv = m; state.invReady = true; await syncUsed(true);
+  } catch (e) { if (!onAuthFail(e)) setConn("err"); }
+}
+let syncing = false;
+async function syncUsed(force) {
+  if (!state.user || !state.invReady || syncing || (document.hidden && !force)) return; syncing = true;
+  try {
+    const r = await api("used"), srv = new Map(r.u.map(x => [String(x.c).toUpperCase(), x])), pend = new Set(state.queue.map(q => q.cod));
+    for (const [c, rec] of state.inv) { const s = srv.get(c); if (s) rec.used = { h: s.h, o: s.o }; else if (rec.used && !pend.has(c)) rec.used = null; }
+    setConn("on"); renderMini();
+    if (r.n !== state.inv.size) loadCheck();        // se agregaron invitaciones nuevas
+  } catch (e) { if (!onAuthFail(e)) setConn("err"); }
+  finally { syncing = false; }
+}
+function renderMini() {
+  let ing = 0; for (const r of state.inv.values()) if (r.used) ing++;
+  const t = state.inv.size, p = pct(ing, t);
+  $("#miniBig").textContent = t ? `${ing} / ${t}` : "–"; $("#miniTxt").textContent = t ? p + "%" : ""; $("#miniBar").style.width = p + "%";
+}
+function startSync() {
+  state.invReady = false; loadCheck();
+  clearInterval(state.t1); clearInterval(state.t2);
+  state.t1 = setInterval(() => syncUsed(), 3000);
+  state.t2 = setInterval(() => { if (!document.hidden) flushQueue(); }, 4000);
+}
+function resumen(ce) { let total = 0, ing = 0; for (const r of state.inv.values()) if (r.ce === ce) { total++; if (r.used) ing++; } return { total, ingresados: ing }; }
+function recInfo(r) { return { codigo: r.c, curso: r.cu, codEst: r.ce, numero: r.n, estudiante: r.s, invitado: r.i, cargo: r.k, tipo: r.t }; }
+function markLocal(code, hora, oper) { const r = state.inv.get(String(code).toUpperCase()); if (r && !r.used) r.used = { h: hora || nowStr(), o: oper || "" }; return r; }
+
+/* Cola de registros pendientes (se guarda en el teléfono; sobrevive a cortes de señal) */
+function saveQueue() { store.set("queue", JSON.stringify(state.queue)); const b = $("#qbadge"); b.hidden = !state.queue.length; b.textContent = "↻ " + state.queue.length; }
+function enqueue(it) { state.queue.push(it); saveQueue(); flushQueue(); }
+let flushing = false;
+async function flushQueue() {
+  if (flushing || !state.user) return; flushing = true;
+  try {
+    while (state.queue.length) {
+      const it = state.queue[0]; let r;
+      try { r = await api(it.manual ? "manual" : "scan", { code: it.code, rid: it.rid }); }
+      catch (e) { if (e.auth) onAuthFail(e); else setConn("err"); break; }
+      state.queue.shift(); saveQueue(); setConn("on");
+      if (r.status === "duplicate") {          // otro teléfono la registró antes
+        const rec = state.inv.get(it.cod); if (rec) rec.used = { h: r.usadoEn, o: r.usadoPor };
+        showResult(r, ++state.scanSeq, `<div class="who">⚠ Otro funcionario la registró primero${r.usadoPor ? " (" + esc(r.usadoPor) + ")" : ""}. Verifica antes de dejar pasar.</div>`);
+      } else if (r.status === "invalid") { showResult(r, ++state.scanSeq); }
+    }
+  } finally { flushing = false; }
+}
+try { state.queue = JSON.parse(store.get("queue", "[]")) || []; } catch { state.queue = []; }
+
 /* ───────── Resultado de escaneo ───────── */
 let ovTimer;
 function pips(a) {
@@ -569,29 +636,32 @@ function pips(a) {
 function quien(t, a) {   // bloque "de quién es la invitación"
   const especial = t.tipo === "ESPECIAL";
   if (especial) return `<p class="lbl">INVITADO ESPECIAL</p><p class="nm">${esc(t.invitado || "Invitado sin nombre")}</p>${t.cargo ? `<p>${esc(t.cargo)}</p>` : ""}`;
-  let h = `<p class="lbl">INVITACIÓN DE</p><p class="nm">${esc(t.estudiante)}</p><p>${esc(t.curso)} · Invitación ${t.numero}${a ? " de " + a.total : ""}</p>`;
+  let h = `<p class="lbl">INVITACIÓN DE</p><p class="nm">${esc(t.estudiante)}</p><p>${esc(t.curso)} · Invitación ${t.numero}${a?.total ? " de " + a.total : ""}</p>`;
   if (t.invitado || t.cargo) h += `<div class="who">Invitado: <b>${esc(t.invitado || "—")}</b>${t.cargo ? " · " + esc(t.cargo) : ""}</div>`;
   return h;
 }
 function onAuthFail(e) { if (e.auth) { closeOv(); logout(); $("#loginMsg").style.color = ""; $("#loginMsg").textContent = "Tu sesión ya no es válida. Ingresa nuevamente."; return true; } return false; }
-function showResult(r) {
+function showResult(r, id, extra = "") {
   const ov = $("#ov"); clearTimeout(ovTimer);
   let cls, ic, title, body = "";
+  const al = r.ticket ? resumen(r.ticket.codEst) : null;
   if (r.status === "ok") {
+    markLocal(r.ticket.codigo, r.hora, state.user?.nombre);
     cls = "ok"; ic = "✔"; title = "INVITACIÓN ESCANEADA";
-    body = quien(r.ticket, r.alumno) + (r.ticket.tipo === "ESPECIAL" ? "" : `<p>Han ingresado <b>${r.alumno.ingresados} de ${r.alumno.total}</b> invitados de este alumno</p>${pips(r.alumno)}`);
-    markLocal(r.ticket.codigo, true, r.hora);
+    const a2 = r.ticket ? resumen(r.ticket.codEst) : al;
+    body = quien(r.ticket, a2) + (r.ticket.tipo === "ESPECIAL" || !a2.total ? "" : `<p>Han ingresado <b>${a2.ingresados} de ${a2.total}</b> invitados de este alumno</p>${pips(a2)}`);
   } else if (r.status === "duplicate") {
+    markLocal(r.ticket.codigo, r.usadoEn, r.usadoPor);
     cls = "dup"; ic = "!"; title = "INVITACIÓN YA USADA";
-    body = quien(r.ticket, r.alumno) + `<p>Ya ingresó: ${esc(r.usadoEn || "—")}${r.usadoPor ? " · registrada por " + esc(r.usadoPor) : ""}</p>` + (r.ticket.tipo === "ESPECIAL" ? "" : pips(r.alumno));
-    markLocal(r.ticket.codigo, true, r.usadoEn);
+    const a2 = resumen(r.ticket.codEst);
+    body = quien(r.ticket, a2) + `<p>Ya ingresó: ${esc(r.usadoEn || "—")}${r.usadoPor ? " · registrada por " + esc(r.usadoPor) : ""}</p>` + (r.ticket.tipo === "ESPECIAL" || !a2.total ? "" : pips(a2));
   } else {
     cls = "bad"; ic = "✖"; title = "INVITACIÓN NO VÁLIDA"; body = `<p>${esc(r.message || "No se pudo validar")}</p>`;
   }
-  if (ov.dataset.cls !== cls) beep(cls);
-  ov.dataset.cls = cls;
+  if (!(state.shown.id === id && state.shown.cls === cls)) beep(cls);
+  state.shown = { id, cls };
   ov.className = "show " + cls;
-  ov.innerHTML = `<div class="ic">${ic}</div><h3>${title}</h3>${body}<button id="ovNext">Siguiente</button>`;
+  ov.innerHTML = `<div class="ic">${ic}</div><h3>${title}</h3>${body}${extra}<button id="ovNext">Siguiente</button>`;
   $("#ovNext").onclick = closeOv;
   if (r.ticket && (r.status === "ok" || (r.status === "duplicate" && isAdmin()))) {
     const b = document.createElement("button");
@@ -602,90 +672,122 @@ function showResult(r) {
       if (r.status === "duplicate" && !confirm("¿Anular el ingreso anterior de la invitación " + r.ticket.codigo + "?")) return;
       b.disabled = true; b.textContent = "Anulando…";
       try {
-        await api("undo", { code: r.ticket.codigo }); beep("dup"); ov.className = "show dup";
+        const qi = state.queue.findIndex(q => q.cod === String(r.ticket.codigo).toUpperCase()); if (qi >= 0) { await flushQueue(); }
+        await api("undo", { code: r.ticket.codigo }); beep("dup");
+        const rec = state.inv.get(String(r.ticket.codigo).toUpperCase()); if (rec) rec.used = null; renderMini();
+        ov.className = "show dup";
         ov.innerHTML = `<div class="ic">↩</div><h3>INGRESO REVERTIDO</h3>${quien(r.ticket)}<p>Invitación disponible de nuevo</p><button id="ovNext">Siguiente</button>`;
-        $("#ovNext").onclick = closeOv; ovTimer = setTimeout(closeOv, 3500); refresh(true);
+        $("#ovNext").onclick = closeOv; ovTimer = setTimeout(closeOv, 3000);
       } catch (e) { b.disabled = false; b.textContent = "Error: " + e.message; }
     };
     ov.appendChild(b);
   }
-  ovTimer = setTimeout(closeOv, cls === "ok" ? 6000 : 9000);
-  refresh(true);
+  ovTimer = setTimeout(closeOv, cls === "ok" ? 2300 : 7000);
+  renderMini();
 }
-function closeOv() { clearTimeout(ovTimer); const o = $("#ov"); o.className = ""; o.dataset.cls = ""; state.busy = false; try { speechSynthesis.cancel(); } catch {} }
+function closeOv() { clearTimeout(ovTimer); const o = $("#ov"); o.className = ""; state.shown = { id: 0, cls: "" }; try { speechSynthesis.cancel(); } catch {} }
 $("#ovX").onclick = closeOv;
 $("#ov").addEventListener("click", e => { if (e.target === $("#ov") && !$("#ov").classList.contains("wait")) closeOv(); });
 
-/* Índice local (código → alumno/invitación) para responder al instante mientras el servidor confirma */
-function lookup(code) {
-  const cod = String(code).toUpperCase().replace(/\s+/g, "").split("-")[0];
-  for (const a of state.stats?.alumnos || []) { const i = a.invitaciones.find(x => String(x.codigo).toUpperCase() === cod); if (i) return { a, i }; }
-  return null;
-}
-function markLocal(code, entro, hora) {
-  const h = lookup(code); if (!h) return;
-  if (entro && !h.i.entro) h.a.ingresados++;
-  h.i.entro = entro; if (hora) h.i.hora = hora;
-}
-function ticketFromHit(h) { return h.a.especial ? { tipo: "ESPECIAL", invitado: h.a.nombre === "Invitado sin nombre" ? "" : h.a.nombre, cargo: h.a.cargo } : { estudiante: h.a.nombre, curso: h.a.curso, numero: h.i.n, invitado: h.i.invitado, cargo: h.i.cargo }; }
-function showPending(hit) {
-  const ov = $("#ov"); clearTimeout(ovTimer);
-  if (hit && hit.i.entro) {   // ya registrada según lo último que sabemos: avisar de inmediato
-    beep("dup"); ov.dataset.cls = "dup"; ov.className = "show dup";
-    ov.innerHTML = `<div class="ic">!</div><h3>INVITACIÓN YA USADA</h3>${quien(ticketFromHit(hit), hit.a)}<p>Ya ingresó: ${esc(hit.i.hora || "—")}</p>${hit.a.especial ? "" : pips(hit.a)}<p class="small">verificando…</p>`;
-    return;
-  }
-  beep("tick"); ov.dataset.cls = ""; ov.className = "show wait";
-  ov.innerHTML = `<div class="spin"></div><h3>Leído, validando…</h3>` + (hit ? quien(ticketFromHit(hit), hit.a) : "");
-}
-
-async function handleCode(code, manual = false) {
-  code = String(code || "").trim();
-  if (!code || state.busy) return;
-  const now = Date.now();
-  if (!manual && code === state.last.code && now - state.last.t < 4000) return;
-  state.last = { code, t: now }; state.busy = true;
-  showPending(lookup(code));
-  try { showResult(await api(manual ? "manual" : "scan", { code })); }
-  catch (e) {
+/* Solo cuando el teléfono no conoce el código (invitación nueva o lista aún sin cargar) decide el servidor */
+async function serverDecides(text, manual, id) {
+  const ov = $("#ov"); clearTimeout(ovTimer); ov.dataset.cls = ""; ov.className = "show wait";
+  ov.innerHTML = `<div class="spin"></div><h3>Validando…</h3>`; beep("tick");
+  try {
+    const r = await api(manual ? "manual" : "scan", { code: text, rid: Math.random().toString(36).slice(2, 10) });
+    if (state.scanSeq === id || r.status !== "ok") showResult(r, id); else markLocal(r.ticket.codigo, r.hora, state.user.nombre);
+    if (!state.inv.has(String(r.ticket?.codigo || "").toUpperCase())) loadCheck();
+  } catch (e) {
     if (onAuthFail(e)) return;
-    beep("bad");
-    $("#ov").className = "show bad";
-    $("#ov").innerHTML = `<div class="ic">⚠</div><h3>SIN CONEXIÓN / ERROR</h3><p>${esc(e.message)}</p><p>No se registró. Reintenta.</p><button id="ovNext">Cerrar</button>`;
+    beep("bad"); ov.className = "show bad";
+    ov.innerHTML = `<div class="ic">⚠</div><h3>SIN CONEXIÓN / ERROR</h3><p>${esc(e.message)}</p><p>No se registró. Reintenta.</p><button id="ovNext">Cerrar</button>`;
     $("#ovNext").onclick = closeOv; setConn("err");
   }
 }
+async function handleCode(text, manual = false) {
+  text = String(text || "").trim(); if (!text) return;
+  const now = Date.now();
+  if (!manual && text === state.last.code && now - state.last.t < 4000) return;
+  state.last = { code: text, t: now };
+  const id = ++state.scanSeq, [cod, tok = ""] = text.toUpperCase().replace(/\s+/g, "").split("-"), rec = state.inv.get(cod);
+  let valid = false;
+  if (rec) { if (!tok) valid = manual; else valid = (await sha16(cod + "|" + tok)) === rec.h; }
+  if (!valid) { await serverDecides(text, manual, id); return; }
+  const info = recInfo(rec);
+  if (rec.used) {   // ya registrada: aviso inmediato; en segundo plano se anota el intento y se confirma
+    showResult({ status: "duplicate", ticket: info, usadoEn: rec.used.h, usadoPor: rec.used.o }, id);
+    api(manual ? "manual" : "scan", { code: text }).then(r => { if (r.status === "ok" && state.scanSeq === id) { rec.used = { h: r.hora, o: state.user.nombre }; showResult(r, id); } else if (r.status === "duplicate") rec.used = { h: r.usadoEn, o: r.usadoPor }; }).catch(() => {});
+    return;
+  }
+  const rid = Math.random().toString(36).slice(2, 10);
+  rec.used = { h: nowStr(), o: state.user.nombre };
+  showResult({ status: "ok", ticket: info, hora: rec.used.h }, id);       // respuesta inmediata
+  enqueue({ rid, code: text, manual, cod, t: Date.now() });               // el registro viaja en segundo plano
+}
 
-/* ───────── Cámara ───────── */
+/* ───────── Cámara: lector propio, rápido (detector nativo del teléfono o jsQR) ───────── */
+const cam = { stream: null, video: null, det: null, run: false, dec: false, last: 0, cv: document.createElement("canvas"), raf: 0, torch: false };
+cam.ctx = cam.cv.getContext("2d", { willReadFrequently: true });
+function ensureVideo() {
+  if (!cam.video) { const v = document.createElement("video"); v.setAttribute("playsinline", ""); v.muted = true; v.autoplay = true; $("#reader").appendChild(v); cam.video = v; }
+  return cam.video;
+}
 async function startCam() {
   try { audio(); } catch {}
-  if (typeof Html5Qrcode === "undefined") { $("#camMsg").textContent = "No se pudo cargar el lector (¿sin internet?). Usa el ingreso manual."; return; }
+  if (cam.run) return;
+  if (!navigator.mediaDevices?.getUserMedia) { $("#camMsg").textContent = "Este navegador no permite usar la cámara. Usa el ingreso manual."; return; }
   try {
-    state.scanner ??= new Html5Qrcode("reader", { formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE], experimentalFeatures: { useBarCodeDetectorIfSupported: true }, verbose: false });
-    await state.scanner.start({ facingMode: "environment" },
-      { fps: 20, disableFlip: true,
-        qrbox: (w, h) => { const s = Math.floor(Math.min(w, h) * .8); return { width: s, height: s }; },
-        aspectRatio: 1,
-        videoConstraints: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 }, advanced: [{ focusMode: "continuous" }] } },
-      txt => handleCode(txt), () => {});
-    $("#btnCam").textContent = "Detener cámara"; $("#idle").hidden = true; $("#camMsg").textContent = "Cámara activa. Mantén el QR a 15–25 cm, quieto y bien iluminado.";
-    try { const caps = state.scanner.getRunningTrackCapabilities(); if (caps && caps.torch) $("#btnTorch").style.display = ""; } catch {}
+    const v = ensureVideo();
+    cam.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } }, audio: false });
+    v.srcObject = cam.stream; await v.play();
+    const tr = cam.stream.getVideoTracks()[0];
+    try { await tr.applyConstraints({ advanced: [{ focusMode: "continuous" }] }); } catch {}
+    try { if (tr.getCapabilities?.().torch) $("#btnTorch").style.display = ""; } catch {}
+    cam.det = null; if ("BarcodeDetector" in window) { try { cam.det = new BarcodeDetector({ formats: ["qr_code"] }); } catch {} }
+    if (!cam.det && typeof jsQR === "undefined") { $("#camMsg").textContent = "No se pudo cargar el lector (¿sin internet?). Usa el ingreso manual."; stopCam(); return; }
+    cam.run = true; $("#btnCam").textContent = "Detener cámara"; $("#idle").hidden = true;
+    $("#camMsg").textContent = "Cámara activa. Mantén el QR a 15–25 cm, quieto y bien iluminado."; camLoop();
   } catch (e) {
     $("#camMsg").textContent = "No se pudo abrir la cámara: " + (e?.message || e) + ". Revisa los permisos o usa el ingreso manual.";
   }
 }
+function camLoop() {
+  if (!cam.run) return;
+  cam.raf = requestAnimationFrame(async () => {
+    const t = performance.now();
+    if (!cam.dec && t - cam.last >= 55 && cam.video.readyState >= 2 && cam.video.videoWidth) {
+      cam.last = t; cam.dec = true;
+      try { const txt = await decodeFrame(); if (txt) handleCode(txt); } catch {}
+      cam.dec = false;
+    }
+    camLoop();
+  });
+}
+async function decodeFrame() {
+  const v = cam.video;
+  if (cam.det) {
+    try { const r = await cam.det.detect(v); return r[0]?.rawValue || ""; }
+    catch { cam.det = null; if (typeof jsQR === "undefined") return ""; }
+  }
+  const vw = v.videoWidth, vh = v.videoHeight, side = Math.min(vw, vh), S = 480;
+  cam.cv.width = S; cam.cv.height = S;
+  cam.ctx.drawImage(v, (vw - side) / 2, (vh - side) / 2, side, side, 0, 0, S, S);
+  const img = cam.ctx.getImageData(0, 0, S, S), c = jsQR(img.data, S, S, { inversionAttempts: "dontInvert" });
+  return c ? c.data : "";
+}
 async function stopCam() {
-  if (state.scanner?.isScanning) { try { await state.scanner.stop(); } catch {} }
+  cam.run = false; cancelAnimationFrame(cam.raf);
+  try { cam.stream?.getTracks().forEach(t => t.stop()); } catch {}
+  cam.stream = null; if (cam.video) cam.video.srcObject = null; cam.torch = false;
   $("#btnCam").textContent = "Iniciar cámara"; $("#btnTorch").style.display = "none"; $("#idle").hidden = false;
 }
-$("#btnCam").onclick = () => state.scanner?.isScanning ? stopCam() : startCam();
-let torchOn = false;
-$("#btnTorch").onclick = async () => { try { torchOn = !torchOn; await state.scanner.applyVideoConstraints({ advanced: [{ torch: torchOn }] }); } catch {} };
+$("#btnCam").onclick = () => cam.run ? stopCam() : startCam();
+$("#btnTorch").onclick = async () => { try { cam.torch = !cam.torch; await cam.stream.getVideoTracks()[0].applyConstraints({ advanced: [{ torch: cam.torch }] }); } catch {} };
 $("#btnManual").onclick = () => { try { audio(); } catch {} const v = $("#manual").value; $("#manual").value = ""; handleCode(v, true); };
 $("#btnRevert").onclick = async () => {
   const v = $("#manual").value.trim(); if (!v) { alert("Escribe el código a revertir, ej. A00103"); return; }
   if (!confirm("¿Revertir el ingreso de " + v.toUpperCase() + "?")) return;
-  try { const r = await api("undo", { code: v }); $("#manual").value = ""; alert("Ingreso revertido" + (r.estudiante ? ": " + r.estudiante : "") + "."); refresh(true); }
+  try { const r = await api("undo", { code: v }); $("#manual").value = ""; const rec = state.inv.get(v.toUpperCase().split("-")[0]); if (rec) rec.used = null; renderMini(); alert("Ingreso revertido" + (r.estudiante ? ": " + r.estudiante : "") + "."); }
   catch (e) { if (!onAuthFail(e)) alert(e.message); }
 };
 $("#manual").addEventListener("keydown", e => { if (e.key === "Enter") $("#btnManual").click(); });
@@ -709,7 +811,6 @@ function hace(f) {
 function render() {
   const s = state.stats; if (!s) return;
   const p = pct(s.ingresados, s.total), completos = s.alumnos.filter(a => a.ingresados === a.total && a.total > 0).length;
-  $("#miniBig").textContent = `${s.ingresados} / ${s.total}`; $("#miniTxt").textContent = p + "%"; $("#miniBar").style.width = p + "%";
   $("#pBig").textContent = `${s.ingresados} / ${s.total}`; $("#ringTxt").textContent = p + "%"; $("#ringPg").setAttribute("stroke-dasharray", `${(p * 3.267).toFixed(1)} 327`);
   $("#pTxt").textContent = `${s.total - s.ingresados} invitaciones por ingresar`;
   $("#kIng").textContent = s.ingresados; $("#kFal").textContent = s.total - s.ingresados; $("#kAl").textContent = completos;
@@ -747,7 +848,7 @@ $("#aList").addEventListener("click", async e => {
   } catch (er) { if (!onAuthFail(er)) alert(er.message); return; }
   const st = e.target.closest(".student"); if (st) st.classList.toggle("open");
 });
-setInterval(() => { if (!document.hidden && state.user && ($("#s-panel").classList.contains("active") || $("#s-scan").classList.contains("active"))) refresh(); }, 8000);
+setInterval(() => { if (!document.hidden && state.user && $("#s-panel").classList.contains("active")) refresh(); }, 8000);
 
 /* ───────── Exportar listado a PDF ───────── */
 function logoDataUrl() {
