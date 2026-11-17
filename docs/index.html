@@ -260,7 +260,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
       <div class="nums"><div class="l">Asistentes ingresados</div><div class="v" id="pBig">–</div><div class="s" id="pTxt"></div></div>
     </div>
     <div class="kpis">
-      <div class="kpi g"><div class="n" id="kIng">–</div><div class="t">Dentro</div></div>
+      <div class="kpi g"><div class="n" id="kIng">–</div><div class="t">En el teatro</div></div>
       <div class="kpi w"><div class="n" id="kFal">–</div><div class="t">Faltan</div></div>
       <div class="kpi b"><div class="n" id="kAl">–</div><div class="t">Alumnos completos</div></div>
     </div>
@@ -364,6 +364,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
 </nav>
 </div>
 
+<datalist id="dlSaludo"><option value="Estimado"><option value="Estimada"><option value="Estimado señor"><option value="Estimada señora"><option value="Distinguido"><option value="Distinguida"></datalist>
 <div id="ov" role="alert"></div>
 <button id="ovX" aria-label="Cerrar" title="Cerrar"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
 
@@ -978,6 +979,16 @@ $("#btnPdfLista").onclick = () => exportPDF(false);
 $("#btnPdfAsist").onclick = () => exportPDF(true);
 
 /* ───────── Invitaciones adicionales / especiales (administrador) ───────── */
+/* ───────── Saludo formal según el género del nombre (editable por el usuario) ───────── */
+const FEM = new Set("maria ana carolina claudia paola patricia francisca constanza camila daniela valentina javiera fernanda macarena karen marcela alejandra andrea carmen rosa isabel veronica jocelyn yasna pamela soledad beatriz gabriela natalia lorena cecilia sandra susana monica katherine katherinne ingrid johanna nancy erika marisol elizabeth luz pilar rocio sofia tamara viviana ximena yolanda silvia sylvia norma miriam mirta gloria graciela eliana edith cristina carla barbara angelica amanda alicia adriana lidia lissette maite nelly olga paulina priscila raquel regina sara teresa ursula vanessa victoria ines ruth esther nicole michelle dolores consuelo belen mercedes yazmin jessica jennifer stephanie evelyn evelyne ivonne yvonne marlene noemi abigail rebeca rebecca tatiana liliana marjorie lucy mabel margarita lisette katia kathy ruby sonia irma ida elsa ema emma eva ema iris".split(" "));
+const MASC_A = new Set(["luca", "joshua", "borja", "garcia", "mena", "jota", "bautista", "elias", "matias", "tobias", "jeremias", "isaias", "nicolas", "andres", "tomas", "lucas", "jonas", "josue", "moises", "ariel", "gabriel", "rafael", "miguel", "daniel", "manuel", "samuel", "israel", "emanuel", "abel", "angel"]);
+/** "F" | "M" según el primer nombre. Heurística; si falla, el usuario edita el saludo. */
+function generoDe(nombre) {
+  const n = sinTildes(nombre).split(/\s+/).filter(Boolean)[0] || ""; if (!n) return "";
+  if (FEM.has(n)) return "F"; if (MASC_A.has(n)) return "M";
+  return n.endsWith("a") ? "F" : "M";
+}
+function saludoPara(nombre) { const g = generoDe(nombre); return !g ? "" : g === "F" ? "Estimada" : "Estimado"; }
 /* ───────── Correo institucional: nombre.apellido@andaliensur.cl ───────── */
 const DOMINIO = "@andaliensur.cl", PARTICULAS = new Set(["de", "del", "la", "las", "los", "san", "santa"]);
 const sinTildes = s => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z\s]/g, " ").trim();
@@ -995,9 +1006,9 @@ $("#fMail").addEventListener("input", () => { $("#fMail").dataset.edited = "1"; 
 
 let _rc;   // recortes del fondo de la invitación (flores/logo y mariposas) para decorar el correo
 async function recortesCorreo() {
-  if (_rc) return _rc; const bg = await loadImg("fondo.jpg"); if (!bg) return { banner: "", pie: "" };
+  if (_rc) return _rc; const bg = await loadImg("fondo.jpg"); if (!bg) return { banner: "" };
   const cut = (sy, sh, w) => { const c = document.createElement("canvas"); c.width = w; c.height = Math.round(w * sh / 1240); c.getContext("2d").drawImage(bg, 0, sy, 1240, sh, 0, 0, c.width, c.height); return c.toDataURL("image/jpeg", .85); };
-  return (_rc = { banner: cut(0, 640, 620), pie: cut(1380, 368, 620) });
+  return (_rc = { banner: cut(0, 640, 620) });
 }
 async function verInvitacion(inv) {   // invitación completa, ajustada a la pantalla
   const c = await drawInvitation(inv, false); let v = $("#viewer");
@@ -1052,11 +1063,12 @@ async function invCardHtml(inv, cont) {
   const d = document.createElement("div"); d.style.minWidth = 0; d.style.flex = "1";
   d.innerHTML = `<b>${esc(inv.invitado || (inv.tipo === "ESPECIAL" ? "Invitado especial" : "Invitación adicional"))}</b>${inv.cargo ? `<div class="muted">${esc(inv.cargo)}</div>` : ""}<div class="muted">${inv.tipo === "ESPECIAL" ? "Invitado especial" : "De " + esc(inv.estudiante) + " · " + esc(inv.curso)} · <b>${esc(inv.codigo)}</b>${inv.entro ? " · ✔ ya ingresó" : ""}</div>
     <div class="acts"><button class="sm" data-a="view">Ver completa</button><button class="sm sec" data-a="png">Digital (imagen)</button><button class="sm sec" data-a="pdf">Imprimir (PDF 11×15)</button><button class="sm sec" data-a="share">Compartir</button><button class="sm sec" data-a="mail">Correo</button><button class="sm danger" data-a="del">Eliminar</button></div>
-    <div class="mailrow"><input placeholder="Nombre del funcionario (editable)" autocomplete="off"><div class="mailgrp"><input placeholder="nombre.apellido" autocomplete="off" autocapitalize="none" inputmode="email"><span class="muted">@andaliensur.cl</span></div><input placeholder="Mensaje adicional (opcional)" autocomplete="off"><button class="sm" data-a="send">Enviar invitación por correo</button><span class="muted" data-m></span></div>`;
+    <div class="mailrow"><input list="dlSaludo" placeholder="Saludo (Estimado / Estimada)" autocomplete="off"><input placeholder="Nombre del funcionario (editable)" autocomplete="off"><div class="mailgrp"><input placeholder="nombre.apellido" autocomplete="off" autocapitalize="none" inputmode="email"><span class="muted">@andaliensur.cl</span></div><input placeholder="Mensaje adicional (opcional)" autocomplete="off"><button class="sm" data-a="send">Enviar invitación por correo</button><span class="muted" data-m></span></div>`;
   d.querySelector('[data-a="png"]').onclick = () => descargarPNG(inv); d.querySelector('[data-a="pdf"]').onclick = () => descargarPDF(inv); d.querySelector('[data-a="share"]').onclick = () => compartir(inv);
-  const mr = d.querySelector(".mailrow"), mm = d.querySelector("[data-m]"), [ni, ci, gi] = mr.querySelectorAll("input");
-  ni.value = inv.invitado || ""; ci.value = sugerirLocal(ni.value);
-  ni.oninput = () => { if (!ci.dataset.edited) ci.value = sugerirLocal(ni.value); };
+  const mr = d.querySelector(".mailrow"), mm = d.querySelector("[data-m]"), [si, ni, ci, gi] = mr.querySelectorAll("input");
+  ni.value = inv.invitado || ""; ci.value = sugerirLocal(ni.value); si.value = saludoPara(ni.value);
+  ni.oninput = () => { if (!ci.dataset.edited) ci.value = sugerirLocal(ni.value); if (!si.dataset.edited) si.value = saludoPara(ni.value); };
+  si.oninput = () => { si.dataset.edited = "1"; };
   ci.oninput = () => { ci.dataset.edited = "1"; };
   d.querySelector('[data-a="mail"]').onclick = () => { mr.classList.toggle("on"); (ni.value ? ci : ni).focus(); };
   d.querySelector('[data-a="view"]').onclick = () => verInvitacion(inv);
@@ -1065,7 +1077,7 @@ async function invCardHtml(inv, cont) {
     const b = ev.currentTarget; b.disabled = true; mm.textContent = "Enviando…";
     try {
       const c = await drawInvitation(inv, false), rc = await recortesCorreo();
-      await apiPost("inv_mail", { code: inv.codigo, correo, nombre: ni.value.trim(), mensaje: gi.value.trim(), imagen: c.toDataURL("image/jpeg", .86), banner: rc.banner, pie: rc.pie });
+      await apiPost("inv_mail", { code: inv.codigo, correo, nombre: ni.value.trim(), mensaje: gi.value.trim(), imagen: c.toDataURL("image/jpeg", .86), banner: rc.banner, saludo: si.value.trim() });
       mm.textContent = "✔ Enviada a " + correo;
     } catch (e) { if (!onAuthFail(e)) mm.textContent = "✖ " + e.message; } finally { b.disabled = false; }
   };
