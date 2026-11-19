@@ -66,7 +66,10 @@ Pestaña **Admin → Invitaciones**: crea un *invitado especial* (código V00001
 Al crear una adicional, la página muestra antes cuántas invitaciones ya tiene el alumno y qué códigos se generarán. Cada invitación creada se puede enviar **por correo** (con el nombre del invitado en el saludo y un mensaje opcional) o **eliminar** (solo si aún no ingresó).
 
 ## Mapa de la sala (Panel)
-Simula la ocupación del Teatro Bío Bío (platea y segundo piso): invitados especiales en la primera fila y al final, y los invitados de los alumnos desde la segunda fila, agrupados por familia. Cada asiento se ilumina al ingresar la persona; al tocar un asiento se ve quién es.
+Simula la ocupación del Teatro Bío Bío (piso 2 platea, piso 3 platea, palco piso 4 y palco piso 5; 1.200 butacas: piso 2 = 312, piso 3 = 456 y palcos 4, 5 y 6 = 144 cada uno): invitados especiales en la primera fila y al final, y los invitados de los alumnos desde la segunda fila, agrupados por familia. Cada asiento se ilumina al ingresar la persona; al tocar un asiento se ve quién es.
+
+### Butacas reservadas
+En Admin → Invitaciones se puede reservar una butaca (piso · fila · asiento) al crear un invitado, o después con el botón «Butaca» de cada invitación. Al escanearla, la pantalla del funcionario muestra «BUTACA RESERVADA: Platea · piso 2 · Fila C · Asiento 20» para indicársela al darle la bienvenida. No se puede reservar la misma butaca dos veces. Formato guardado en la hoja (columna Butaca): piso:fila:asiento, ej. 2:C:20.
 
 ## Importar listado de funcionarios
 Admin → **Importar**: sube el Excel/CSV (reconoce hojas con columnas Docente/Funcionario, Apellido, Correo, Jefatura, Dept., Ciclo, Licencia), revisa y edita la lista, quita a quienes no correspondan y al aceptar crea un invitado especial por persona (con su correo guardado). El correo de cada invitado especial puede ser @andaliensur.cl u otro dominio (lista de dominios comunes en Chile o libre).

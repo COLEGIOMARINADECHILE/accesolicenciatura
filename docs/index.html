@@ -222,6 +222,13 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
 .improw .f input{padding:8px 10px;font-size:14px}
 .improw .chk{padding-top:6px}.improw .chk input{width:22px;height:22px;padding:0}
 .warn{color:var(--warn)}
+.sg{fill:rgba(107,122,144,.55);stroke:#6b7a90}
+.seat.rsv{stroke:#d9a53a;stroke-width:1.8}
+.legend .lg-g{background:rgba(107,122,144,.55);border-color:#6b7a90}.legend .lg-r{background:transparent;border:2px solid #d9a53a}
+.pk{display:flex;gap:6px}.pk select{flex:1;min-width:0;padding:8px;font-size:14px}
+.seatrow{display:none;margin-top:8px;gap:6px;flex-direction:column}.seatrow.on{display:flex}
+#ov .butaca{background:#fff;color:#0b1f3a;border-radius:16px;padding:12px 20px;margin-top:14px;font-size:13px;letter-spacing:2px;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+#ov .butaca b{display:block;letter-spacing:0;font-size:clamp(20px,4.4vh,28px);margin-top:4px}
 </style>
 </head>
 <body>
@@ -289,12 +296,16 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
     </div>
     <div class="card sala">
       <div class="mini"><h2 style="margin:0">Sala · ocupación en vivo</h2><span class="muted" id="salaTxt">Cargando…</span></div>
-      <div class="seg" style="margin:10px 0 8px"><button id="pisoP" class="on">Platea</button><button id="pisoS">Segundo piso</button></div>
+      <div class="bar" style="margin:10px 0 4px;height:10px"><i id="salaBar" style="width:0"></i></div>
+      <div class="muted" id="salaAforo" style="font-size:12.5px"></div>
+      <div class="seg" id="pisos" style="margin:12px 0 6px"></div>
+      <div class="muted" id="pisoInfo" style="margin:0 2px 6px;font-size:12.5px"></div>
       <svg id="salaSvg" viewBox="-24 -30 424 190" role="img" aria-label="Mapa de la sala"></svg>
       <div class="infobox" id="salaInfo">Toca un asiento para ver quién se sienta ahí.</div>
-      <div class="legend"><span><i class="lg-E"></i>Especial: ya está</span><span><i class="lg-e"></i>Especial: por llegar</span><span><i class="lg-A"></i>Alumno: ya está</span><span><i class="lg-a"></i>Alumno: por llegar</span></div>
-      <p class="muted" style="margin:8px 0 0;font-size:12px">Simulación: invitados especiales al frente y al final; los invitados de los alumnos desde la segunda fila, juntos por familia. Cada asiento se ilumina cuando la persona ingresa.</p>
-    </div>    <div class="kpis">
+      <div class="legend"><span><i class="lg-E"></i>Especial: ya está</span><span><i class="lg-e"></i>Especial: por llegar</span><span><i class="lg-A"></i>Alumno: ya está</span><span><i class="lg-a"></i>Alumno: por llegar</span><span><i class="lg-g"></i>Alumnos (graduandos)</span><span><i class="lg-r"></i>Butaca reservada</span></div>
+      <p class="muted" style="margin:8px 0 0;font-size:12px">Simulación referencial: nadie tiene un asiento asignado, salvo quienes tengan una butaca reservada (borde dorado). Los alumnos ocupan A32…A2 en la primera fila; los invitados especiales van en los demás puestos de esa fila y siguientes; después, las invitaciones de los alumnos (familias juntas) en cualquier lugar. Orden de pisos: 2 → 3 → palcos 4, 5 y 6.</p>
+    </div>
+    <div class="kpis">
       <div class="kpi g"><div class="n" id="kIng">–</div><div class="t">En el teatro</div></div>
       <div class="kpi w"><div class="n" id="kFal">–</div><div class="t">Faltan</div></div>
       <div class="kpi b"><div class="n" id="kAl">–</div><div class="t">Alumnos completos</div></div>
@@ -355,6 +366,10 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
           <div class="mailgrp" id="gColegio"><input id="iMailL" placeholder="nombre.apellido" autocomplete="off" autocapitalize="none" inputmode="email"><span class="muted">@andaliensur.cl</span></div>
           <div class="mailgrp" id="gOtro" hidden><input id="iMailO" placeholder="usuario" autocomplete="off" autocapitalize="none" inputmode="email"><span class="muted">@</span><input id="iDom" list="dlDominios" placeholder="gmail.com u otro dominio" autocomplete="off" autocapitalize="none"></div>
           <datalist id="dlDominios"></datalist>
+        </div>
+        <div id="boxRsv" style="margin-top:12px">
+          <label style="display:flex;gap:8px;align-items:center;color:var(--ink);margin:0"><input type="checkbox" id="iRsv" style="width:auto"> Reservar una butaca para este invitado <span class="muted">(se le indicará al recibirlo)</span></label>
+          <div class="pk" id="iRsvBox" hidden style="margin-top:8px"></div>
         </div>
         <button id="btnIAdd" style="width:100%;margin-top:14px">Crear invitación con QR</button>
         <p class="muted" id="iMsg" style="margin:8px 0 0">El nombre y el cargo aparecerán en la pantalla del funcionario al escanear. Se agrega al listado y a la base de datos.</p>
@@ -474,7 +489,7 @@ function demoApi(action, p) {
   const resumen = ce => { const l = demoDB.inv.filter(x => x.codEst === ce); return { ingresados: l.filter(x => x.entro).length, total: l.length }; };
   const log = (t, res) => demoDB.log.unshift({ fecha: nowStr(), codigo: t.codigo || "", estudiante: t.estudiante || "", curso: t.curso || "", resultado: res, operador: user.nombre });
   const fun = c => demoDB.fun.find(f => f.correo === String(c).toLowerCase());
-  const info = t => ({ codigo: t.codigo, curso: t.curso, codEst: t.codEst, numero: t.numero, estudiante: t.estudiante, invitado: t.invitado, cargo: t.cargo, tipo: t.tipo });
+  const info = t => ({ codigo: t.codigo, curso: t.curso, codEst: t.codEst, numero: t.numero, estudiante: t.estudiante, invitado: t.invitado, cargo: t.cargo, tipo: t.tipo, butaca: t.butaca || "" });
   switch (action) {
     case "ping": return { ok: true };
     case "login": return { ok: true, ...user };
@@ -502,6 +517,7 @@ function demoApi(action, p) {
     }
   }
   if (action === "inv_del") { const i = demoDB.inv.findIndex(x => x.codigo === norm(p.code)); if (i < 0) return { ok: false, error: "La invitación no existe" }; const x = demoDB.inv[i]; if (!x.tipo) return { ok: false, error: "Solo se pueden eliminar invitaciones adicionales o especiales." }; if (x.entro) return { ok: false, error: "Esa invitación ya ingresó. Anula primero el ingreso." }; demoDB.inv.splice(i, 1); return { ok: true }; }
+  if (action === "inv_seat") { const x = demoDB.inv.find(z => z.codigo === norm(p.code)); if (!x) return { ok: false, error: "La invitación no existe" }; const b = String(p.butaca || "").toUpperCase(); const o = b && demoDB.inv.find(z => z !== x && (z.butaca || "").toUpperCase() === b); if (o) return { ok: false, error: "Esa butaca ya está reservada para " + o.codigo }; x.butaca = b; return { ok: true, butaca: b }; }
   if (action === "inv_bulk") {
     const out = [], om = []; let m = Math.max(0, ...demoDB.inv.filter(x => /^V\d+$/.test(x.codigo)).map(x => +x.codigo.slice(1)));
     (p.items || []).forEach(it => { const c = String(it.correo || "").toLowerCase(); if (c && demoDB.inv.some(x => x.tipo === "ESPECIAL" && x.correo === c)) { om.push({ nombre: it.nombre, motivo: "Ya tiene invitación" }); return; } m++;
@@ -511,7 +527,7 @@ function demoApi(action, p) {
   if (action === "inv_mail") { if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(p.correo || ""))) return { ok: false, error: "Correo no válido" }; return { ok: true }; }
   if (action === "inv_add" || action === "inv_list") {
     if (user.rol !== "admin") return { ok: false, error: "Solo el administrador puede hacer esto" };
-    if (action === "inv_list") return { ok: true, invitaciones: demoDB.inv.filter(x => x.tipo).map(x => ({ codigo: x.codigo, token: x.token, invitado: x.invitado, cargo: x.cargo, correo: x.correo || "", estudiante: x.estudiante, curso: x.curso, numero: x.numero, tipo: x.tipo, entro: x.entro })) };
+    if (action === "inv_list") return { ok: true, invitaciones: demoDB.inv.filter(x => x.tipo).map(x => ({ codigo: x.codigo, token: x.token, invitado: x.invitado, cargo: x.cargo, correo: x.correo || "", butaca: x.butaca || "", estudiante: x.estudiante, curso: x.curso, numero: x.numero, tipo: x.tipo, entro: x.entro })) };
     const tk = () => Array.from({ length: 5 }, () => "23456789ABCDEFGHJKMNPQRSTUVWXYZ"[Math.floor(Math.random() * 31)]).join("");
     const out = [], nombre = String(p.nombre || "").trim(), cargo = String(p.cargo || "").trim();
     if (p.codEst) {
@@ -520,7 +536,7 @@ function demoApi(action, p) {
       for (let k = 0; k < Math.min(10, +p.cantidad || 1); k++) { n++; const t = { codigo: p.codEst + String(n).padStart(2, "0"), token: tk(), curso: base[0].curso, codEst: p.codEst, numero: n, estudiante: base[0].estudiante, entro: false, hora: "", oper: "", invitado: nombre, cargo, tipo: "ADICIONAL" }; demoDB.inv.push(t); out.push({ ...t }); log(t, "CREADA (ADICIONAL)"); }
     } else {
       const m = Math.max(0, ...demoDB.inv.filter(x => /^V\d+$/.test(x.codigo)).map(x => +x.codigo.slice(1)));
-      const t = { codigo: "V" + String(m + 1).padStart(5, "0"), token: tk(), curso: CURSO_ESPECIAL, numero: 1, estudiante: nombre || "Invitado especial", entro: false, hora: "", oper: "", invitado: nombre, cargo, correo: String(p.correo || ""), tipo: "ESPECIAL" }; t.codEst = t.codigo; demoDB.inv.push(t); out.push({ ...t }); log(t, "CREADA (ESPECIAL)");
+      const t = { codigo: "V" + String(m + 1).padStart(5, "0"), token: tk(), curso: CURSO_ESPECIAL, numero: 1, estudiante: nombre || "Invitado especial", entro: false, hora: "", oper: "", invitado: nombre, cargo, correo: String(p.correo || ""), butaca: String(p.butaca || ""), tipo: "ESPECIAL" }; t.codEst = t.codigo; demoDB.inv.push(t); out.push({ ...t }); log(t, "CREADA (ESPECIAL)");
     }
     return { ok: true, invitaciones: out, antes: out.antes };
   }
@@ -541,7 +557,7 @@ function demoApi(action, p) {
 /* ───────── API ───────── */
 async function api(action, params = {}) {
   if (state.demo) {
-    if (action === "checklist") return { ok: true, l: await Promise.all(demoDB.inv.map(async x => ({ c: x.codigo, h: await sha16(x.codigo + "|" + x.token), s: x.estudiante, u: x.curso, e: x.codEst, n: x.numero, i: x.invitado, k: x.cargo, t: x.tipo }))) };
+    if (action === "checklist") return { ok: true, l: await Promise.all(demoDB.inv.map(async x => ({ c: x.codigo, h: await sha16(x.codigo + "|" + x.token), s: x.estudiante, u: x.curso, e: x.codEst, n: x.numero, i: x.invitado, k: x.cargo, t: x.tipo, b: x.butaca || "" }))) };
     if (action === "used") return { ok: true, n: demoDB.inv.length, u: demoDB.inv.filter(x => x.entro).map(x => ({ c: x.codigo, h: x.hora, o: x.oper })) };
     return unwrap(demoApi(action, { pin: state.pin, ...params }));
   }
@@ -664,7 +680,7 @@ async function sha16(s) {
 async function loadCheck() {
   try {
     const r = await api("checklist"), m = new Map(), old = state.inv;
-    r.l.forEach(x => m.set(String(x.c).toUpperCase(), { c: x.c, h: x.h, s: x.s, cu: x.u, ce: String(x.e), n: x.n, i: x.i || "", k: x.k || "", t: x.t || "", used: old.get(String(x.c).toUpperCase())?.used || null }));
+    r.l.forEach(x => m.set(String(x.c).toUpperCase(), { c: x.c, h: x.h, s: x.s, cu: x.u, ce: String(x.e), n: x.n, i: x.i || "", k: x.k || "", t: x.t || "", b: x.b || "", used: old.get(String(x.c).toUpperCase())?.used || null }));
     state.inv = m; state.invReady = true; await syncUsed(true);
   } catch (e) { if (!onAuthFail(e)) setConn("err"); }
 }
@@ -692,7 +708,7 @@ function startSync() {
   state.t2 = setInterval(() => { if (!document.hidden) flushQueue(); }, 4000);
 }
 function resumen(ce) { let total = 0, ing = 0; for (const r of state.inv.values()) if (r.ce === ce) { total++; if (r.used) ing++; } return { total, ingresados: ing }; }
-function recInfo(r) { return { codigo: r.c, curso: r.cu, codEst: r.ce, numero: r.n, estudiante: r.s, invitado: r.i, cargo: r.k, tipo: r.t }; }
+function recInfo(r) { return { codigo: r.c, curso: r.cu, codEst: r.ce, numero: r.n, estudiante: r.s, invitado: r.i, cargo: r.k, tipo: r.t, butaca: r.b }; }
 function markLocal(code, hora, oper) { const r = state.inv.get(String(code).toUpperCase()); if (r && !r.used) r.used = { h: hora || nowStr(), o: oper || "" }; return r; }
 
 /* Cola de registros pendientes (se guarda en el teléfono; sobrevive a cortes de señal) */
@@ -723,12 +739,15 @@ function pips(a) {
   for (let i = 1; i <= n; i++) h += `<span class="pip ${i <= (a?.ingresados || 0) ? "in" : ""}">${i}</span>`;
   return `<div class="pips">${h}</div>`;
 }
-function quien(t, a) {   // bloque "de quién es la invitación"
+function quienBase(t, a) {   // bloque "de quién es la invitación"
   const especial = t.tipo === "ESPECIAL";
   if (especial) return `<span class="vipbadge">★ INVITADO ESPECIAL</span><p class="nm big">${esc(t.invitado || "Invitado sin nombre")}</p>${t.cargo ? `<div class="cargo">${esc(t.cargo)}</div>` : ""}`;
   let h = `<p class="lbl">INVITACIÓN DE</p><p class="nm">${esc(t.estudiante)}</p><p>${esc(t.curso)} · Invitación ${t.numero}${a?.total ? " de " + a.total : ""}</p>`;
   if (t.invitado || t.cargo) h += `<span class="vipbadge">INVITADO</span><p class="nm big" style="margin:2px 0">${esc(t.invitado || "—")}</p>${t.cargo ? `<div class="cargo">${esc(t.cargo)}</div>` : ""}`;
   return h;
+}
+function quien(t, a, recordar) {   // quién es + butaca reservada (para indicársela al dar la bienvenida; en "ya usada" como recordatorio)
+  return quienBase(t, a) + (t.butaca ? `<div class="butaca">${recordar ? "RECORDATORIO · " : ""}BUTACA RESERVADA<b>${esc(butacaTxt(t.butaca))}</b></div>` : "");
 }
 function onAuthFail(e) { if (e.auth) { closeOv(); logout(); $("#loginMsg").style.color = ""; $("#loginMsg").textContent = "Tu sesión ya no es válida. Ingresa nuevamente."; return true; } return false; }
 function showResult(r, id, extra = "") {
@@ -744,7 +763,7 @@ function showResult(r, id, extra = "") {
     markLocal(r.ticket.codigo, r.usadoEn, r.usadoPor);
     cls = "dup"; ic = "!"; title = "INVITACIÓN YA USADA";
     const a2 = resumen(r.ticket.codEst);
-    body = quien(r.ticket, a2) + `<p>Ya ingresó: ${esc(r.usadoEn || "—")}${r.usadoPor ? " · registrada por " + esc(r.usadoPor) : ""}</p>` + (r.ticket.tipo === "ESPECIAL" || !a2.total ? "" : pips(a2));
+    body = quien(r.ticket, a2, true) + `<p>Ya ingresó: ${esc(r.usadoEn || "—")}${r.usadoPor ? " · registrada por " + esc(r.usadoPor) : ""}</p>` + (r.ticket.tipo === "ESPECIAL" || !a2.total ? "" : pips(a2));
   } else {
     cls = "bad"; ic = "✖"; title = "INVITACIÓN NO VÁLIDA"; body = `<p>${esc(r.message || "No se pudo validar")}</p>`;
   }
@@ -772,7 +791,7 @@ function showResult(r, id, extra = "") {
     };
     ov.appendChild(b);
   }
-  const conNombre = r.ticket && (r.ticket.tipo === "ESPECIAL" || r.ticket.invitado || r.ticket.cargo);   // especiales: más tiempo para leer nombre y cargo
+  const conNombre = r.ticket && (r.ticket.tipo === "ESPECIAL" || r.ticket.invitado || r.ticket.cargo || r.ticket.butaca);   // especiales: más tiempo para leer nombre y cargo
   ovTimer = setTimeout(closeOv, cls === "ok" ? (conNombre ? 8000 : 2300) : (conNombre ? 9000 : 7000));
   renderMini();
 }
@@ -941,80 +960,128 @@ $("#aList").addEventListener("click", async e => {
 });
 setInterval(() => { if (!document.hidden && state.user && $("#s-panel").classList.contains("active")) refresh(); }, 8000);
 
-/* ───────── Sala del teatro: ocupación simulada ───────── */
+/* ───────── Sala del teatro: ocupación simulada (plano real) ───────── */
+const AFORO_REF = 1200;   // capacidad total de referencia del recinto (piso 2: 312 + piso 3: 456 + palcos 4, 5 y 6: 144 c/u)
+const ZONA_ALUMNOS = s => s.piso === 0 && s.fila === "A" && s.n % 2 === 0 && s.n <= 32;   // alumnos (graduandos): A32 … A2, lado par de la primera fila
 const SALA = (() => {
-  const DX = 10, DY = 11.5, rows = [], seats = [];
+  const DX = 10, DY = 11.5, seats = [], pisos = [];
   const ev = (a, b) => { const r = []; for (let n = a; n >= b; n -= 2) r.push(n); return r; };   // pares, de mayor a menor
   const od = (a, b) => { const r = []; for (let n = a; n <= b; n += 2) r.push(n); return r; };   // impares, de menor a mayor
-  // Platea (piso 1): bloque izquierdo 34→20, central 18…2 y 1…17, bloque derecho 19→33
-  const pl = [["J", ev(30, 20), 18, od(19, 29)], ["K", [], 18, []]];
-  ["L", "M", "N", "NN", "O", "P", "Q", "R", "S", "T", "U", "V"].forEach(f => pl.push([f, ev(34, 20), 18, od(19, 33)]));
-  pl.forEach(([f, L, c, R], i) => rows.push({ piso: 0, fila: f, y: i * DY, L, C: c ? ev(c, 2).concat(od(1, c - 1)) : [], R, wL: 8, xC: 98, xR: 296 }));
-  // Segundo piso: a la izquierda pares (máx→2) y a la derecha impares (1→máx)
-  Object.entries({ A: 32, B: 36, C: 34, D: 36, E: 34, F: 36, G: 34, H: 36, I: 34 }).forEach(([f, m], i) => rows.push({ piso: 1, fila: f, y: i * DY, L: ev(m, 2), C: [], R: od(1, m - 1), wL: 18, xC: 0, xR: 200 }));
-  rows.forEach(r => {
-    const row = [];
-    r.L.forEach((n, i) => row.push({ n, x: (r.wL - r.L.length + i) * DX }));
-    r.C.forEach((n, i) => row.push({ n, x: r.xC + i * DX }));
-    r.R.forEach((n, i) => row.push({ n, x: r.xR + i * DX }));
-    row.sort((a, b) => a.x - b.x).forEach((s, i) => seats.push({ piso: r.piso, fila: r.fila, n: s.n, x: s.x, y: r.y, first: i === 0 }));
+  const piso = (nombre, stage, num) => { const p = { nombre, stage, num, rows: [], n: 0 }; pisos.push(p); return p; };
+  const fila = (p, f, secs) => { p.rows.push({ fila: f, y: p.rows.length * DY, secs }); };
+  // Piso 2 · Platea: izquierda pares (máx→2) y derecha impares (1→máx)
+  const p2 = piso("Platea · piso 2", false, 2);
+  Object.entries({ A: 32, B: 36, C: 34, D: 36, E: 34, F: 36, G: 34, H: 36, I: 34 }).forEach(([f, m]) => {
+    const L = ev(m, 2), R = od(1, m - 1); fila(p2, f, [{ ns: L, x0: (18 - L.length) * DX }, { ns: R, x0: 200 }]);
   });
-  return { rows, seats, DX, DY };
+  // Piso 3 · Platea: bloque izquierdo 34→20, central 18…2 y 1…17, bloque derecho 19→33 (la fila Ñ se escribe NN en los mapas)
+  const p3 = piso("Platea · piso 3", true, 3);
+  const centro = ev(18, 2).concat(od(1, 17));
+  fila(p3, "J", [{ ns: ev(30, 20), x0: 20 }, { ns: centro, x0: 98 }, { ns: od(19, 29), x0: 296 }]);
+  fila(p3, "K", [{ ns: centro, x0: 98 }]);
+  ["L", "M", "N", "Ñ", "O", "P", "Q", "R", "S", "T", "U", "V"].forEach(f => fila(p3, f, [{ ns: ev(34, 20), x0: 0 }, { ns: centro, x0: 98 }, { ns: od(19, 33), x0: 296 }]));
+  // Palcos (pisos 4, 5 y 6): 4 secciones por fila (36→24 · 22→2 · 1→21 · 23→35) = 36 asientos
+  const palco = (p, filas) => filas.forEach(f => fila(p, f, [{ ns: ev(36, 24), x0: 0 }, { ns: ev(22, 2), x0: 84 }, { ns: od(1, 21), x0: 208 }, { ns: od(23, 35), x0: 332 }]));
+  palco(piso("Palco · piso 4", false, 4), ["A", "B", "C", "D"]);
+  palco(piso("Palco · piso 5", false, 5), ["E", "F", "G", "H"]);
+  palco(piso("Palco · piso 6", false, 6), ["I", "J", "K", "L"]);
+  pisos.forEach((p, pi) => {
+    let xmax = 0;
+    p.rows.forEach(r => {
+      const row = []; r.secs.forEach(s => s.ns.forEach((n, i) => row.push({ n, x: s.x0 + i * DX })));
+      row.sort((a, b) => a.x - b.x).forEach((s, i) => { seats.push({ piso: pi, fila: r.fila, n: s.n, x: s.x, y: r.y, first: i === 0, key: `${p.num}:${r.fila}:${s.n}` }); xmax = Math.max(xmax, s.x); });
+    });
+    p.xmax = xmax; p.n = seats.filter(s => s.piso === pi).length;
+    p.vb = `-24 ${p.stage ? -32 : -10} ${xmax + 52} ${p.rows.length * DY + (p.stage ? 36 : 10)}`;
+  });
+  return { pisos, seats, DX, DY, byKey: new Map(seats.map((s, i) => [s.key, i])) };
 })();
+const butacaTxt = b => { const i = SALA.byKey.get(String(b || "").toUpperCase()); if (i == null) return String(b || ""); const s = SALA.seats[i]; return `${SALA.pisos[s.piso].nombre} · Fila ${s.fila} · Asiento ${s.n}`; };
 const sala = { built: false, els: [], plan: null, piso: 0 };
-/** Reparto simulado: especiales al frente (fila 1…), alumnos desde la segunda fila (familias juntas) y el resto de especiales al final. */
+/** Reparto simulado. Alumnos en A32…A2; invitados especiales en los demás puestos de la primera fila y siguientes;
+ *  luego las invitaciones de los alumnos (familias juntas). Quien tiene butaca reservada va en ella. Orden de pisos: 2 → 3 → 4 → 5 → 6. */
 function planSala() {
-  const recs = [...state.inv.values()], esp = recs.filter(r => r.t === "ESPECIAL").sort((a, b) => a.c.localeCompare(b.c)), alu = recs.filter(r => r.t !== "ESPECIAL").sort((a, b) => a.ce.localeCompare(b.ce) || (a.n - b.n));
-  const sig = esp.map(r => r.c).join() + "|" + alu.length + "|" + (alu[0]?.c || "") + (alu[alu.length - 1]?.c || "");
+  const recs = [...state.inv.values()], S = SALA.seats, conB = r => r.b && SALA.byKey.has(String(r.b).toUpperCase());
+  const rsv = recs.filter(conB), libres = recs.filter(r => !conB(r));
+  const esp = libres.filter(r => r.t === "ESPECIAL").sort((a, b) => a.c.localeCompare(b.c)), alu = libres.filter(r => r.t !== "ESPECIAL").sort((a, b) => a.ce.localeCompare(b.ce) || (a.n - b.n));
+  const sig = esp.map(r => r.c).join() + "|" + alu.length + "|" + (alu[0]?.c || "") + (alu[alu.length - 1]?.c || "") + "|" + rsv.map(r => r.c + r.b).join();
   if (sala.plan?.sig === sig) return sala.plan;
-  const S = SALA.seats, occ = new Array(S.length).fill(""), segunda = S.findIndex(s => s.fila === "K"); let i = 0, sin = 0;
-  const put = list => { for (const r of list) { if (i >= S.length) { sin++; continue; } occ[i++] = r.c.toUpperCase(); } };
-  const filaNueva = () => { while (i < S.length && i > 0 && !S[i].first) i++; };
-  const frente = Math.min(Math.ceil(esp.length / 2), S.findIndex(s => s.fila === "K"));   // al frente: solo la primera fila; los alumnos parten en la segunda
-  put(esp.slice(0, frente)); filaNueva(); i = Math.max(i, segunda);
-  put(alu); filaNueva();
-  put(esp.slice(frente));
+  const occ = new Array(S.length).fill("");
+  S.forEach((s, i) => { if (ZONA_ALUMNOS(s)) occ[i] = "#ALU"; });
+  rsv.forEach(r => { const i = SALA.byKey.get(String(r.b).toUpperCase()); if (!occ[i]) occ[i] = r.c.toUpperCase(); });
+  const pool = []; occ.forEach((c, i) => { if (!c) pool.push(i); });
+  let p = 0, sin = 0; const rowOf = i => S[i].piso + S[i].fila;
+  const put = list => { for (const r of list) { if (p >= pool.length) { sin++; continue; } occ[pool[p++]] = r.c.toUpperCase(); } };
+  put(esp);
+  if (p > 0) { const fila = rowOf(pool[p - 1]); while (p < pool.length && rowOf(pool[p]) === fila) p++; }   // las invitaciones de alumnos parten en una fila nueva
+  put(alu);
   return (sala.plan = { sig, occ, sin });
 }
 function buildSala() {
   if (sala.built) return;
-  const g = [[], []], s = [[], []];
-  SALA.rows.forEach(r => g[r.piso].push(`<text class="rl" x="-9" y="${r.y}" text-anchor="end">${r.fila}</text><text class="rl" x="381" y="${r.y}">${r.fila}</text>`));
-  SALA.seats.forEach((st, i) => s[st.piso].push(`<circle class="seat s0" data-i="${i}" cx="${st.x}" cy="${st.y}" r="4.3"></circle>`));
-  $("#salaSvg").innerHTML = `<g id="gP0"><rect x="60" y="-26" width="246" height="10" rx="3" class="stage"/><text x="183" y="-20.5" class="stt" text-anchor="middle" dominant-baseline="middle">ESCENARIO</text>${g[0].join("")}${s[0].join("")}</g><g id="gP1" style="display:none">${g[1].join("")}${s[1].join("")}</g>`;
+  const g = SALA.pisos.map(() => []);
+  SALA.pisos.forEach((p, pi) => p.rows.forEach(r => g[pi].push(`<text class="rl" x="-9" y="${r.y}" text-anchor="end">${r.fila}</text><text class="rl" x="${p.xmax + 11}" y="${r.y}">${r.fila}</text>`)));
+  SALA.seats.forEach((st, i) => g[st.piso].push(`<circle class="seat s0" data-i="${i}" cx="${st.x}" cy="${st.y}" r="4.3"></circle>`));
+  $("#salaSvg").innerHTML = SALA.pisos.map((p, pi) => `<g id="gP${pi}" style="display:none">${p.stage ? `<rect x="${(p.xmax - 246) / 2}" y="-26" width="246" height="10" rx="3" class="stage"/><text x="${p.xmax / 2}" y="-20.5" class="stt" text-anchor="middle" dominant-baseline="middle">ESCENARIO</text>` : ""}${g[pi].join("")}</g>`).join("");
+  $("#pisos").innerHTML = SALA.pisos.map((p, pi) => `<button data-p="${pi}">Piso ${p.num}</button>`).join("");
+  $$("#pisos button").forEach(b => b.onclick = () => setPiso(+b.dataset.p));
   sala.els = $$("#salaSvg .seat"); sala.built = true; setPiso(0);
 }
 function setPiso(p) {
-  sala.piso = p; $("#gP0").style.display = p ? "none" : ""; $("#gP1").style.display = p ? "" : "none";
-  $("#salaSvg").setAttribute("viewBox", p ? `-24 -10 424 ${SALA.DY * 9 + 6}` : `-24 -32 424 ${SALA.DY * 14 + 36}`);
-  $("#pisoP").classList.toggle("on", !p); $("#pisoS").classList.toggle("on", !!p);
+  sala.piso = p; SALA.pisos.forEach((_, i) => { $("#gP" + i).style.display = i === p ? "" : "none"; });
+  $("#salaSvg").setAttribute("viewBox", SALA.pisos[p].vb); $$("#pisos button").forEach(b => b.classList.toggle("on", +b.dataset.p === p)); pisoInfo();
+}
+function pisoInfo() {
+  const p = SALA.pisos[sala.piso]; if (!p) return; let ocu = 0;
+  if (sala.plan) sala.plan.occ.forEach((code, i) => { if (SALA.seats[i].piso === sala.piso && code && code !== "#ALU" && state.inv.get(code)?.used) ocu++; });
+  $("#pisoInfo").textContent = `${p.nombre} · ${p.n} asientos · ${ocu} ocupados (${pct(ocu, p.n)}%)`;
 }
 function updateSala(force) {
   if (!sala.built) return;
   if (!state.inv.size) { $("#salaTxt").textContent = "Cargando…"; return; }
   const pl = planSala(); sala.plan = pl; let eI = 0, eT = 0, aI = 0, aT = 0;
   pl.occ.forEach((code, i) => {
-    const r = code ? state.inv.get(code) : null, el = sala.els[i]; let cls = "s0";
+    const r = code && code !== "#ALU" ? state.inv.get(code) : null, el = sala.els[i]; let cls = code === "#ALU" ? "sg" : "s0";
     if (r) { const esp = r.t === "ESPECIAL"; cls = esp ? (r.used ? "sE" : "se") : (r.used ? "sA" : "sa"); if (esp) { eT++; if (r.used) eI++; } else { aT++; if (r.used) aI++; } }
-    if (el.dataset.c !== cls) {
-      const antes = el.dataset.c; el.setAttribute("class", "seat " + cls); el.dataset.c = cls;
-      if (!force && antes && (cls === "sE" || cls === "sA")) el.classList.add("pop");
+    const key = cls + (r?.b ? " rsv" : "");
+    if (el.dataset.c !== key) {
+      const antes = el.dataset.c || ""; el.setAttribute("class", "seat " + key); el.dataset.c = key;
+      if (!force && antes && /^s[EA]/.test(key) && !/^s[EA]/.test(antes)) el.classList.add("pop");
     }
   });
-  $("#salaTxt").textContent = `${eI + aI} en sala · especiales ${eI}/${eT} · alumnos ${aI}/${aT}` + (pl.sin ? ` · ${pl.sin} sin asiento simulado` : "");
+  const dentro = eI + aI, p = pct(dentro, AFORO_REF);
+  $("#salaTxt").textContent = `${dentro} en sala · ${p}% del aforo`; $("#salaBar").style.width = p + "%";
+  $("#salaAforo").textContent = `Aforo ${AFORO_REF.toLocaleString("es-CL")} butacas (5 niveles) · especiales ${eI}/${eT} · invitados de alumnos ${aI}/${aT}` + (pl.sin ? ` · ${pl.sin} sin asiento simulado` : "");
+  pisoInfo();
 }
-$("#pisoP").onclick = () => setPiso(0); $("#pisoS").onclick = () => setPiso(1);
 $("#salaSvg").addEventListener("click", e => {
   const c = e.target.closest(".seat"); if (!c) return;
-  const i = +c.dataset.i, s = SALA.seats[i], code = sala.plan?.occ[i], r = code ? state.inv.get(code) : null;
-  let h = `<b>${s.piso ? "Segundo piso" : "Platea"} · Fila ${s.fila} · Asiento ${s.n}</b><br>`;
-  if (!r) h += "Libre (sin invitación asignada)";
+  const i = +c.dataset.i, s = SALA.seats[i], code = sala.plan?.occ[i], r = code && code !== "#ALU" ? state.inv.get(code) : null;
+  let h = `<b>${SALA.pisos[s.piso].nombre} · Fila ${s.fila} · Asiento ${s.n}</b><br>`;
+  if (code === "#ALU") h += "Zona reservada para los alumnos (graduandos)";
+  else if (!r) h += "Libre (sin invitación asignada)";
   else {
     h += r.t === "ESPECIAL" ? `★ Invitado especial · <b>${esc(r.i || "Invitado sin nombre")}</b>${r.k ? " · " + esc(r.k) : ""}` : `${esc(r.s)} · ${esc(r.cu)} · Invitación ${r.n}${r.i ? " · invitado: " + esc(r.i) : ""}`;
+    if (r.b) h += "<br>🪑 Butaca reservada para esta persona";
     h += r.used ? `<br><span style="color:var(--ok)">✔ Ya ingresó ${esc((r.used.h || "").slice(11, 16))}</span>` : "<br>Aún no ingresa";
   }
   $("#salaInfo").innerHTML = h;
 });
+
+/* Selector de butaca (piso · fila · asiento) para reservar un puesto a un invitado */
+function pickerHtml() { return `<select data-sp="p">${SALA.pisos.map(p => `<option value="${p.num}">Piso ${p.num}</option>`).join("")}</select><select data-sp="f"></select><select data-sp="n"></select>`; }
+function pickerInit(root, valor) {
+  root.innerHTML = pickerHtml();
+  const sp = root.querySelector('[data-sp="p"]'), sf = root.querySelector('[data-sp="f"]'), sn = root.querySelector('[data-sp="n"]');
+  const rows = () => SALA.pisos.find(p => p.num === +sp.value).rows;
+  const fillN = () => { const r = rows().find(x => x.fila === sf.value); sn.innerHTML = r.secs.flatMap(s => s.ns).sort((a, b) => a - b).map(n => `<option>${n}</option>`).join(""); };
+  const fillF = () => { sf.innerHTML = rows().map(r => `<option>${r.fila}</option>`).join(""); fillN(); };
+  sp.onchange = fillF; sf.onchange = fillN;
+  if (valor && SALA.byKey.has(String(valor).toUpperCase())) { const [p, f, n] = String(valor).toUpperCase().split(":"); sp.value = p; fillF(); sf.value = f; fillN(); sn.value = n; } else fillF();
+  return () => `${sp.value}:${sf.value}:${sn.value}`;
+}
+const getRsv = pickerInit($("#iRsvBox"));
+$("#iRsv").onchange = () => { $("#iRsvBox").hidden = !$("#iRsv").checked; };
 /* ───────── Exportar listado a PDF ───────── */
 function logoDataUrl() {
   return new Promise(res => {
@@ -1211,9 +1278,10 @@ async function invCardHtml(inv, cont) {
   const div = document.createElement("div"); div.className = "invcard"; div.dataset.cod = inv.codigo; div.dataset.q = [inv.invitado, inv.cargo, inv.correo, inv.codigo, inv.estudiante].join(" ").toLowerCase();
   const mini = document.createElement("canvas"); mini.width = 168; mini.height = 237; div.appendChild(mini); lazyThumb(mini, inv);
   const d = document.createElement("div"); d.style.minWidth = 0; d.style.flex = "1";
-  d.innerHTML = `<b>${esc(inv.invitado || (inv.tipo === "ESPECIAL" ? "Invitado especial" : "Invitación adicional"))}</b>${inv.cargo ? `<div class="muted">${esc(inv.cargo)}</div>` : ""}<div class="muted">${inv.tipo === "ESPECIAL" ? "Invitado especial" : "De " + esc(inv.estudiante) + " · " + esc(inv.curso)} · <b>${esc(inv.codigo)}</b>${inv.entro ? " · ✔ ya ingresó" : ""}</div>
-    <div class="acts"><button class="sm" data-a="view">Ver completa</button><button class="sm sec" data-a="png">Digital (imagen)</button><button class="sm sec" data-a="pdf">Imprimir (PDF 11×15)</button><button class="sm sec" data-a="share">Compartir</button><button class="sm sec" data-a="mail">Correo</button><button class="sm danger" data-a="del">Eliminar</button></div>
-    <div class="mailrow"><input list="dlSaludo" placeholder="Saludo (Estimado / Estimada)" autocomplete="off"><input placeholder="Nombre del funcionario (editable)" autocomplete="off"><input placeholder="correo@andaliensur.cl (o el dominio que corresponda)" autocomplete="off" autocapitalize="none" inputmode="email"><input placeholder="Mensaje adicional (opcional)" autocomplete="off"><button class="sm" data-a="send">Enviar invitación por correo</button><span class="muted" data-m></span></div>`;
+  d.innerHTML = `<b>${esc(inv.invitado || (inv.tipo === "ESPECIAL" ? "Invitado especial" : "Invitación adicional"))}</b>${inv.cargo ? `<div class="muted">${esc(inv.cargo)}</div>` : ""}<div class="muted">${inv.tipo === "ESPECIAL" ? "Invitado especial" : "De " + esc(inv.estudiante) + " · " + esc(inv.curso)} · <b>${esc(inv.codigo)}</b>${inv.entro ? " · ✔ ya ingresó" : ""}</div>${inv.butaca ? `<div class="muted">🪑 Butaca reservada: <b>${esc(butacaTxt(inv.butaca))}</b></div>` : ""}
+    <div class="acts"><button class="sm" data-a="view">Ver completa</button><button class="sm sec" data-a="png">Digital (imagen)</button><button class="sm sec" data-a="pdf">Imprimir (PDF 11×15)</button><button class="sm sec" data-a="share">Compartir</button><button class="sm sec" data-a="seat">Butaca</button><button class="sm sec" data-a="mail">Correo</button><button class="sm danger" data-a="del">Eliminar</button></div>
+    <div class="mailrow"><input list="dlSaludo" placeholder="Saludo (Estimado / Estimada)" autocomplete="off"><input placeholder="Nombre del funcionario (editable)" autocomplete="off"><input placeholder="correo@andaliensur.cl (o el dominio que corresponda)" autocomplete="off" autocapitalize="none" inputmode="email"><input placeholder="Mensaje adicional (opcional)" autocomplete="off"><button class="sm" data-a="send">Enviar invitación por correo</button><span class="muted" data-m></span></div>
+    <div class="seatrow"><div class="pk"></div><div class="row"><button class="sm" data-a="seat-ok">Reservar esta butaca</button><button class="sm sec" data-a="seat-no">Quitar reserva</button></div><span class="muted" data-sm></span></div>`;
   d.querySelector('[data-a="png"]').onclick = () => descargarPNG(inv); d.querySelector('[data-a="pdf"]').onclick = () => descargarPDF(inv); d.querySelector('[data-a="share"]').onclick = () => compartir(inv);
   const mr = d.querySelector(".mailrow"), mm = d.querySelector("[data-m]"), [si, ni, ci, gi] = mr.querySelectorAll("input");
   ni.value = inv.invitado || ""; ci.value = inv.correo || (sugerirLocal(ni.value) ? sugerirLocal(ni.value) + DOMINIO : ""); si.value = saludoPara(ni.value);
@@ -1222,6 +1290,10 @@ async function invCardHtml(inv, cont) {
   ci.oninput = () => { ci.dataset.edited = "1"; };
   d.querySelector('[data-a="mail"]').onclick = () => { mr.classList.toggle("on"); (ni.value ? ci : ni).focus(); };
   d.querySelector('[data-a="view"]').onclick = () => verInvitacion(inv);
+  const sr = d.querySelector(".seatrow"), getS = pickerInit(sr.querySelector(".pk"), inv.butaca), sm = sr.querySelector("[data-sm]");
+  d.querySelector('[data-a="seat"]').onclick = () => sr.classList.toggle("on");
+  const setSeat = async b => { sm.textContent = "Guardando…"; try { await api("inv_seat", { code: inv.codigo, butaca: b }); sm.textContent = b ? "✔ Butaca reservada" : "✔ Reserva quitada"; loadCheck(); loadInv(); } catch (e) { if (!onAuthFail(e)) sm.textContent = "✖ " + e.message; } };
+  sr.querySelector('[data-a="seat-ok"]').onclick = () => setSeat(getS()); sr.querySelector('[data-a="seat-no"]').onclick = () => setSeat("");
   d.querySelector('[data-a="send"]').onclick = async ev => {
     const correo = correoCompleto(ci.value); if (!correo) { mm.textContent = "Escribe el correo."; return; }
     const b = ev.currentTarget; b.disabled = true; mm.textContent = "Enviando…";
@@ -1233,8 +1305,8 @@ async function invCardHtml(inv, cont) {
   };
   d.querySelector('[data-a="del"]').onclick = async () => {
     if (inv.entro) { alert("Esa invitación ya ingresó. Anula primero el ingreso (pestaña Alumnos) y luego elimínala."); return; }
-    if (!confirm("¿Eliminar la invitación " + inv.codigo + (inv.invitado ? " de " + inv.invitado : "") + "?\nSu QR dejará de funcionar y no se puede deshacer.")) return;
-    try { await api("inv_del", { code: inv.codigo }); state.inv.delete(String(inv.codigo).toUpperCase()); $$(".invcard").forEach(e => { if (e.dataset.cod === inv.codigo) e.remove(); }); loadInv(); refresh(true); }
+    if (!confirm("¿Eliminar la invitación " + inv.codigo + (inv.invitado ? " de " + inv.invitado : "") + "?\nSu QR dejará de funcionar y no se puede deshacer." + (inv.butaca ? "\nLa butaca reservada (" + butacaTxt(inv.butaca) + ") quedará libre." : ""))) return;
+    try { await api("inv_del", { code: inv.codigo }); state.inv.delete(String(inv.codigo).toUpperCase()); updateSala(); $$(".invcard").forEach(e => { if (e.dataset.cod === inv.codigo) e.remove(); }); loadInv(); refresh(true); }
     catch (e) { if (!onAuthFail(e)) alert(e.message); }
   };
   div.appendChild(d); cont.appendChild(div);
@@ -1248,7 +1320,7 @@ async function loadInv() {
     $("#iCount").textContent = r.invitaciones.length + " en total"; $("#iBuscar").value = "";
   } catch (e) { if (!onAuthFail(e)) $("#iList").innerHTML = `<p class="muted">${esc(e.message)}</p>`; }
 }
-$$('input[name="tipo"]').forEach(r => r.onchange = () => { const ad = $('input[name="tipo"]:checked').value === "adicional"; $("#boxAlumno").hidden = !ad; $("#boxOrigen").hidden = ad; if (ad) infoAlumno(); });
+$$('input[name="tipo"]').forEach(r => r.onchange = () => { const ad = $('input[name="tipo"]:checked').value === "adicional"; $("#boxAlumno").hidden = !ad; $("#boxOrigen").hidden = ad; $("#boxRsv").hidden = ad; if (ad) infoAlumno(); });
 $("#iBuscar").addEventListener("input", () => { const q = $("#iBuscar").value.trim().toLowerCase(); $$("#iList .invcard").forEach(c => c.hidden = !!q && !c.dataset.q.includes(q)); });
 
 /* Correo del invitado especial: funcionario del colegio (@andaliensur.cl) u otro (dominios comunes en Chile, o libre) */
@@ -1280,6 +1352,7 @@ $("#btnIAdd").onclick = async () => {
     const mail = correoForm();
     if (($("#iMailL").value.trim() || $("#iMailO").value.trim()) && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { msg.textContent = "El correo no es válido: " + (mail || "falta el dominio"); return; }
     if (mail) params.correo = mail;
+    if ($("#iRsv").checked) params.butaca = getRsv();
   }
   if (tipo === "adicional") {
     const t = $("#iAlumno").value.trim(), cod = t.split("·").pop().trim(), al = state.stats?.alumnos.find(a => !a.especial && a.codEst === cod);
@@ -1291,7 +1364,7 @@ $("#btnIAdd").onclick = async () => {
     const r = await api("inv_add", params);
     msg.textContent = `✔ ${r.invitaciones.length} invitación(es) creada(s) y agregada(s) al listado.` + (r.antes ? ` El alumno tenía ${r.antes.total} (${r.antes.ingresadas} ya ingresaron${r.antes.adicionales ? ", " + r.antes.adicionales + " adicionales" : ""}) y ahora tiene ${r.antes.despues}.` : "") + " Descárgala o envíala abajo.";
     $("#iNuevas").hidden = false; const box = $("#iNuevasList"); box.innerHTML = ""; for (const inv of r.invitaciones) await invCardHtml(inv, box);
-    $("#iNom").value = ""; $("#iCargo").value = ""; $("#iMailL").value = ""; delete $("#iMailL").dataset.edited; $("#iMailO").value = ""; $("#iDom").value = ""; await refresh(true); infoAlumno(); loadInv(); loadCheck();
+    $("#iRsv").checked = false; $("#iRsvBox").hidden = true; $("#iNom").value = ""; $("#iCargo").value = ""; $("#iMailL").value = ""; delete $("#iMailL").dataset.edited; $("#iMailO").value = ""; $("#iDom").value = ""; await refresh(true); infoAlumno(); loadInv(); loadCheck();
   } catch (e) { if (!onAuthFail(e)) msg.textContent = "✖ " + e.message; }
   finally { b.disabled = false; }
 };
