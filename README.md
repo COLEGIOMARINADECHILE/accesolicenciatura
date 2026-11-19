@@ -1,4 +1,4 @@
-﻿# Control de acceso · Licenciatura 2026
+# Control de acceso · Licenciatura 2026
 
 Sistema de invitaciones con **código QR** y control de ingreso en tiempo real (110 estudiantes · 550 invitaciones · 5 por estudiante).
 
@@ -64,6 +64,9 @@ Invitación (QR "A00101-9SUE3")  →  Teléfono con docs/index.html  →  Apps S
 Pestaña **Admin → Invitaciones**: crea un *invitado especial* (código V00001…) o invitaciones *adicionales* de un alumno (A00106…), con nombre y cargo opcionales. Se guardan en la hoja «Invitaciones» (columnas Invitado, Cargo, Tipo), aparecen en el listado y en el PDF, y se descargan como imagen (digital, para enviar por WhatsApp) o PDF 11×15 cm (impresa). Al escanearlas, el funcionario ve el nombre y el cargo.
 
 Al crear una adicional, la página muestra antes cuántas invitaciones ya tiene el alumno y qué códigos se generarán. Cada invitación creada se puede enviar **por correo** (con el nombre del invitado en el saludo y un mensaje opcional) o **eliminar** (solo si aún no ingresó).
+
+## Importar listado de funcionarios
+Admin → **Importar**: sube el Excel/CSV (reconoce hojas con columnas Docente/Funcionario, Apellido, Correo, Jefatura, Dept., Ciclo, Licencia), revisa y edita la lista, quita a quienes no correspondan y al aceptar crea un invitado especial por persona (con su correo guardado). El correo de cada invitado especial puede ser @andaliensur.cl u otro dominio (lista de dominios comunes en Chile o libre).
 
 ## Exportar listado en PDF
 Pestaña **Alumnos** (solo administradores): «Lista de invitaciones» o «Con asistencia» (marca en verde las ya utilizadas). Genera un PDF por curso con los 5 códigos de cada alumno; no incluye los tokens secretos.

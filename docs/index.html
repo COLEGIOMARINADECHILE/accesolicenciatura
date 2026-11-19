@@ -193,7 +193,13 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
 #viewer.show{display:flex}
 #viewer img{max-width:100%;max-height:100%;object-fit:contain}
 #viewer button{position:absolute;top:calc(14px + env(safe-area-inset-top));right:14px;width:46px;height:46px;border-radius:50%;padding:0;background:rgba(255,255,255,.25);font-size:22px;color:#fff}
-.mailgrp{display:flex;align-items:center;gap:6px}.mailgrp span{white-space:nowrap}
+.mailgrp{display:flex;align-items:center;gap:6px;margin-top:6px}.mailgrp span{white-space:nowrap}.mailgrp input{flex:1;min-width:0}
+.improw{display:flex;gap:10px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line)}
+.improw.off{opacity:.45}
+.improw .f{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.improw .f input{padding:8px 10px;font-size:14px}
+.improw .chk{padding-top:6px}.improw .chk input{width:22px;height:22px;padding:0}
+.warn{color:var(--warn)}
 </style>
 </head>
 <body>
@@ -290,7 +296,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
   </section>
 
   <section id="s-func">
-    <div class="seg"><button id="segInv" class="on">Invitaciones</button><button id="segTeam">Equipo</button></div>
+    <div class="seg"><button id="segInv" class="on">Invitaciones</button><button id="segImp">Importar</button><button id="segTeam">Equipo</button></div>
 
     <div id="paneInv">
       <div class="card">
@@ -311,11 +317,39 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
         <input id="iNom" placeholder="Ej: Juan Pérez" autocomplete="off">
         <label>Cargo o relación <span class="muted">(opcional)</span></label>
         <input id="iCargo" placeholder="Ej: Director de Colegio" autocomplete="off">
+        <div id="boxOrigen">
+          <label>Correo <span class="muted">(opcional, para enviarle la invitación)</span></label>
+          <div class="opt" style="margin-bottom:6px">
+            <label><input type="radio" name="origen" value="colegio" checked> Funcionario del colegio</label>
+            <label><input type="radio" name="origen" value="otro"> Otro invitado</label>
+          </div>
+          <div class="mailgrp" id="gColegio"><input id="iMailL" placeholder="nombre.apellido" autocomplete="off" autocapitalize="none" inputmode="email"><span class="muted">@andaliensur.cl</span></div>
+          <div class="mailgrp" id="gOtro" hidden><input id="iMailO" placeholder="usuario" autocomplete="off" autocapitalize="none" inputmode="email"><span class="muted">@</span><input id="iDom" list="dlDominios" placeholder="gmail.com u otro dominio" autocomplete="off" autocapitalize="none"></div>
+          <datalist id="dlDominios"></datalist>
+        </div>
         <button id="btnIAdd" style="width:100%;margin-top:14px">Crear invitación con QR</button>
         <p class="muted" id="iMsg" style="margin:8px 0 0">El nombre y el cargo aparecerán en la pantalla del funcionario al escanear. Se agrega al listado y a la base de datos.</p>
       </div>
       <div class="card" id="iNuevas" hidden><h2>Recién creadas</h2><div id="iNuevasList"></div></div>
-      <div class="card"><h2>Invitaciones adicionales y especiales</h2><div id="iList"><p class="muted">Cargando…</p></div></div>
+      <div class="card"><div class="mini"><h2 style="margin:0">Invitaciones adicionales y especiales</h2><span class="muted" id="iCount"></span></div><input id="iBuscar" placeholder="Buscar por nombre, cargo, correo o código…" style="margin:10px 0" autocomplete="off"><div id="iList"><p class="muted">Cargando…</p></div></div>
+    </div>
+
+    <div id="paneImp" hidden>
+      <div class="card">
+        <h2>Importar listado de funcionarios</h2>
+        <p class="muted" style="margin:0 0 10px">Sube un Excel (.xlsx) o CSV con el nombre (o «Docente/Funcionario» + «Apellido») y el correo; opcionales: jefatura, departamento, ciclo y cargo. Revisas la lista, quitas a quienes no correspondan y solo al aceptar se crean las invitaciones.</p>
+        <input type="file" id="impFile" accept=".xlsx,.xls,.csv">
+        <div id="impSheets" hidden></div>
+        <p class="muted" id="impMsg" style="margin:8px 0 0"></p>
+      </div>
+      <div class="card" id="impBox" hidden>
+        <div class="mini"><h2 style="margin:0">Revisión del listado</h2><span class="muted" id="impCount"></span></div>
+        <input id="impQ" placeholder="Buscar en la lista…" style="margin:10px 0" autocomplete="off">
+        <div class="row"><button class="sec sm" id="impAll">Marcar todos</button><button class="sec sm" id="impNone">Desmarcar todos</button><button class="danger sm" id="impDelUn">Quitar desmarcados</button></div>
+        <div id="impList"></div>
+        <button id="impCreate" style="width:100%;margin-top:12px">Crear invitaciones</button>
+        <p class="muted" id="impRes" style="margin:8px 0 0"></p>
+      </div>
     </div>
 
     <div id="paneTeam" hidden>
@@ -371,6 +405,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
@@ -438,10 +473,16 @@ function demoApi(action, p) {
     }
   }
   if (action === "inv_del") { const i = demoDB.inv.findIndex(x => x.codigo === norm(p.code)); if (i < 0) return { ok: false, error: "La invitación no existe" }; const x = demoDB.inv[i]; if (!x.tipo) return { ok: false, error: "Solo se pueden eliminar invitaciones adicionales o especiales." }; if (x.entro) return { ok: false, error: "Esa invitación ya ingresó. Anula primero el ingreso." }; demoDB.inv.splice(i, 1); return { ok: true }; }
+  if (action === "inv_bulk") {
+    const out = [], om = []; let m = Math.max(0, ...demoDB.inv.filter(x => /^V\d+$/.test(x.codigo)).map(x => +x.codigo.slice(1)));
+    (p.items || []).forEach(it => { const c = String(it.correo || "").toLowerCase(); if (c && demoDB.inv.some(x => x.tipo === "ESPECIAL" && x.correo === c)) { om.push({ nombre: it.nombre, motivo: "Ya tiene invitación" }); return; } m++;
+      const t = { codigo: "V" + String(m).padStart(5, "0"), token: "DEMO1", curso: CURSO_ESPECIAL, numero: 1, estudiante: it.nombre, entro: false, hora: "", oper: "", invitado: it.nombre, cargo: it.cargo || "", correo: c, tipo: "ESPECIAL" }; t.codEst = t.codigo; demoDB.inv.push(t); out.push({ ...t }); });
+    return { ok: true, invitaciones: out, omitidas: om };
+  }
   if (action === "inv_mail") { if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(p.correo || ""))) return { ok: false, error: "Correo no válido" }; return { ok: true }; }
   if (action === "inv_add" || action === "inv_list") {
     if (user.rol !== "admin") return { ok: false, error: "Solo el administrador puede hacer esto" };
-    if (action === "inv_list") return { ok: true, invitaciones: demoDB.inv.filter(x => x.tipo).map(x => ({ codigo: x.codigo, token: x.token, invitado: x.invitado, cargo: x.cargo, estudiante: x.estudiante, curso: x.curso, numero: x.numero, tipo: x.tipo, entro: x.entro })) };
+    if (action === "inv_list") return { ok: true, invitaciones: demoDB.inv.filter(x => x.tipo).map(x => ({ codigo: x.codigo, token: x.token, invitado: x.invitado, cargo: x.cargo, correo: x.correo || "", estudiante: x.estudiante, curso: x.curso, numero: x.numero, tipo: x.tipo, entro: x.entro })) };
     const tk = () => Array.from({ length: 5 }, () => "23456789ABCDEFGHJKMNPQRSTUVWXYZ"[Math.floor(Math.random() * 31)]).join("");
     const out = [], nombre = String(p.nombre || "").trim(), cargo = String(p.cargo || "").trim();
     if (p.codEst) {
@@ -450,7 +491,7 @@ function demoApi(action, p) {
       for (let k = 0; k < Math.min(10, +p.cantidad || 1); k++) { n++; const t = { codigo: p.codEst + String(n).padStart(2, "0"), token: tk(), curso: base[0].curso, codEst: p.codEst, numero: n, estudiante: base[0].estudiante, entro: false, hora: "", oper: "", invitado: nombre, cargo, tipo: "ADICIONAL" }; demoDB.inv.push(t); out.push({ ...t }); log(t, "CREADA (ADICIONAL)"); }
     } else {
       const m = Math.max(0, ...demoDB.inv.filter(x => /^V\d+$/.test(x.codigo)).map(x => +x.codigo.slice(1)));
-      const t = { codigo: "V" + String(m + 1).padStart(5, "0"), token: tk(), curso: CURSO_ESPECIAL, numero: 1, estudiante: nombre || "Invitado especial", entro: false, hora: "", oper: "", invitado: nombre, cargo, tipo: "ESPECIAL" }; t.codEst = t.codigo; demoDB.inv.push(t); out.push({ ...t }); log(t, "CREADA (ESPECIAL)");
+      const t = { codigo: "V" + String(m + 1).padStart(5, "0"), token: tk(), curso: CURSO_ESPECIAL, numero: 1, estudiante: nombre || "Invitado especial", entro: false, hora: "", oper: "", invitado: nombre, cargo, correo: String(p.correo || ""), tipo: "ESPECIAL" }; t.codEst = t.codigo; demoDB.inv.push(t); out.push({ ...t }); log(t, "CREADA (ESPECIAL)");
     }
     return { ok: true, invitaciones: out, antes: out.antes };
   }
@@ -1056,18 +1097,21 @@ async function compartir(inv) {
     if (navigator.canShare?.({ files: [f] })) { try { await navigator.share({ files: [f], title: "Invitación Licenciatura 2026" }); } catch {} } else descargarPNG(inv);
   }, "image/png");
 }
+/* miniaturas: se dibujan solo cuando entran en pantalla (listas grandes) */
+const thumbObs = "IntersectionObserver" in window ? new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { thumbObs.unobserve(e.target); pintaThumb(e.target); } }), { rootMargin: "300px" }) : null;
+function pintaThumb(c) { drawInvitation(c._inv, false).then(cv => c.getContext("2d").drawImage(cv, 0, 0, 168, 237)); }
+function lazyThumb(c, inv) { c._inv = inv; if (thumbObs) thumbObs.observe(c); else pintaThumb(c); }
 async function invCardHtml(inv, cont) {
-  const div = document.createElement("div"); div.className = "invcard"; div.dataset.cod = inv.codigo;
-  const cv = await drawInvitation(inv, false); const mini = document.createElement("canvas"); mini.width = 168; mini.height = 237; mini.getContext("2d").drawImage(cv, 0, 0, 168, 237);
-  div.appendChild(mini);
+  const div = document.createElement("div"); div.className = "invcard"; div.dataset.cod = inv.codigo; div.dataset.q = [inv.invitado, inv.cargo, inv.correo, inv.codigo, inv.estudiante].join(" ").toLowerCase();
+  const mini = document.createElement("canvas"); mini.width = 168; mini.height = 237; div.appendChild(mini); lazyThumb(mini, inv);
   const d = document.createElement("div"); d.style.minWidth = 0; d.style.flex = "1";
   d.innerHTML = `<b>${esc(inv.invitado || (inv.tipo === "ESPECIAL" ? "Invitado especial" : "Invitación adicional"))}</b>${inv.cargo ? `<div class="muted">${esc(inv.cargo)}</div>` : ""}<div class="muted">${inv.tipo === "ESPECIAL" ? "Invitado especial" : "De " + esc(inv.estudiante) + " · " + esc(inv.curso)} · <b>${esc(inv.codigo)}</b>${inv.entro ? " · ✔ ya ingresó" : ""}</div>
     <div class="acts"><button class="sm" data-a="view">Ver completa</button><button class="sm sec" data-a="png">Digital (imagen)</button><button class="sm sec" data-a="pdf">Imprimir (PDF 11×15)</button><button class="sm sec" data-a="share">Compartir</button><button class="sm sec" data-a="mail">Correo</button><button class="sm danger" data-a="del">Eliminar</button></div>
-    <div class="mailrow"><input list="dlSaludo" placeholder="Saludo (Estimado / Estimada)" autocomplete="off"><input placeholder="Nombre del funcionario (editable)" autocomplete="off"><div class="mailgrp"><input placeholder="nombre.apellido" autocomplete="off" autocapitalize="none" inputmode="email"><span class="muted">@andaliensur.cl</span></div><input placeholder="Mensaje adicional (opcional)" autocomplete="off"><button class="sm" data-a="send">Enviar invitación por correo</button><span class="muted" data-m></span></div>`;
+    <div class="mailrow"><input list="dlSaludo" placeholder="Saludo (Estimado / Estimada)" autocomplete="off"><input placeholder="Nombre del funcionario (editable)" autocomplete="off"><input placeholder="correo@andaliensur.cl (o el dominio que corresponda)" autocomplete="off" autocapitalize="none" inputmode="email"><input placeholder="Mensaje adicional (opcional)" autocomplete="off"><button class="sm" data-a="send">Enviar invitación por correo</button><span class="muted" data-m></span></div>`;
   d.querySelector('[data-a="png"]').onclick = () => descargarPNG(inv); d.querySelector('[data-a="pdf"]').onclick = () => descargarPDF(inv); d.querySelector('[data-a="share"]').onclick = () => compartir(inv);
   const mr = d.querySelector(".mailrow"), mm = d.querySelector("[data-m]"), [si, ni, ci, gi] = mr.querySelectorAll("input");
-  ni.value = inv.invitado || ""; ci.value = sugerirLocal(ni.value); si.value = saludoPara(ni.value);
-  ni.oninput = () => { if (!ci.dataset.edited) ci.value = sugerirLocal(ni.value); if (!si.dataset.edited) si.value = saludoPara(ni.value); };
+  ni.value = inv.invitado || ""; ci.value = inv.correo || (sugerirLocal(ni.value) ? sugerirLocal(ni.value) + DOMINIO : ""); si.value = saludoPara(ni.value);
+  ni.oninput = () => { if (!ci.dataset.edited && !inv.correo) ci.value = sugerirLocal(ni.value) ? sugerirLocal(ni.value) + DOMINIO : ""; if (!si.dataset.edited) si.value = saludoPara(ni.value); };
   si.oninput = () => { si.dataset.edited = "1"; };
   ci.oninput = () => { ci.dataset.edited = "1"; };
   d.querySelector('[data-a="mail"]').onclick = () => { mr.classList.toggle("on"); (ni.value ? ci : ni).focus(); };
@@ -1095,9 +1139,24 @@ async function loadInv() {
     const r = await api("inv_list"), box = $("#iList"); box.innerHTML = "";
     if (!r.invitaciones.length) { box.innerHTML = `<p class="muted">Aún no hay invitaciones adicionales ni especiales.</p>`; return; }
     for (const inv of r.invitaciones.slice().reverse()) await invCardHtml(inv, box);
+    $("#iCount").textContent = r.invitaciones.length + " en total"; $("#iBuscar").value = "";
   } catch (e) { if (!onAuthFail(e)) $("#iList").innerHTML = `<p class="muted">${esc(e.message)}</p>`; }
 }
-$$('input[name="tipo"]').forEach(r => r.onchange = () => { $("#boxAlumno").hidden = $('input[name="tipo"]:checked').value !== "adicional"; if (!$("#boxAlumno").hidden) infoAlumno(); });
+$$('input[name="tipo"]').forEach(r => r.onchange = () => { const ad = $('input[name="tipo"]:checked').value === "adicional"; $("#boxAlumno").hidden = !ad; $("#boxOrigen").hidden = ad; if (ad) infoAlumno(); });
+$("#iBuscar").addEventListener("input", () => { const q = $("#iBuscar").value.trim().toLowerCase(); $$("#iList .invcard").forEach(c => c.hidden = !!q && !c.dataset.q.includes(q)); });
+
+/* Correo del invitado especial: funcionario del colegio (@andaliensur.cl) u otro (dominios comunes en Chile, o libre) */
+const DOMINIOS_CL = ["gmail.com", "hotmail.com", "outlook.com", "outlook.cl", "outlook.es", "hotmail.es", "yahoo.com", "yahoo.es", "live.com", "icloud.com", "vtr.net", "uc.cl", "uchile.cl", "udec.cl", "ubiobio.cl", "usach.cl", "gob.cl", "mineduc.cl", "minsal.cl", "carabineros.cl", "ejercito.cl", "armada.cl", "fach.cl", "pdichile.cl", "gorebiobio.cl", "concepcion.cl", "bomberos.cl"];
+$("#dlDominios").innerHTML = DOMINIOS_CL.map(d => `<option value="${d}">`).join("");
+const origenActual = () => $('input[name="origen"]:checked').value;
+$$('input[name="origen"]').forEach(r => r.onchange = () => { $("#gColegio").hidden = origenActual() !== "colegio"; $("#gOtro").hidden = origenActual() !== "otro"; });
+$("#iNom").addEventListener("input", () => { const l = $("#iMailL"); if (!l.dataset.edited) l.value = sugerirLocal($("#iNom").value); });
+$("#iMailL").addEventListener("input", () => { $("#iMailL").dataset.edited = "1"; });
+function correoForm() {
+  if (origenActual() === "colegio") { const l = $("#iMailL").value.trim().toLowerCase(); return !l ? "" : l.includes("@") ? l : l + DOMINIO; }
+  const u = $("#iMailO").value.trim().toLowerCase(), d = $("#iDom").value.trim().toLowerCase().replace(/^@/, "");
+  if (!u) return ""; return u.includes("@") ? u : (d ? u + "@" + d : "");
+}
 function infoAlumno() {
   const box = $("#iInfo"), t = $("#iAlumno").value.trim(), cod = t.split("·").pop().trim(), al = state.stats?.alumnos.find(a => !a.especial && a.codEst === cod);
   if (!al) { box.hidden = !t; box.textContent = t ? "Elige un alumno de la lista que aparece al escribir." : ""; return; }
@@ -1111,6 +1170,11 @@ $("#iAlumno").addEventListener("input", infoAlumno); $("#iAlumno").addEventListe
 $("#btnIAdd").onclick = async () => {
   const msg = $("#iMsg"), tipo = $('input[name="tipo"]:checked').value, nombre = $("#iNom").value.trim(), cargo = $("#iCargo").value.trim();
   const params = { nombre, cargo };
+  if (tipo === "especial") {
+    const mail = correoForm();
+    if (($("#iMailL").value.trim() || $("#iMailO").value.trim()) && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { msg.textContent = "El correo no es válido: " + (mail || "falta el dominio"); return; }
+    if (mail) params.correo = mail;
+  }
   if (tipo === "adicional") {
     const t = $("#iAlumno").value.trim(), cod = t.split("·").pop().trim(), al = state.stats?.alumnos.find(a => !a.especial && a.codEst === cod);
     if (!al) { msg.textContent = "Elige un alumno de la lista (aparece al escribir)."; return; }
@@ -1121,12 +1185,94 @@ $("#btnIAdd").onclick = async () => {
     const r = await api("inv_add", params);
     msg.textContent = `✔ ${r.invitaciones.length} invitación(es) creada(s) y agregada(s) al listado.` + (r.antes ? ` El alumno tenía ${r.antes.total} (${r.antes.ingresadas} ya ingresaron${r.antes.adicionales ? ", " + r.antes.adicionales + " adicionales" : ""}) y ahora tiene ${r.antes.despues}.` : "") + " Descárgala o envíala abajo.";
     $("#iNuevas").hidden = false; const box = $("#iNuevasList"); box.innerHTML = ""; for (const inv of r.invitaciones) await invCardHtml(inv, box);
-    $("#iNom").value = ""; $("#iCargo").value = ""; await refresh(true); infoAlumno(); loadInv(); loadCheck();
+    $("#iNom").value = ""; $("#iCargo").value = ""; $("#iMailL").value = ""; delete $("#iMailL").dataset.edited; $("#iMailO").value = ""; $("#iDom").value = ""; await refresh(true); infoAlumno(); loadInv(); loadCheck();
   } catch (e) { if (!onAuthFail(e)) msg.textContent = "✖ " + e.message; }
   finally { b.disabled = false; }
 };
-function seg(w) { $("#segInv").classList.toggle("on", w === "inv"); $("#segTeam").classList.toggle("on", w === "team"); $("#paneInv").hidden = w !== "inv"; $("#paneTeam").hidden = w !== "team"; if (w === "team") loadFun(); else loadInv(); }
-$("#segInv").onclick = () => seg("inv"); $("#segTeam").onclick = () => seg("team");
+function seg(w) { ["Inv", "Imp", "Team"].forEach(k => { $("#seg" + k).classList.toggle("on", k.toLowerCase() === w); $("#pane" + k).hidden = k.toLowerCase() !== w; }); if (w === "team") loadFun(); else if (w === "inv") loadInv(); }
+$("#segInv").onclick = () => seg("inv"); $("#segImp").onclick = () => seg("imp"); $("#segTeam").onclick = () => seg("team");
+
+/* ───────── Importar listado de funcionarios (Excel / CSV) ───────── */
+const imp = { wb: null, rows: [], dup: 0 };
+const titulo = s => s.toLowerCase().split(/\s+/).filter(Boolean).map((w, i) => (i > 0 && PARTICULAS.has(w)) ? w : w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+/** Los listados vienen como "APELLIDO APELLIDO NOMBRE NOMBRE" o "NOMBRE APELLIDO": el correo (nombre.apellido@) indica dónde parte el nombre. */
+function ordenarNombre(n, mail) {
+  const toks = n.trim().split(/\s+/).filter(Boolean), first = sinTildes(mail.split("@")[0].split(".")[0]);
+  const idx = toks.findIndex(t => sinTildes(t) === first);
+  if (idx > 0) return { txt: titulo(toks.slice(idx).concat(toks.slice(0, idx)).join(" ")), ok: true };
+  return { txt: titulo(toks.join(" ")), ok: idx === 0 };
+}
+function parseHoja(ws, hoja) {
+  const a = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "", raw: false });
+  const hi = a.findIndex(r => r.some(c => /correo|e-?mail/i.test(String(c)))); if (hi < 0) return [];
+  const H = a[hi].map(c => String(c).trim().toLowerCase()), col = re => H.findIndex(h => re.test(h));
+  const cM = col(/correo|e-?mail/), cN = col(/docente|funcionari|fucionari|nombre/), cA = col(/apellido/), cJ = col(/jefatura/), cD = col(/dept|departamento/), cC = col(/ciclo/), cK = col(/cargo/), cL = col(/licencia/);
+  const lim = s => String(s || "").replace(/^[\s-]+/, "").trim(), esClase = s => /^[A-Za-z]{1,3}\s?\d[A-Za-z]?$/.test(s);
+  const out = [];
+  for (const r of a.slice(hi + 1)) {
+    const mail = String(r[cM] || "").trim().toLowerCase().replace(/\s+/g, ""); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) continue;
+    const bruto = [r[cN], cA >= 0 ? r[cA] : ""].map(x => String(x || "").trim()).filter(Boolean).join(" "); if (!bruto) continue;
+    const nom = ordenarNombre(bruto, mail), j = lim(r[cJ]), d = lim(r[cD]), c = lim(r[cC]).replace(/^(\d)\s*ciclo$/i, "$1° ciclo"), k = lim(r[cK]), parts = [];
+    if (k) parts.push(k);
+    if (/docente/.test(H[cN] || "") && !k && !(j && !esClase(j))) parts.push("Docente");
+    if (j) parts.push(esClase(j) ? "Profesor(a) jefe " + j.toUpperCase() : j);
+    if (d && !/^equipo$/i.test(d)) parts.push(d); if (c && c.toLowerCase() !== d.toLowerCase() && !/^equipo$/i.test(c)) parts.push(c);
+    const lic = cL >= 0 && !!String(r[cL] || "").trim();
+    out.push({ nombre: nom.txt, correo: mail, cargo: parts.join(" · "), warn: !nom.ok, lic, hoja, sel: !lic });
+  }
+  return out;
+}
+function parseImp() {
+  const sel = $$("[data-sh]").filter(c => c.checked).map(c => imp.wb.SheetNames[+c.dataset.sh]), vistos = new Set(); imp.rows = []; imp.dup = 0;
+  sel.forEach(n => parseHoja(imp.wb.Sheets[n], n).forEach(r => { if (vistos.has(r.correo)) { imp.dup++; return; } vistos.add(r.correo); r.id = imp.rows.length; imp.rows.push(r); }));
+  $("#impMsg").textContent = imp.rows.length ? `✔ ${imp.rows.length} funcionarios leídos${imp.dup ? " (" + imp.dup + " repetidos por correo se unieron)" : ""}. Revisa y quita los que no correspondan.` : "No encontré filas con correo en las hojas elegidas.";
+  $("#impBox").hidden = !imp.rows.length; $("#impRes").textContent = ""; renderImp();
+}
+function renderImp() {
+  const q = $("#impQ").value.trim().toLowerCase(), n = imp.rows.filter(r => r.sel).length;
+  $("#impCount").textContent = `${n} marcados de ${imp.rows.length}`; $("#impCreate").textContent = n ? `Crear ${n} invitaciones` : "Crear invitaciones"; $("#impCreate").disabled = !n;
+  $("#impList").innerHTML = imp.rows.filter(r => !q || (r.nombre + " " + r.correo + " " + r.cargo).toLowerCase().includes(q)).map(r => `
+    <div class="improw ${r.sel ? "" : "off"}" data-id="${r.id}">
+      <label class="chk" style="margin:0"><input type="checkbox" ${r.sel ? "checked" : ""}></label>
+      <div class="f"><input data-k="nombre" value="${esc(r.nombre)}" placeholder="Nombre"><input data-k="correo" value="${esc(r.correo)}" placeholder="Correo" autocapitalize="none"><input data-k="cargo" value="${esc(r.cargo)}" placeholder="Cargo (opcional)">
+        <div class="muted">${esc(r.hoja)}${r.lic ? ' · <b class="warn">con licencia</b>' : ""}${r.warn ? ' · <span class="warn">⚠ el correo no coincide con el nombre, revísalo</span>' : ""}</div></div>
+      <button class="danger sm" data-del title="Quitar de la lista">✕</button>
+    </div>`).join("") || `<p class="muted">Sin resultados.</p>`;
+}
+$("#impFile").onchange = async e => {
+  const f = e.target.files[0]; if (!f) return; $("#impMsg").textContent = "Leyendo…";
+  try {
+    if (!window.XLSX) throw new Error("No se pudo cargar el lector de Excel (¿sin internet?)");
+    imp.wb = XLSX.read(await f.arrayBuffer(), { type: "array" });
+    const box = $("#impSheets"); box.hidden = false;
+    box.innerHTML = `<label>Hojas a importar</label>` + imp.wb.SheetNames.map((n, i) => `<label style="display:flex;gap:8px;align-items:center;color:var(--ink);margin:4px 0"><input type="checkbox" data-sh="${i}" checked style="width:auto">${esc(n)}</label>`).join("");
+    $$("[data-sh]", box).forEach(c => c.onchange = parseImp); parseImp();
+  } catch (er) { $("#impMsg").textContent = "✖ " + er.message; }
+};
+$("#impQ").addEventListener("input", renderImp);
+$("#impAll").onclick = () => { imp.rows.forEach(r => r.sel = true); renderImp(); };
+$("#impNone").onclick = () => { imp.rows.forEach(r => r.sel = false); renderImp(); };
+$("#impDelUn").onclick = () => { const k = imp.rows.filter(r => !r.sel).length; if (k && confirm("¿Quitar de la lista a los " + k + " desmarcados?")) { imp.rows = imp.rows.filter(r => r.sel); renderImp(); } };
+$("#impList").addEventListener("input", e => { const row = e.target.closest(".improw"), r = imp.rows.find(x => x.id === +row?.dataset.id); if (!r) return; if (e.target.dataset.k) r[e.target.dataset.k] = e.target.value; });
+$("#impList").addEventListener("change", e => { if (e.target.type !== "checkbox") return; const r = imp.rows.find(x => x.id === +e.target.closest(".improw").dataset.id); if (r) { r.sel = e.target.checked; renderImp(); } });
+$("#impList").addEventListener("click", e => { const b = e.target.closest("[data-del]"); if (!b) return; const id = +b.closest(".improw").dataset.id; imp.rows = imp.rows.filter(x => x.id !== id); renderImp(); });
+$("#impCreate").onclick = async () => {
+  const sel = imp.rows.filter(r => r.sel && r.nombre.trim()), res = $("#impRes");
+  const mal = sel.filter(r => r.correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correoCompleto(r.correo)));
+  if (mal.length) { res.textContent = "✖ Corrige el correo de: " + mal.slice(0, 5).map(r => r.nombre).join(", ") + (mal.length > 5 ? "…" : ""); return; }
+  if (!confirm(`¿Crear ${sel.length} invitaciones especiales con estos datos?\n\nCada una tendrá su QR único y se agregará al listado y a la base de datos.`)) return;
+  const b = $("#impCreate"); b.disabled = true; let creadas = 0, omitidas = [];
+  try {
+    for (let i = 0; i < sel.length; i += 40) {
+      res.textContent = `Creando… ${Math.min(i + 40, sel.length)} de ${sel.length}`;
+      const r = await apiPost("inv_bulk", { items: sel.slice(i, i + 40).map(x => ({ nombre: x.nombre.trim(), cargo: x.cargo.trim(), correo: correoCompleto(x.correo) })) });
+      creadas += r.invitaciones.length; omitidas = omitidas.concat(r.omitidas || []);
+    }
+    res.innerHTML = `✔ <b>${creadas}</b> invitaciones creadas.` + (omitidas.length ? ` Omitidas (${omitidas.length}): ` + omitidas.slice(0, 6).map(o => esc(o.nombre) + " – " + esc(o.motivo)).join("; ") + (omitidas.length > 6 ? "…" : "") : "") + ` Búscalas en la pestaña «Invitaciones» para verlas, descargarlas o enviarlas por correo.`;
+    imp.rows = imp.rows.filter(r => !r.sel); renderImp(); refresh(true); loadCheck();
+  } catch (e) { if (!onAuthFail(e)) res.textContent = "✖ " + e.message + (creadas ? ` (ya se habían creado ${creadas}; revisa la pestaña Invitaciones antes de reintentar)` : ""); }
+  finally { b.disabled = false; renderImp(); }
+};
 
 /* ───────── Equipo (administrador) ───────── */
 async function loadFun() {
