@@ -111,6 +111,28 @@ nav button.active::before{content:"";position:absolute;top:0;width:34px;height:3
 .hero .nums .s{font-size:13px;opacity:.85}
 .hero .upd{position:absolute;top:10px;right:14px;font-size:11px;opacity:.7}
 .hero{position:relative}
+.hero .nums{flex:1;min-width:0}
+.hero .pct{order:2;font-size:44px;font-weight:800;letter-spacing:-1px;flex:none}
+.herobar{height:8px;background:rgba(255,255,255,.2);margin-top:10px}
+.herobar>i{background:linear-gradient(90deg,#f2cf79,#5fa0ff)!important}
+.sala svg{width:100%;height:auto;display:block}
+.seat{stroke-width:.6;transition:fill .5s,stroke .5s;cursor:pointer}
+.s0{fill:var(--line);stroke:none}
+.se{fill:rgba(224,178,76,.28);stroke:#e0b24c}
+.sE{fill:#e0b24c;stroke:#b8862a}
+.sa{fill:rgba(47,95,167,.22);stroke:var(--brand)}
+.sA{fill:var(--brand);stroke:#1d4a86}
+.seat.pop{transform-box:fill-box;transform-origin:center;animation:popseat 1s ease}
+@keyframes popseat{0%{transform:scale(2.6)}60%{transform:scale(.9)}100%{transform:scale(1)}}
+.rl{font-size:5.2px;fill:var(--muted);dominant-baseline:middle;font-family:Georgia,serif}
+.stage{fill:var(--ink);opacity:.85}
+.stt{font-size:6px;fill:#fff;letter-spacing:2px;font-weight:700}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);margin-top:10px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:-1px;border:1.5px solid transparent}
+.lg-E{background:#e0b24c;border-color:#b8862a}.lg-e{background:rgba(224,178,76,.28);border-color:#e0b24c}.lg-A{background:var(--brand);border-color:#1d4a86}.lg-a{background:rgba(47,95,167,.22);border-color:var(--brand)}
+#ov .vipbadge{display:inline-block;background:linear-gradient(180deg,#f2cf79,#d9a53a);color:#2a1d00;font-weight:800;letter-spacing:2px;padding:7px 18px;border-radius:99px;font-size:15px;margin:10px 0 6px;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+#ov .nm.big{font-size:clamp(28px,6vh,40px);line-height:1.15}
+#ov .cargo{background:rgba(255,255,255,.22);border:2px solid rgba(255,255,255,.55);border-radius:16px;padding:10px 18px;font-size:clamp(21px,4.6vh,30px);font-weight:700;margin-top:10px;line-height:1.2;overflow-wrap:anywhere}
 .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
 .kpi{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 10px;box-shadow:var(--shadow);text-align:center}
 .kpi .n{font-size:24px;font-weight:800;line-height:1.1}
@@ -262,10 +284,17 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
   <section id="s-panel">
     <div class="card hero">
       <span class="upd" id="updated"></span>
-      <div class="ring"><svg viewBox="0 0 120 120"><defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f2cf79"/><stop offset="1" stop-color="#5fa0ff"/></linearGradient></defs><circle class="tr" cx="60" cy="60" r="52" fill="none" stroke-width="11"/><circle class="pg" id="ringPg" cx="60" cy="60" r="52" fill="none" stroke-width="11" stroke-linecap="round" stroke-dasharray="0 327"/></svg><b id="ringTxt">0%</b></div>
-      <div class="nums"><div class="l">Asistentes ingresados</div><div class="v" id="pBig">–</div><div class="s" id="pTxt"></div></div>
+      <div class="pct" id="ringTxt">0%</div>
+      <div class="nums"><div class="l">Asistentes ingresados</div><div class="v" id="pBig">–</div><div class="s" id="pTxt"></div><div class="bar herobar"><i id="pBar" style="width:0"></i></div></div>
     </div>
-    <div class="kpis">
+    <div class="card sala">
+      <div class="mini"><h2 style="margin:0">Sala · ocupación en vivo</h2><span class="muted" id="salaTxt">Cargando…</span></div>
+      <div class="seg" style="margin:10px 0 8px"><button id="pisoP" class="on">Platea</button><button id="pisoS">Segundo piso</button></div>
+      <svg id="salaSvg" viewBox="-24 -30 424 190" role="img" aria-label="Mapa de la sala"></svg>
+      <div class="infobox" id="salaInfo">Toca un asiento para ver quién se sienta ahí.</div>
+      <div class="legend"><span><i class="lg-E"></i>Especial: ya está</span><span><i class="lg-e"></i>Especial: por llegar</span><span><i class="lg-A"></i>Alumno: ya está</span><span><i class="lg-a"></i>Alumno: por llegar</span></div>
+      <p class="muted" style="margin:8px 0 0;font-size:12px">Simulación: invitados especiales al frente y al final; los invitados de los alumnos desde la segunda fila, juntos por familia. Cada asiento se ilumina cuando la persona ingresa.</p>
+    </div>    <div class="kpis">
       <div class="kpi g"><div class="n" id="kIng">–</div><div class="t">En el teatro</div></div>
       <div class="kpi w"><div class="n" id="kFal">–</div><div class="t">Faltan</div></div>
       <div class="kpi b"><div class="n" id="kAl">–</div><div class="t">Alumnos completos</div></div>
@@ -616,6 +645,7 @@ function goTab(t) {
   $$("nav button").forEach(b => b.classList.toggle("active", b.dataset.tab === t));
   if (t !== "scan") stopCam();
   if (t === "panel" || t === "alum") refresh(true);
+  if (t === "panel") { buildSala(); updateSala(true); }
   if (t === "func") { loadInv(); }
   try { $("main").scrollTo(0, 0); } catch {}
 }
@@ -653,6 +683,7 @@ function renderMini() {
   let ing = 0; for (const r of state.inv.values()) if (r.used) ing++;
   const t = state.inv.size, p = pct(ing, t);
   $("#miniBig").textContent = t ? `${ing} / ${t}` : "–"; $("#miniTxt").textContent = t ? p + "%" : ""; $("#miniBar").style.width = p + "%";
+  updateSala();
 }
 function startSync() {
   state.invReady = false; loadCheck();
@@ -694,9 +725,9 @@ function pips(a) {
 }
 function quien(t, a) {   // bloque "de quién es la invitación"
   const especial = t.tipo === "ESPECIAL";
-  if (especial) return `<p class="lbl">INVITADO ESPECIAL</p><p class="nm">${esc(t.invitado || "Invitado sin nombre")}</p>${t.cargo ? `<p>${esc(t.cargo)}</p>` : ""}`;
+  if (especial) return `<span class="vipbadge">★ INVITADO ESPECIAL</span><p class="nm big">${esc(t.invitado || "Invitado sin nombre")}</p>${t.cargo ? `<div class="cargo">${esc(t.cargo)}</div>` : ""}`;
   let h = `<p class="lbl">INVITACIÓN DE</p><p class="nm">${esc(t.estudiante)}</p><p>${esc(t.curso)} · Invitación ${t.numero}${a?.total ? " de " + a.total : ""}</p>`;
-  if (t.invitado || t.cargo) h += `<div class="who">Invitado: <b>${esc(t.invitado || "—")}</b>${t.cargo ? " · " + esc(t.cargo) : ""}</div>`;
+  if (t.invitado || t.cargo) h += `<span class="vipbadge">INVITADO</span><p class="nm big" style="margin:2px 0">${esc(t.invitado || "—")}</p>${t.cargo ? `<div class="cargo">${esc(t.cargo)}</div>` : ""}`;
   return h;
 }
 function onAuthFail(e) { if (e.auth) { closeOv(); logout(); $("#loginMsg").style.color = ""; $("#loginMsg").textContent = "Tu sesión ya no es válida. Ingresa nuevamente."; return true; } return false; }
@@ -741,7 +772,8 @@ function showResult(r, id, extra = "") {
     };
     ov.appendChild(b);
   }
-  ovTimer = setTimeout(closeOv, cls === "ok" ? 2300 : 7000);
+  const conNombre = r.ticket && (r.ticket.tipo === "ESPECIAL" || r.ticket.invitado || r.ticket.cargo);   // especiales: más tiempo para leer nombre y cargo
+  ovTimer = setTimeout(closeOv, cls === "ok" ? (conNombre ? 8000 : 2300) : (conNombre ? 9000 : 7000));
   renderMini();
 }
 function closeOv() { clearTimeout(ovTimer); const o = $("#ov"); o.className = ""; state.shown = { id: 0, cls: "" }; try { speechSynthesis.cancel(); } catch {} }
@@ -870,7 +902,7 @@ function hace(f) {
 function render() {
   const s = state.stats; if (!s) return;
   const p = pct(s.ingresados, s.total), completos = s.alumnos.filter(a => a.ingresados === a.total && a.total > 0).length;
-  $("#pBig").textContent = `${s.ingresados} / ${s.total}`; $("#ringTxt").textContent = p + "%"; $("#ringPg").setAttribute("stroke-dasharray", `${(p * 3.267).toFixed(1)} 327`);
+  $("#pBig").textContent = `${s.ingresados} / ${s.total}`; $("#ringTxt").textContent = p + "%"; $("#pBar").style.width = p + "%";
   $("#pTxt").textContent = `${s.total - s.ingresados} invitaciones por ingresar`;
   $("#kIng").textContent = s.ingresados; $("#kFal").textContent = s.total - s.ingresados; $("#kAl").textContent = completos;
   $("#updated").textContent = "act. " + (s.actualizado || "").slice(11, 19);
@@ -909,6 +941,80 @@ $("#aList").addEventListener("click", async e => {
 });
 setInterval(() => { if (!document.hidden && state.user && $("#s-panel").classList.contains("active")) refresh(); }, 8000);
 
+/* ───────── Sala del teatro: ocupación simulada ───────── */
+const SALA = (() => {
+  const DX = 10, DY = 11.5, rows = [], seats = [];
+  const ev = (a, b) => { const r = []; for (let n = a; n >= b; n -= 2) r.push(n); return r; };   // pares, de mayor a menor
+  const od = (a, b) => { const r = []; for (let n = a; n <= b; n += 2) r.push(n); return r; };   // impares, de menor a mayor
+  // Platea (piso 1): bloque izquierdo 34→20, central 18…2 y 1…17, bloque derecho 19→33
+  const pl = [["J", ev(30, 20), 18, od(19, 29)], ["K", [], 18, []]];
+  ["L", "M", "N", "NN", "O", "P", "Q", "R", "S", "T", "U", "V"].forEach(f => pl.push([f, ev(34, 20), 18, od(19, 33)]));
+  pl.forEach(([f, L, c, R], i) => rows.push({ piso: 0, fila: f, y: i * DY, L, C: c ? ev(c, 2).concat(od(1, c - 1)) : [], R, wL: 8, xC: 98, xR: 296 }));
+  // Segundo piso: a la izquierda pares (máx→2) y a la derecha impares (1→máx)
+  Object.entries({ A: 32, B: 36, C: 34, D: 36, E: 34, F: 36, G: 34, H: 36, I: 34 }).forEach(([f, m], i) => rows.push({ piso: 1, fila: f, y: i * DY, L: ev(m, 2), C: [], R: od(1, m - 1), wL: 18, xC: 0, xR: 200 }));
+  rows.forEach(r => {
+    const row = [];
+    r.L.forEach((n, i) => row.push({ n, x: (r.wL - r.L.length + i) * DX }));
+    r.C.forEach((n, i) => row.push({ n, x: r.xC + i * DX }));
+    r.R.forEach((n, i) => row.push({ n, x: r.xR + i * DX }));
+    row.sort((a, b) => a.x - b.x).forEach((s, i) => seats.push({ piso: r.piso, fila: r.fila, n: s.n, x: s.x, y: r.y, first: i === 0 }));
+  });
+  return { rows, seats, DX, DY };
+})();
+const sala = { built: false, els: [], plan: null, piso: 0 };
+/** Reparto simulado: especiales al frente (fila 1…), alumnos desde la segunda fila (familias juntas) y el resto de especiales al final. */
+function planSala() {
+  const recs = [...state.inv.values()], esp = recs.filter(r => r.t === "ESPECIAL").sort((a, b) => a.c.localeCompare(b.c)), alu = recs.filter(r => r.t !== "ESPECIAL").sort((a, b) => a.ce.localeCompare(b.ce) || (a.n - b.n));
+  const sig = esp.map(r => r.c).join() + "|" + alu.length + "|" + (alu[0]?.c || "") + (alu[alu.length - 1]?.c || "");
+  if (sala.plan?.sig === sig) return sala.plan;
+  const S = SALA.seats, occ = new Array(S.length).fill(""), segunda = S.findIndex(s => s.fila === "K"); let i = 0, sin = 0;
+  const put = list => { for (const r of list) { if (i >= S.length) { sin++; continue; } occ[i++] = r.c.toUpperCase(); } };
+  const filaNueva = () => { while (i < S.length && i > 0 && !S[i].first) i++; };
+  const frente = Math.min(Math.ceil(esp.length / 2), S.findIndex(s => s.fila === "K"));   // al frente: solo la primera fila; los alumnos parten en la segunda
+  put(esp.slice(0, frente)); filaNueva(); i = Math.max(i, segunda);
+  put(alu); filaNueva();
+  put(esp.slice(frente));
+  return (sala.plan = { sig, occ, sin });
+}
+function buildSala() {
+  if (sala.built) return;
+  const g = [[], []], s = [[], []];
+  SALA.rows.forEach(r => g[r.piso].push(`<text class="rl" x="-9" y="${r.y}" text-anchor="end">${r.fila}</text><text class="rl" x="381" y="${r.y}">${r.fila}</text>`));
+  SALA.seats.forEach((st, i) => s[st.piso].push(`<circle class="seat s0" data-i="${i}" cx="${st.x}" cy="${st.y}" r="4.3"></circle>`));
+  $("#salaSvg").innerHTML = `<g id="gP0"><rect x="60" y="-26" width="246" height="10" rx="3" class="stage"/><text x="183" y="-20.5" class="stt" text-anchor="middle" dominant-baseline="middle">ESCENARIO</text>${g[0].join("")}${s[0].join("")}</g><g id="gP1" style="display:none">${g[1].join("")}${s[1].join("")}</g>`;
+  sala.els = $$("#salaSvg .seat"); sala.built = true; setPiso(0);
+}
+function setPiso(p) {
+  sala.piso = p; $("#gP0").style.display = p ? "none" : ""; $("#gP1").style.display = p ? "" : "none";
+  $("#salaSvg").setAttribute("viewBox", p ? `-24 -10 424 ${SALA.DY * 9 + 6}` : `-24 -32 424 ${SALA.DY * 14 + 36}`);
+  $("#pisoP").classList.toggle("on", !p); $("#pisoS").classList.toggle("on", !!p);
+}
+function updateSala(force) {
+  if (!sala.built) return;
+  if (!state.inv.size) { $("#salaTxt").textContent = "Cargando…"; return; }
+  const pl = planSala(); sala.plan = pl; let eI = 0, eT = 0, aI = 0, aT = 0;
+  pl.occ.forEach((code, i) => {
+    const r = code ? state.inv.get(code) : null, el = sala.els[i]; let cls = "s0";
+    if (r) { const esp = r.t === "ESPECIAL"; cls = esp ? (r.used ? "sE" : "se") : (r.used ? "sA" : "sa"); if (esp) { eT++; if (r.used) eI++; } else { aT++; if (r.used) aI++; } }
+    if (el.dataset.c !== cls) {
+      const antes = el.dataset.c; el.setAttribute("class", "seat " + cls); el.dataset.c = cls;
+      if (!force && antes && (cls === "sE" || cls === "sA")) el.classList.add("pop");
+    }
+  });
+  $("#salaTxt").textContent = `${eI + aI} en sala · especiales ${eI}/${eT} · alumnos ${aI}/${aT}` + (pl.sin ? ` · ${pl.sin} sin asiento simulado` : "");
+}
+$("#pisoP").onclick = () => setPiso(0); $("#pisoS").onclick = () => setPiso(1);
+$("#salaSvg").addEventListener("click", e => {
+  const c = e.target.closest(".seat"); if (!c) return;
+  const i = +c.dataset.i, s = SALA.seats[i], code = sala.plan?.occ[i], r = code ? state.inv.get(code) : null;
+  let h = `<b>${s.piso ? "Segundo piso" : "Platea"} · Fila ${s.fila} · Asiento ${s.n}</b><br>`;
+  if (!r) h += "Libre (sin invitación asignada)";
+  else {
+    h += r.t === "ESPECIAL" ? `★ Invitado especial · <b>${esc(r.i || "Invitado sin nombre")}</b>${r.k ? " · " + esc(r.k) : ""}` : `${esc(r.s)} · ${esc(r.cu)} · Invitación ${r.n}${r.i ? " · invitado: " + esc(r.i) : ""}`;
+    h += r.used ? `<br><span style="color:var(--ok)">✔ Ya ingresó ${esc((r.used.h || "").slice(11, 16))}</span>` : "<br>Aún no ingresa";
+  }
+  $("#salaInfo").innerHTML = h;
+});
 /* ───────── Exportar listado a PDF ───────── */
 function logoDataUrl() {
   return new Promise(res => {

@@ -65,6 +65,9 @@ Pestaña **Admin → Invitaciones**: crea un *invitado especial* (código V00001
 
 Al crear una adicional, la página muestra antes cuántas invitaciones ya tiene el alumno y qué códigos se generarán. Cada invitación creada se puede enviar **por correo** (con el nombre del invitado en el saludo y un mensaje opcional) o **eliminar** (solo si aún no ingresó).
 
+## Mapa de la sala (Panel)
+Simula la ocupación del Teatro Bío Bío (platea y segundo piso): invitados especiales en la primera fila y al final, y los invitados de los alumnos desde la segunda fila, agrupados por familia. Cada asiento se ilumina al ingresar la persona; al tocar un asiento se ve quién es.
+
 ## Importar listado de funcionarios
 Admin → **Importar**: sube el Excel/CSV (reconoce hojas con columnas Docente/Funcionario, Apellido, Correo, Jefatura, Dept., Ciclo, Licencia), revisa y edita la lista, quita a quienes no correspondan y al aceptar crea un invitado especial por persona (con su correo guardado). El correo de cada invitado especial puede ser @andaliensur.cl u otro dominio (lista de dominios comunes en Chile o libre).
 
