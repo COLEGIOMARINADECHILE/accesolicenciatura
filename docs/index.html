@@ -222,6 +222,15 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
 .improw .f input{padding:8px 10px;font-size:14px}
 .improw .chk{padding-top:6px}.improw .chk input{width:22px;height:22px;padding:0}
 .warn{color:var(--warn)}
+.sf{fill:rgba(139,92,246,.2);stroke:#8b5cf6;stroke-dasharray:2 1.2}
+.seat.mk{stroke:#8b5cf6;stroke-width:1.6;stroke-dasharray:2 1.2}
+.seat.sel{fill:#16a34a;stroke:#fff;stroke-width:1.6}
+.legend .lg-m{background:rgba(139,92,246,.2);border:2px dashed #8b5cf6}
+#pickmap{position:fixed;inset:0;z-index:50;background:rgba(8,17,31,.65);display:flex;align-items:flex-end;justify-content:center}
+#pickmap .pm{background:var(--card);width:100%;max-width:640px;max-height:94%;overflow:auto;border-radius:20px 20px 0 0;padding:16px calc(16px + env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom))}
+#pickmap svg{width:100%;height:auto;display:block}
+.wave{fill:none;stroke:var(--ink);stroke-width:1.6;opacity:.85;stroke-linecap:round}
+.stl{font-size:6.5px;letter-spacing:3px;font-weight:700;fill:var(--ink)}
 .sg{fill:rgba(107,122,144,.55);stroke:#6b7a90}
 .seat.rsv{stroke:#d9a53a;stroke-width:1.8}
 .legend .lg-g{background:rgba(107,122,144,.55);border-color:#6b7a90}.legend .lg-r{background:transparent;border:2px solid #d9a53a}
@@ -300,10 +309,14 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
       <div class="muted" id="salaAforo" style="font-size:12.5px"></div>
       <div class="seg" id="pisos" style="margin:12px 0 6px"></div>
       <div class="muted" id="pisoInfo" style="margin:0 2px 6px;font-size:12.5px"></div>
+      <div class="row" data-admin style="margin:0 0 8px"><button class="sec sm" id="btnMarcar">Marcar butacas para funcionarios</button></div>
+      <div class="infobox" id="marcarBar" hidden><b>Modo marcar:</b> toca los asientos que se reservarán para funcionarios sin número específico (lila). Las butacas con nombre y la zona de alumnos no se pueden marcar.
+        <label style="display:flex;gap:8px;align-items:center;color:var(--ink);margin:8px 0"><input type="checkbox" id="mkFila" style="width:auto"> Marcar la fila completa al tocar</label>
+        <div class="row"><button class="sm" id="mkGuardar">Guardar marcas</button><button class="sm sec" id="mkCancel">Cancelar</button></div><span class="muted" id="mkMsg"></span></div>
       <svg id="salaSvg" viewBox="-24 -30 424 190" role="img" aria-label="Mapa de la sala"></svg>
       <div class="infobox" id="salaInfo">Toca un asiento para ver quién se sienta ahí.</div>
-      <div class="legend"><span><i class="lg-E"></i>Especial: ya está</span><span><i class="lg-e"></i>Especial: por llegar</span><span><i class="lg-A"></i>Alumno: ya está</span><span><i class="lg-a"></i>Alumno: por llegar</span><span><i class="lg-g"></i>Alumnos (graduandos)</span><span><i class="lg-r"></i>Butaca reservada</span></div>
-      <p class="muted" style="margin:8px 0 0;font-size:12px">Simulación referencial: nadie tiene un asiento asignado, salvo quienes tengan una butaca reservada (borde dorado). Los alumnos ocupan A32…A2 en la primera fila; los invitados especiales van en los demás puestos de esa fila y siguientes; después, las invitaciones de los alumnos (familias juntas) en cualquier lugar. Orden de pisos: 2 → 3 → palcos 4, 5 y 6.</p>
+      <div class="legend"><span><i class="lg-E"></i>Especial: ya está</span><span><i class="lg-e"></i>Especial: por llegar</span><span><i class="lg-A"></i>Alumno: ya está</span><span><i class="lg-a"></i>Alumno: por llegar</span><span><i class="lg-g"></i>Alumnos (graduandos)</span><span><i class="lg-r"></i>Butaca reservada</span><span><i class="lg-m"></i>Para funcionarios (sin número)</span></div>
+      <p class="muted" style="margin:8px 0 0;font-size:12px">Simulación referencial: nadie tiene un asiento asignado, salvo quienes tengan una butaca reservada (borde dorado). Las butacas lilas están marcadas para funcionarios sin número específico: los funcionarios del colegio (@andaliensur.cl) se ubican ahí primero. Los alumnos van en las butacas 26, 28, 30 y 32 del piso 2 (de la fila A hacia atrás, en gris); los invitados especiales, en los demás puestos de la primera fila y siguientes; después, las invitaciones de los alumnos (familias juntas) en cualquier lugar. Orden de pisos: 2 → 3 → palcos 4, 5 y 6.</p>
     </div>
     <div class="kpis">
       <div class="kpi g"><div class="n" id="kIng">–</div><div class="t">En el teatro</div></div>
@@ -370,6 +383,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
         <div id="boxRsv" style="margin-top:12px">
           <label style="display:flex;gap:8px;align-items:center;color:var(--ink);margin:0"><input type="checkbox" id="iRsv" style="width:auto"> Reservar una butaca para este invitado <span class="muted">(se le indicará al recibirlo)</span></label>
           <div class="pk" id="iRsvBox" hidden style="margin-top:8px"></div>
+          <button type="button" class="sm sec" id="iRsvMapa" hidden style="margin-top:6px">Elegir en el mapa</button>
         </div>
         <button id="btnIAdd" style="width:100%;margin-top:14px">Crear invitación con QR</button>
         <p class="muted" id="iMsg" style="margin:8px 0 0">El nombre y el cargo aparecerán en la pantalla del funcionario al escanear. Se agrega al listado y a la base de datos.</p>
@@ -466,7 +480,7 @@ const state = {
   url: store.get("url", "") || CFG.APPS_SCRIPT_URL || "", pin: store.get("pin"), user: null,
   sound: store.get("sound", "1") === "1", voice: store.get("voice", "0") === "1", vol: parseFloat(store.get("vol", "0.9")) || 0.9,
   demo: store.get("demo") === "1" || new URLSearchParams(location.search).has("demo"),
-  stats: null, filtro: "todos", last: { code: "", t: 0 }, inv: new Map(), invReady: false, queue: [], scanSeq: 0, shown: { id: 0, cls: "" }, t1: 0, t2: 0
+  stats: null, filtro: "todos", last: { code: "", t: 0 }, inv: new Map(), invReady: false, marks: new Set(), marksV: 0, queue: [], scanSeq: 0, shown: { id: 0, cls: "" }, t1: 0, t2: 0
 };
 const isAdmin = () => state.user?.rol === "admin";
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -517,6 +531,7 @@ function demoApi(action, p) {
     }
   }
   if (action === "inv_del") { const i = demoDB.inv.findIndex(x => x.codigo === norm(p.code)); if (i < 0) return { ok: false, error: "La invitación no existe" }; const x = demoDB.inv[i]; if (!x.tipo) return { ok: false, error: "Solo se pueden eliminar invitaciones adicionales o especiales." }; if (x.entro) return { ok: false, error: "Esa invitación ya ingresó. Anula primero el ingreso." }; demoDB.inv.splice(i, 1); return { ok: true }; }
+  if (action === "sala_marcar") { if (user.rol !== "admin") return { ok: false, error: "Solo el administrador puede hacer esto" }; demoDB.marks = String(p.keys || "").split(",").map(k => k.trim().toUpperCase()).filter(Boolean); demoDB.mv = (demoDB.mv || 0) + 1; return { ok: true, n: demoDB.marks.length }; }
   if (action === "inv_seat") { const x = demoDB.inv.find(z => z.codigo === norm(p.code)); if (!x) return { ok: false, error: "La invitación no existe" }; const b = String(p.butaca || "").toUpperCase(); const o = b && demoDB.inv.find(z => z !== x && (z.butaca || "").toUpperCase() === b); if (o) return { ok: false, error: "Esa butaca ya está reservada para " + o.codigo }; x.butaca = b; return { ok: true, butaca: b }; }
   if (action === "inv_bulk") {
     const out = [], om = []; let m = Math.max(0, ...demoDB.inv.filter(x => /^V\d+$/.test(x.codigo)).map(x => +x.codigo.slice(1)));
@@ -557,8 +572,8 @@ function demoApi(action, p) {
 /* ───────── API ───────── */
 async function api(action, params = {}) {
   if (state.demo) {
-    if (action === "checklist") return { ok: true, l: await Promise.all(demoDB.inv.map(async x => ({ c: x.codigo, h: await sha16(x.codigo + "|" + x.token), s: x.estudiante, u: x.curso, e: x.codEst, n: x.numero, i: x.invitado, k: x.cargo, t: x.tipo, b: x.butaca || "" }))) };
-    if (action === "used") return { ok: true, n: demoDB.inv.length, u: demoDB.inv.filter(x => x.entro).map(x => ({ c: x.codigo, h: x.hora, o: x.oper })) };
+    if (action === "checklist") return { ok: true, l: await Promise.all(demoDB.inv.map(async x => ({ c: x.codigo, h: await sha16(x.codigo + "|" + x.token), s: x.estudiante, u: x.curso, e: x.codEst, n: x.numero, i: x.invitado, k: x.cargo, t: x.tipo, b: x.butaca || "", f: /@andaliensur\.cl$/i.test(x.correo || "") ? 1 : 0 }))), m: demoDB.marks || [], mv: demoDB.mv || 0 };
+    if (action === "used") return { ok: true, n: demoDB.inv.length, u: demoDB.inv.filter(x => x.entro).map(x => ({ c: x.codigo, h: x.hora, o: x.oper })), mv: demoDB.mv || 0 };
     return unwrap(demoApi(action, { pin: state.pin, ...params }));
   }
   if (!state.url) throw new Error("Falta la URL del Apps Script (Yo → Avanzado).");
@@ -680,8 +695,8 @@ async function sha16(s) {
 async function loadCheck() {
   try {
     const r = await api("checklist"), m = new Map(), old = state.inv;
-    r.l.forEach(x => m.set(String(x.c).toUpperCase(), { c: x.c, h: x.h, s: x.s, cu: x.u, ce: String(x.e), n: x.n, i: x.i || "", k: x.k || "", t: x.t || "", b: x.b || "", used: old.get(String(x.c).toUpperCase())?.used || null }));
-    state.inv = m; state.invReady = true; await syncUsed(true);
+    r.l.forEach(x => m.set(String(x.c).toUpperCase(), { c: x.c, h: x.h, s: x.s, cu: x.u, ce: String(x.e), n: x.n, i: x.i || "", k: x.k || "", t: x.t || "", b: x.b || "", f: x.f || 0, used: old.get(String(x.c).toUpperCase())?.used || null }));
+    state.inv = m; state.invReady = true; state.marks = new Set(r.m || []); state.marksV = r.mv; sala.plan = null; await syncUsed(true);
   } catch (e) { if (!onAuthFail(e)) setConn("err"); }
 }
 let syncing = false;
@@ -691,7 +706,7 @@ async function syncUsed(force) {
     const r = await api("used"), srv = new Map(r.u.map(x => [String(x.c).toUpperCase(), x])), pend = new Set(state.queue.map(q => q.cod));
     for (const [c, rec] of state.inv) { const s = srv.get(c); if (s) rec.used = { h: s.h, o: s.o }; else if (rec.used && !pend.has(c)) rec.used = null; }
     setConn("on"); renderMini();
-    if (r.n !== state.inv.size) loadCheck();        // se agregaron invitaciones nuevas
+    if (r.n !== state.inv.size || (r.mv !== undefined && r.mv !== state.marksV)) loadCheck();        // se agregaron invitaciones nuevas
   } catch (e) { if (!onAuthFail(e)) setConn("err"); }
   finally { syncing = false; }
 }
@@ -962,17 +977,17 @@ setInterval(() => { if (!document.hidden && state.user && $("#s-panel").classLis
 
 /* ───────── Sala del teatro: ocupación simulada (plano real) ───────── */
 const AFORO_REF = 1200;   // capacidad total de referencia del recinto (piso 2: 312 + piso 3: 456 + palcos 4, 5 y 6: 144 c/u)
-const ZONA_ALUMNOS = s => s.piso === 0 && s.fila === "A" && s.n % 2 === 0 && s.n <= 32;   // alumnos (graduandos): A32 … A2, lado par de la primera fila
+const ZONA_ALUMNOS = s => s.piso === 0 && [26, 28, 30, 32].includes(s.n);   // alumnos (graduandos): butacas 26, 28, 30 y 32 de cada fila del piso 2, de la A hacia atrás
 const SALA = (() => {
   const DX = 10, DY = 11.5, seats = [], pisos = [];
   const ev = (a, b) => { const r = []; for (let n = a; n >= b; n -= 2) r.push(n); return r; };   // pares, de mayor a menor
   const od = (a, b) => { const r = []; for (let n = a; n <= b; n += 2) r.push(n); return r; };   // impares, de menor a mayor
   const piso = (nombre, stage, num) => { const p = { nombre, stage, num, rows: [], n: 0 }; pisos.push(p); return p; };
   const fila = (p, f, secs) => { p.rows.push({ fila: f, y: p.rows.length * DY, secs }); };
-  // Piso 2 · Platea: izquierda pares (máx→2) y derecha impares (1→máx)
-  const p2 = piso("Platea · piso 2", false, 2);
+  // Piso 2 · Platea (escenario arriba, fila A arriba): a la izquierda los impares (pared→1) y a la derecha los pares (2→pared)
+  const p2 = piso("Platea · piso 2", true, 2);
   Object.entries({ A: 32, B: 36, C: 34, D: 36, E: 34, F: 36, G: 34, H: 36, I: 34 }).forEach(([f, m]) => {
-    const L = ev(m, 2), R = od(1, m - 1); fila(p2, f, [{ ns: L, x0: (18 - L.length) * DX }, { ns: R, x0: 200 }]);
+    const L = od(1, m - 1).reverse(), R = ev(m, 2).reverse(); fila(p2, f, [{ ns: L, x0: (18 - L.length) * DX }, { ns: R, x0: 200 }]);
   });
   // Piso 3 · Platea: bloque izquierdo 34→20, central 18…2 y 1…17, bloque derecho 19→33 (la fila Ñ se escribe NN en los mapas)
   const p3 = piso("Platea · piso 3", true, 3);
@@ -992,58 +1007,83 @@ const SALA = (() => {
       row.sort((a, b) => a.x - b.x).forEach((s, i) => { seats.push({ piso: pi, fila: r.fila, n: s.n, x: s.x, y: r.y, first: i === 0, key: `${p.num}:${r.fila}:${s.n}` }); xmax = Math.max(xmax, s.x); });
     });
     p.xmax = xmax; p.n = seats.filter(s => s.piso === pi).length;
-    p.vb = `-24 ${p.stage ? -32 : -10} ${xmax + 52} ${p.rows.length * DY + (p.stage ? 36 : 10)}`;
+    p.vb = `-24 ${p.stage ? -38 : -10} ${xmax + 52} ${p.rows.length * DY + (p.stage ? 42 : 10)}`;
   });
   return { pisos, seats, DX, DY, byKey: new Map(seats.map((s, i) => [s.key, i])) };
 })();
 const butacaTxt = b => { const i = SALA.byKey.get(String(b || "").toUpperCase()); if (i == null) return String(b || ""); const s = SALA.seats[i]; return `${SALA.pisos[s.piso].nombre} · Fila ${s.fila} · Asiento ${s.n}`; };
-const sala = { built: false, els: [], plan: null, piso: 0 };
+const sala = { built: false, els: [], plan: null, piso: 0, edit: false, tmp: null };
 /** Reparto simulado. Alumnos en A32…A2; invitados especiales en los demás puestos de la primera fila y siguientes;
  *  luego las invitaciones de los alumnos (familias juntas). Quien tiene butaca reservada va en ella. Orden de pisos: 2 → 3 → 4 → 5 → 6. */
 function planSala() {
   const recs = [...state.inv.values()], S = SALA.seats, conB = r => r.b && SALA.byKey.has(String(r.b).toUpperCase());
+  const marks = [...state.marks].filter(k => SALA.byKey.has(k)).map(k => SALA.byKey.get(k)).sort((a, b) => a - b);
   const rsv = recs.filter(conB), libres = recs.filter(r => !conB(r));
-  const esp = libres.filter(r => r.t === "ESPECIAL").sort((a, b) => a.c.localeCompare(b.c)), alu = libres.filter(r => r.t !== "ESPECIAL").sort((a, b) => a.ce.localeCompare(b.ce) || (a.n - b.n));
-  const sig = esp.map(r => r.c).join() + "|" + alu.length + "|" + (alu[0]?.c || "") + (alu[alu.length - 1]?.c || "") + "|" + rsv.map(r => r.c + r.b).join();
+  const espAll = libres.filter(r => r.t === "ESPECIAL").sort((a, b) => a.c.localeCompare(b.c)), func = espAll.filter(r => r.f), esp = espAll.filter(r => !r.f);
+  const alu = libres.filter(r => r.t !== "ESPECIAL").sort((a, b) => a.ce.localeCompare(b.ce) || (a.n - b.n));
+  const sig = espAll.map(r => r.c + r.f).join() + "|" + alu.length + "|" + (alu[0]?.c || "") + (alu[alu.length - 1]?.c || "") + "|" + rsv.map(r => r.c + r.b).join() + "|" + marks.join(",");
   if (sala.plan?.sig === sig) return sala.plan;
   const occ = new Array(S.length).fill("");
   S.forEach((s, i) => { if (ZONA_ALUMNOS(s)) occ[i] = "#ALU"; });
   rsv.forEach(r => { const i = SALA.byKey.get(String(r.b).toUpperCase()); if (!occ[i]) occ[i] = r.c.toUpperCase(); });
-  const pool = []; occ.forEach((c, i) => { if (!c) pool.push(i); });
+  marks.forEach(i => { if (!occ[i]) occ[i] = "#FUN"; });                         // butacas marcadas para funcionarios sin número específico
+  let f = 0; marks.forEach(i => { if (occ[i] === "#FUN" && f < func.length) occ[i] = func[f++].c.toUpperCase(); });
+  const resto = func.slice(f), pool = []; occ.forEach((c, i) => { if (!c) pool.push(i); });
   let p = 0, sin = 0; const rowOf = i => S[i].piso + S[i].fila;
   const put = list => { for (const r of list) { if (p >= pool.length) { sin++; continue; } occ[pool[p++]] = r.c.toUpperCase(); } };
-  put(esp);
+  put(esp.concat(resto).sort((a, b) => a.c.localeCompare(b.c)));
   if (p > 0) { const fila = rowOf(pool[p - 1]); while (p < pool.length && rowOf(pool[p]) === fila) p++; }   // las invitaciones de alumnos parten en una fila nueva
   put(alu);
   return (sala.plan = { sig, occ, sin });
+}/** Escenario: la línea ondulada del plano, arriba, con su rotulo. */
+function escenarioSvg(w) {
+  let d = ""; for (let x = -6; x <= w + 6; x += 2) d += (d ? "L" : "M") + x + "," + (-14 + 2.6 * Math.sin(x / 5)).toFixed(2);
+  return `<path class="wave" d="${d}"/><text x="${w / 2}" y="-24" class="stl" text-anchor="middle">ESCENARIO</text>`;
 }
-function buildSala() {
-  if (sala.built) return;
+/** Marcado SVG de los pisos (sirve al mapa del panel y al selector de butacas). */
+function svgSalaMarkup() {
   const g = SALA.pisos.map(() => []);
   SALA.pisos.forEach((p, pi) => p.rows.forEach(r => g[pi].push(`<text class="rl" x="-9" y="${r.y}" text-anchor="end">${r.fila}</text><text class="rl" x="${p.xmax + 11}" y="${r.y}">${r.fila}</text>`)));
   SALA.seats.forEach((st, i) => g[st.piso].push(`<circle class="seat s0" data-i="${i}" cx="${st.x}" cy="${st.y}" r="4.3"></circle>`));
-  $("#salaSvg").innerHTML = SALA.pisos.map((p, pi) => `<g id="gP${pi}" style="display:none">${p.stage ? `<rect x="${(p.xmax - 246) / 2}" y="-26" width="246" height="10" rx="3" class="stage"/><text x="${p.xmax / 2}" y="-20.5" class="stt" text-anchor="middle" dominant-baseline="middle">ESCENARIO</text>` : ""}${g[pi].join("")}</g>`).join("");
+  return SALA.pisos.map((p, pi) => `<g class="gp" data-p="${pi}" style="display:none">${p.stage ? escenarioSvg(p.xmax) : ""}${g[pi].join("")}</g>`).join("");
+}
+function buildSala() {
+  if (sala.built) return;
+  $("#salaSvg").innerHTML = svgSalaMarkup();
   $("#pisos").innerHTML = SALA.pisos.map((p, pi) => `<button data-p="${pi}">Piso ${p.num}</button>`).join("");
   $$("#pisos button").forEach(b => b.onclick = () => setPiso(+b.dataset.p));
   sala.els = $$("#salaSvg .seat"); sala.built = true; setPiso(0);
 }
 function setPiso(p) {
-  sala.piso = p; SALA.pisos.forEach((_, i) => { $("#gP" + i).style.display = i === p ? "" : "none"; });
+  sala.piso = p; $$("#salaSvg .gp").forEach(g => { g.style.display = +g.dataset.p === p ? "" : "none"; });
   $("#salaSvg").setAttribute("viewBox", SALA.pisos[p].vb); $$("#pisos button").forEach(b => b.classList.toggle("on", +b.dataset.p === p)); pisoInfo();
 }
 function pisoInfo() {
   const p = SALA.pisos[sala.piso]; if (!p) return; let ocu = 0;
-  if (sala.plan) sala.plan.occ.forEach((code, i) => { if (SALA.seats[i].piso === sala.piso && code && code !== "#ALU" && state.inv.get(code)?.used) ocu++; });
-  $("#pisoInfo").textContent = `${p.nombre} · ${p.n} asientos · ${ocu} ocupados (${pct(ocu, p.n)}%)`;
+  if (sala.plan) sala.plan.occ.forEach((code, i) => { if (SALA.seats[i].piso === sala.piso && code && code[0] !== "#" && state.inv.get(code)?.used) ocu++; });
+  const mk = [...state.marks].filter(k => SALA.byKey.has(k) && SALA.seats[SALA.byKey.get(k)].piso === sala.piso).length;
+  $("#pisoInfo").textContent = `${p.nombre} · ${p.n} asientos · ${ocu} ocupados (${pct(ocu, p.n)}%)` + (mk ? ` · ${mk} marcados para funcionarios` : "");
+}
+/** Butacas con nombre (reservadas a una persona): clave → invitación */
+function reservasPersonas() { const m = new Map(); state.inv.forEach(r => { if (r.b) m.set(String(r.b).toUpperCase(), r); }); return m; }
+function pintarEdicion() {   // modo "marcar butacas para funcionarios"
+  const res = reservasPersonas();
+  sala.els.forEach((el, i) => {
+    const s = SALA.seats[i]; let cls = "s0";
+    if (ZONA_ALUMNOS(s)) cls = "sg"; else if (res.has(s.key)) cls = "se rsv"; else if (sala.tmp.has(s.key)) cls = "sf";
+    el.setAttribute("class", "seat " + cls); el.dataset.c = "";
+  });
+  $("#mkMsg").textContent = `${sala.tmp.size} butacas marcadas`;
 }
 function updateSala(force) {
   if (!sala.built) return;
+  if (sala.edit) { pintarEdicion(); return; }
   if (!state.inv.size) { $("#salaTxt").textContent = "Cargando…"; return; }
   const pl = planSala(); sala.plan = pl; let eI = 0, eT = 0, aI = 0, aT = 0;
   pl.occ.forEach((code, i) => {
-    const r = code && code !== "#ALU" ? state.inv.get(code) : null, el = sala.els[i]; let cls = code === "#ALU" ? "sg" : "s0";
+    const r = code && code[0] !== "#" ? state.inv.get(code) : null, el = sala.els[i], S = SALA.seats[i]; let cls = code === "#ALU" ? "sg" : code === "#FUN" ? "sf" : "s0";
     if (r) { const esp = r.t === "ESPECIAL"; cls = esp ? (r.used ? "sE" : "se") : (r.used ? "sA" : "sa"); if (esp) { eT++; if (r.used) eI++; } else { aT++; if (r.used) aI++; } }
-    const key = cls + (r?.b ? " rsv" : "");
+    const key = cls + (r?.b ? " rsv" : "") + (state.marks.has(S.key) && cls !== "sf" ? " mk" : "");
     if (el.dataset.c !== key) {
       const antes = el.dataset.c || ""; el.setAttribute("class", "seat " + key); el.dataset.c = key;
       if (!force && antes && /^s[EA]/.test(key) && !/^s[EA]/.test(antes)) el.classList.add("pop");
@@ -1055,19 +1095,63 @@ function updateSala(force) {
   pisoInfo();
 }
 $("#salaSvg").addEventListener("click", e => {
-  const c = e.target.closest(".seat"); if (!c) return;
-  const i = +c.dataset.i, s = SALA.seats[i], code = sala.plan?.occ[i], r = code && code !== "#ALU" ? state.inv.get(code) : null;
+  const c = e.target.closest(".seat"); if (!c) return; const i = +c.dataset.i, s = SALA.seats[i];
+  if (sala.edit) {      // marcar / desmarcar para funcionarios sin número específico
+    const res = reservasPersonas(), libre = x => !ZONA_ALUMNOS(x) && !res.has(x.key);
+    if (!libre(s)) return;
+    const activar = !sala.tmp.has(s.key), objetivo = $("#mkFila").checked ? SALA.seats.filter(x => x.piso === s.piso && x.fila === s.fila && libre(x)) : [s];
+    objetivo.forEach(x => activar ? sala.tmp.add(x.key) : sala.tmp.delete(x.key)); pintarEdicion(); return;
+  }
+  const code = sala.plan?.occ[i], r = code && code[0] !== "#" ? state.inv.get(code) : null;
   let h = `<b>${SALA.pisos[s.piso].nombre} · Fila ${s.fila} · Asiento ${s.n}</b><br>`;
   if (code === "#ALU") h += "Zona reservada para los alumnos (graduandos)";
+  else if (code === "#FUN") h += "Marcada para funcionarios del colegio (sin número específico), aún sin asignar";
   else if (!r) h += "Libre (sin invitación asignada)";
   else {
     h += r.t === "ESPECIAL" ? `★ Invitado especial · <b>${esc(r.i || "Invitado sin nombre")}</b>${r.k ? " · " + esc(r.k) : ""}` : `${esc(r.s)} · ${esc(r.cu)} · Invitación ${r.n}${r.i ? " · invitado: " + esc(r.i) : ""}`;
-    if (r.b) h += "<br>🪑 Butaca reservada para esta persona";
+    if (r.b) h += "<br>🪑 Butaca reservada para esta persona"; else if (state.marks.has(s.key)) h += "<br>Ubicada en la zona marcada para funcionarios";
     h += r.used ? `<br><span style="color:var(--ok)">✔ Ya ingresó ${esc((r.used.h || "").slice(11, 16))}</span>` : "<br>Aún no ingresa";
   }
   $("#salaInfo").innerHTML = h;
 });
+$("#btnMarcar").onclick = () => { if (!isAdmin()) return; sala.edit = true; sala.tmp = new Set(state.marks); $("#marcarBar").hidden = false; $("#btnMarcar").hidden = true; pintarEdicion(); };
+$("#mkCancel").onclick = () => { sala.edit = false; $("#marcarBar").hidden = true; $("#btnMarcar").hidden = false; updateSala(true); };
+$("#mkGuardar").onclick = async () => {
+  const b = $("#mkGuardar"); b.disabled = true; $("#mkMsg").textContent = "Guardando…";
+  try { await api("sala_marcar", { keys: [...sala.tmp].join(",") }); state.marks = new Set(sala.tmp); sala.plan = null; sala.edit = false; $("#marcarBar").hidden = true; $("#btnMarcar").hidden = false; updateSala(true); loadCheck(); }
+  catch (e) { if (!onAuthFail(e)) $("#mkMsg").textContent = "✖ " + e.message; } finally { b.disabled = false; }
+};
 
+/** Selector de butaca en el mapa: muestra qué está reservado para todos (nombres, funcionarios, alumnos) y permite elegir una libre. */
+function mapaButaca(actual, onPick, propio) {
+  const res = reservasPersonas(); let sel = actual && SALA.byKey.has(String(actual).toUpperCase()) ? String(actual).toUpperCase() : "", piso = sel ? SALA.seats[SALA.byKey.get(sel)].piso : 0;
+  const m = document.createElement("div"); m.id = "pickmap";
+  m.innerHTML = `<div class="pm"><div class="mini"><b>Elegir butaca en el mapa</b><button class="sm sec" data-x>Cerrar</button></div><div class="seg" style="margin:10px 0 6px"></div><svg></svg>
+    <div class="infobox pmi">Toca un asiento libre para elegirlo. Dorado con borde: reservado a una persona · lila: para funcionarios · gris: alumnos.</div>
+    <div class="legend"><span><i class="lg-E"></i>Reservada a una persona</span><span><i class="lg-m"></i>Para funcionarios</span><span><i class="lg-g"></i>Alumnos</span></div>
+    <button class="pmok" style="width:100%;margin-top:10px" disabled>Usar esta butaca</button></div>`;
+  document.body.appendChild(m);
+  const svg = m.querySelector("svg"), seg = m.querySelector(".seg"), info = m.querySelector(".pmi"), ok = m.querySelector(".pmok");
+  svg.innerHTML = svgSalaMarkup(); const els = [...svg.querySelectorAll(".seat")];
+  seg.innerHTML = SALA.pisos.map((p, pi) => `<button data-p="${pi}">Piso ${p.num}</button>`).join("");
+  const pintar = () => {
+    svg.querySelectorAll(".gp").forEach(g => { g.style.display = +g.dataset.p === piso ? "" : "none"; }); svg.setAttribute("viewBox", SALA.pisos[piso].vb);
+    seg.querySelectorAll("button").forEach(b => b.classList.toggle("on", +b.dataset.p === piso));
+    els.forEach((el, i) => { const s = SALA.seats[i], o = res.get(s.key); let cls = "s0";
+      if (s.key === sel) cls = "sel"; else if (ZONA_ALUMNOS(s)) cls = "sg"; else if (o && o.c !== propio) cls = "sE rsv"; else if (state.marks.has(s.key)) cls = "sf";
+      el.setAttribute("class", "seat " + cls); });
+    ok.disabled = !sel; if (sel) info.innerHTML = `Elegida: <b>${esc(butacaTxt(sel))}</b>`;
+  };
+  seg.querySelectorAll("button").forEach(b => b.onclick = () => { piso = +b.dataset.p; pintar(); });
+  svg.addEventListener("click", e => {
+    const c = e.target.closest(".seat"); if (!c) return; const s = SALA.seats[+c.dataset.i], o = res.get(s.key);
+    if (ZONA_ALUMNOS(s)) { info.textContent = "Esa butaca es de la zona de alumnos."; return; }
+    if (o && o.c !== propio) { info.innerHTML = `Ya está reservada para <b>${esc(o.i || o.s)}</b>${o.k ? " · " + esc(o.k) : ""}.`; return; }
+    sel = s.key; pintar();
+  });
+  m.querySelector("[data-x]").onclick = () => m.remove(); m.addEventListener("click", e => { if (e.target === m) m.remove(); });
+  ok.onclick = () => { onPick(sel); m.remove(); }; pintar();
+}
 /* Selector de butaca (piso · fila · asiento) para reservar un puesto a un invitado */
 function pickerHtml() { return `<select data-sp="p">${SALA.pisos.map(p => `<option value="${p.num}">Piso ${p.num}</option>`).join("")}</select><select data-sp="f"></select><select data-sp="n"></select>`; }
 function pickerInit(root, valor) {
@@ -1077,11 +1161,12 @@ function pickerInit(root, valor) {
   const fillN = () => { const r = rows().find(x => x.fila === sf.value); sn.innerHTML = r.secs.flatMap(s => s.ns).sort((a, b) => a - b).map(n => `<option>${n}</option>`).join(""); };
   const fillF = () => { sf.innerHTML = rows().map(r => `<option>${r.fila}</option>`).join(""); fillN(); };
   sp.onchange = fillF; sf.onchange = fillN;
-  if (valor && SALA.byKey.has(String(valor).toUpperCase())) { const [p, f, n] = String(valor).toUpperCase().split(":"); sp.value = p; fillF(); sf.value = f; fillN(); sn.value = n; } else fillF();
-  return () => `${sp.value}:${sf.value}:${sn.value}`;
+  const set = v => { if (v && SALA.byKey.has(String(v).toUpperCase())) { const [p, f, n] = String(v).toUpperCase().split(":"); sp.value = p; fillF(); sf.value = f; fillN(); sn.value = n; } else fillF(); };
+  set(valor); const get = () => `${sp.value}:${sf.value}:${sn.value}`; get.set = set; return get;
 }
 const getRsv = pickerInit($("#iRsvBox"));
-$("#iRsv").onchange = () => { $("#iRsvBox").hidden = !$("#iRsv").checked; };
+$("#iRsv").onchange = () => { $("#iRsvBox").hidden = $("#iRsvMapa").hidden = !$("#iRsv").checked; };
+$("#iRsvMapa").onclick = () => mapaButaca(getRsv(), k => getRsv.set(k));
 /* ───────── Exportar listado a PDF ───────── */
 function logoDataUrl() {
   return new Promise(res => {
@@ -1281,7 +1366,7 @@ async function invCardHtml(inv, cont) {
   d.innerHTML = `<b>${esc(inv.invitado || (inv.tipo === "ESPECIAL" ? "Invitado especial" : "Invitación adicional"))}</b>${inv.cargo ? `<div class="muted">${esc(inv.cargo)}</div>` : ""}<div class="muted">${inv.tipo === "ESPECIAL" ? "Invitado especial" : "De " + esc(inv.estudiante) + " · " + esc(inv.curso)} · <b>${esc(inv.codigo)}</b>${inv.entro ? " · ✔ ya ingresó" : ""}</div>${inv.butaca ? `<div class="muted">🪑 Butaca reservada: <b>${esc(butacaTxt(inv.butaca))}</b></div>` : ""}
     <div class="acts"><button class="sm" data-a="view">Ver completa</button><button class="sm sec" data-a="png">Digital (imagen)</button><button class="sm sec" data-a="pdf">Imprimir (PDF 11×15)</button><button class="sm sec" data-a="share">Compartir</button><button class="sm sec" data-a="seat">Butaca</button><button class="sm sec" data-a="mail">Correo</button><button class="sm danger" data-a="del">Eliminar</button></div>
     <div class="mailrow"><input list="dlSaludo" placeholder="Saludo (Estimado / Estimada)" autocomplete="off"><input placeholder="Nombre del funcionario (editable)" autocomplete="off"><input placeholder="correo@andaliensur.cl (o el dominio que corresponda)" autocomplete="off" autocapitalize="none" inputmode="email"><input placeholder="Mensaje adicional (opcional)" autocomplete="off"><button class="sm" data-a="send">Enviar invitación por correo</button><span class="muted" data-m></span></div>
-    <div class="seatrow"><div class="pk"></div><div class="row"><button class="sm" data-a="seat-ok">Reservar esta butaca</button><button class="sm sec" data-a="seat-no">Quitar reserva</button></div><span class="muted" data-sm></span></div>`;
+    <div class="seatrow"><div class="pk"></div><div class="row"><button class="sm" data-a="seat-ok">Reservar esta butaca</button><button class="sm sec" data-a="seat-no">Quitar reserva</button><button class="sm sec" data-a="seat-map">Elegir en el mapa</button></div><span class="muted" data-sm></span></div>`;
   d.querySelector('[data-a="png"]').onclick = () => descargarPNG(inv); d.querySelector('[data-a="pdf"]').onclick = () => descargarPDF(inv); d.querySelector('[data-a="share"]').onclick = () => compartir(inv);
   const mr = d.querySelector(".mailrow"), mm = d.querySelector("[data-m]"), [si, ni, ci, gi] = mr.querySelectorAll("input");
   ni.value = inv.invitado || ""; ci.value = inv.correo || (sugerirLocal(ni.value) ? sugerirLocal(ni.value) + DOMINIO : ""); si.value = saludoPara(ni.value);
@@ -1293,6 +1378,7 @@ async function invCardHtml(inv, cont) {
   const sr = d.querySelector(".seatrow"), getS = pickerInit(sr.querySelector(".pk"), inv.butaca), sm = sr.querySelector("[data-sm]");
   d.querySelector('[data-a="seat"]').onclick = () => sr.classList.toggle("on");
   const setSeat = async b => { sm.textContent = "Guardando…"; try { await api("inv_seat", { code: inv.codigo, butaca: b }); sm.textContent = b ? "✔ Butaca reservada" : "✔ Reserva quitada"; loadCheck(); loadInv(); } catch (e) { if (!onAuthFail(e)) sm.textContent = "✖ " + e.message; } };
+  sr.querySelector('[data-a="seat-map"]').onclick = () => mapaButaca(getS(), k => getS.set(k), inv.codigo);
   sr.querySelector('[data-a="seat-ok"]').onclick = () => setSeat(getS()); sr.querySelector('[data-a="seat-no"]').onclick = () => setSeat("");
   d.querySelector('[data-a="send"]').onclick = async ev => {
     const correo = correoCompleto(ci.value); if (!correo) { mm.textContent = "Escribe el correo."; return; }
@@ -1364,7 +1450,7 @@ $("#btnIAdd").onclick = async () => {
     const r = await api("inv_add", params);
     msg.textContent = `✔ ${r.invitaciones.length} invitación(es) creada(s) y agregada(s) al listado.` + (r.antes ? ` El alumno tenía ${r.antes.total} (${r.antes.ingresadas} ya ingresaron${r.antes.adicionales ? ", " + r.antes.adicionales + " adicionales" : ""}) y ahora tiene ${r.antes.despues}.` : "") + " Descárgala o envíala abajo.";
     $("#iNuevas").hidden = false; const box = $("#iNuevasList"); box.innerHTML = ""; for (const inv of r.invitaciones) await invCardHtml(inv, box);
-    $("#iRsv").checked = false; $("#iRsvBox").hidden = true; $("#iNom").value = ""; $("#iCargo").value = ""; $("#iMailL").value = ""; delete $("#iMailL").dataset.edited; $("#iMailO").value = ""; $("#iDom").value = ""; await refresh(true); infoAlumno(); loadInv(); loadCheck();
+    $("#iRsv").checked = false; $("#iRsvBox").hidden = true; $("#iRsvMapa").hidden = true; $("#iNom").value = ""; $("#iCargo").value = ""; $("#iMailL").value = ""; delete $("#iMailL").dataset.edited; $("#iMailO").value = ""; $("#iDom").value = ""; await refresh(true); infoAlumno(); loadInv(); loadCheck();
   } catch (e) { if (!onAuthFail(e)) msg.textContent = "✖ " + e.message; }
   finally { b.disabled = false; }
 };

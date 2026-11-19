@@ -68,6 +68,9 @@ Al crear una adicional, la página muestra antes cuántas invitaciones ya tiene 
 ## Mapa de la sala (Panel)
 Simula la ocupación del Teatro Bío Bío (piso 2 platea, piso 3 platea, palco piso 4 y palco piso 5; 1.200 butacas: piso 2 = 312, piso 3 = 456 y palcos 4, 5 y 6 = 144 cada uno): invitados especiales en la primera fila y al final, y los invitados de los alumnos desde la segunda fila, agrupados por familia. Cada asiento se ilumina al ingresar la persona; al tocar un asiento se ve quién es.
 
+### Butacas para funcionarios sin número
+En el Panel, el administrador usa «Marcar butacas para funcionarios» y toca los asientos (o la fila completa) que se reservarán sin asignar a una persona concreta; se guardan en Apps Script y los ven todos los teléfonos. Los funcionarios del colegio (@andaliensur.cl) se ubican primero en esas butacas. Al reservar una butaca a una persona hay un botón «Elegir en el mapa» que muestra todo lo reservado.
+
 ### Butacas reservadas
 En Admin → Invitaciones se puede reservar una butaca (piso · fila · asiento) al crear un invitado, o después con el botón «Butaca» de cada invitación. Al escanearla, la pantalla del funcionario muestra «BUTACA RESERVADA: Platea · piso 2 · Fila C · Asiento 20» para indicársela al darle la bienvenida. No se puede reservar la misma butaca dos veces. Formato guardado en la hoja (columna Butaca): piso:fila:asiento, ej. 2:C:20.
 
