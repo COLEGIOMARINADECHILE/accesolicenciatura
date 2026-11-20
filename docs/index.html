@@ -295,6 +295,13 @@ label.pq{display:flex;gap:10px;align-items:center;margin:6px 0;color:var(--ink);
 .as-b{display:flex;gap:6px;flex:none}.as-b button{padding:7px 11px;font-size:13px;margin:0}
 .cmp{border:2px dashed var(--gold);border-radius:14px;padding:10px 12px;margin:0 0 12px;background:color-mix(in srgb,var(--gold) 9%,var(--card))}
 .compart{margin-top:6px;padding:7px 10px;border-radius:9px;background:var(--warnbg);color:var(--warn);font-size:13.5px;font-weight:600}
+.envio{display:inline-block;margin-top:5px;padding:4px 11px;border-radius:99px;font-size:12.5px;font-weight:700}
+.envio.env{background:var(--okbg);color:var(--ok)}.envio.pend{background:var(--warnbg);color:var(--warn)}.envio.sin{background:var(--line);color:var(--muted)}
+.envres{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}.envres .envio{margin:0}
+.invcard[data-st="env"]{border-left-color:#22c55e}.invcard[data-st="pend"]{border-left-color:#f59e0b}.invcard[data-st="sin"]{border-left-color:#9aa8bd}.invcard[data-st="comp"]{border-left-color:#f59e0b}.invcard[data-st="libre"]{border-left-color:#22c55e}
+.extstats{display:flex;gap:8px;margin:8px 0}.extstats .t{flex:1;border-radius:12px;padding:8px 6px;text-align:center;font-size:12px;font-weight:600;color:#fff;line-height:1.2}
+.extstats .t b{display:block;font-size:28px;line-height:1.1}.extstats .t span{display:block}
+.extstats .libre{background:linear-gradient(135deg,#15803d,#22c55e)}.extstats .comp{background:linear-gradient(135deg,#b45309,#f59e0b)}.extstats .tot{background:linear-gradient(135deg,#1d4a86,#2f6fc4)}
 .cursohd{margin:16px 2px 6px;font-size:15px;color:var(--brand)}
 .editfun{margin-top:8px;border-top:1px dashed var(--line);padding-top:8px}
 .agrad .acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
@@ -332,6 +339,13 @@ input,select{background:color-mix(in srgb,var(--card) 80%,var(--bg));border:1px 
 .as-sec{border:1px solid rgba(47,95,167,.16)}
 .cmp{border:2px dashed var(--gold);border-radius:14px;padding:10px 12px;margin:0 0 12px;background:color-mix(in srgb,var(--gold) 9%,var(--card))}
 .compart{margin-top:6px;padding:7px 10px;border-radius:9px;background:var(--warnbg);color:var(--warn);font-size:13.5px;font-weight:600}
+.envio{display:inline-block;margin-top:5px;padding:4px 11px;border-radius:99px;font-size:12.5px;font-weight:700}
+.envio.env{background:var(--okbg);color:var(--ok)}.envio.pend{background:var(--warnbg);color:var(--warn)}.envio.sin{background:var(--line);color:var(--muted)}
+.envres{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}.envres .envio{margin:0}
+.invcard[data-st="env"]{border-left-color:#22c55e}.invcard[data-st="pend"]{border-left-color:#f59e0b}.invcard[data-st="sin"]{border-left-color:#9aa8bd}.invcard[data-st="comp"]{border-left-color:#f59e0b}.invcard[data-st="libre"]{border-left-color:#22c55e}
+.extstats{display:flex;gap:8px;margin:8px 0}.extstats .t{flex:1;border-radius:12px;padding:8px 6px;text-align:center;font-size:12px;font-weight:600;color:#fff;line-height:1.2}
+.extstats .t b{display:block;font-size:28px;line-height:1.1}.extstats .t span{display:block}
+.extstats .libre{background:linear-gradient(135deg,#15803d,#22c55e)}.extstats .comp{background:linear-gradient(135deg,#b45309,#f59e0b)}.extstats .tot{background:linear-gradient(135deg,#1d4a86,#2f6fc4)}
 .cursohd{background:linear-gradient(90deg,rgba(47,95,167,.14),transparent);padding:6px 10px;border-radius:10px;border-left:4px solid var(--gold)}
 .fun,.invcard{border-left:5px solid var(--gold)}
 </style>
@@ -470,12 +484,14 @@ input,select{background:color-mix(in srgb,var(--card) 80%,var(--bg));border:1px 
         <div id="boxExtra" hidden>
           <label>Cantidad de invitaciones extra</label>
           <input id="iCantX" type="number" min="1" max="50" value="5" inputmode="numeric">
+          <p class="muted" id="iExtraDisp" style="margin:6px 0 0"></p>
           <p class="muted" style="margin:6px 0 0">Se crean sin nombre y sin alumno (códigos E00001…), listas para imprimir. Cuando sepas a quién van, usa «Asignar a alumno» en su tarjeta para ordenarlas: el QR no cambia.</p>
         </div>
         <label>Nombre del invitado <span class="muted">(opcional)</span></label>
         <input id="iNom" placeholder="Ej: Juan Pérez" autocomplete="off">
         <label>Cargo o relación <span class="muted">(opcional)</span></label>
         <input id="iCargo" placeholder="Ej: Director de Colegio" autocomplete="off">
+        <div id="boxCantE"><label>Cantidad de invitaciones para este invitado <span class="muted">(1 a 10; se pueden enviar juntas en un solo correo)</span></label><input id="iCantE" type="number" min="1" max="10" value="1" inputmode="numeric"></div>
         <div id="boxOrigen">
           <label>Correo <span class="muted">(opcional, para enviarle la invitación)</span></label>
           <div class="opt" style="margin-bottom:6px">
@@ -494,7 +510,8 @@ input,select{background:color-mix(in srgb,var(--card) 80%,var(--bg));border:1px 
         <button id="btnIAdd" style="width:100%;margin-top:14px">Crear invitación con QR</button>
         <p class="muted" id="iMsg" style="margin:8px 0 0">El nombre y el cargo aparecerán en la pantalla del funcionario al escanear. Se agrega al listado y a la base de datos.</p>
       </div>
-      <div class="card" id="iNuevas" hidden><h2>Recién creadas</h2><div id="iNuevasList"></div></div>
+      <div class="card" id="iNuevas" hidden><h2>Recién creadas</h2><div id="iNuevasList"></div>
+        <div id="iNuevasMail" class="cmp" hidden><button id="iNuevasEnviar" style="width:100%"></button><p class="muted" id="iNuevasMsg" style="margin:8px 0 0"></p></div></div>
       <div class="card">
         <h2>Descargar invitaciones para imprimir</h2>
         <p class="muted" style="margin:0 0 8px">Elige cuáles quieres. Se descargan en PDF, <b>2 por hoja</b> (A4 horizontal, 11 × 15 cm), con líneas de corte, listas para imprimir y entregar.</p>
@@ -513,7 +530,8 @@ input,select{background:color-mix(in srgb,var(--card) 80%,var(--bg));border:1px 
         <div class="seg" id="grpTabs" style="margin:10px 0 8px"><button data-g="func" class="on">Funcionarios</button><button data-g="otros">Otros invitados</button><button data-g="extra">Extras y adicionales</button></div>
         <div id="cardCompartir" class="cmp" hidden>
           <h2 style="margin:6px 0 6px">Compartir extras con otra persona</h2>
-          <p class="muted" style="margin:0 0 8px">Para quien <b>no es alumno</b>. Puedes darle <b>más de una</b> invitación; se envían juntas en un solo correo y quedan marcadas como compartidas para que <b>nadie las vuelva a imprimir</b>. Extras sin asignar disponibles: <b id="cmpDisp">0</b>.</p>
+          <p class="muted" style="margin:0 0 8px">Para quien <b>no es alumno</b>. Puedes darle <b>más de una</b> invitación; se envían juntas en un solo correo y quedan marcadas como compartidas para que <b>nadie las vuelva a imprimir</b>.</p>
+          <div class="extstats"><div class="t libre"><b id="cmpDisp">0</b><span>SIN ASIGNAR<br>(disponibles)</span></div><div class="t comp"><b id="cmpComp">0</b><span>YA COMPARTIDAS</span></div><div class="t tot"><b id="cmpTot">0</b><span>EXTRAS EN TOTAL</span></div></div>
           <input id="cmpNom" placeholder="Nombre y apellido (ej. Juan Pérez)" autocomplete="off">
           <input id="cmpMail" placeholder="Correo: nombre.apellido (@andaliensur.cl) o el correo completo de otro dominio" autocomplete="off" autocapitalize="none" inputmode="email" style="margin-top:8px">
           <label>Cantidad de invitaciones para esta persona</label><input id="cmpCant" type="number" min="1" max="10" value="1" inputmode="numeric">
@@ -747,7 +765,7 @@ function demoApi(action, p) {
   }
   if (action === "inv_todas") return { ok: true, invitaciones: demoDB.inv.map(x => ({ codigo: x.codigo, token: x.token, curso: x.curso, ce: x.codEst, nombre: x.estudiante, numero: x.numero, tipo: x.tipo || "", invitado: x.invitado || "", cargo: x.cargo || "", correo: x.correo || "" })) };
   if (action === "inv_seat") { const x = demoDB.inv.find(z => z.codigo === norm(p.code)); if (!x) return { ok: false, error: "La invitación no existe" }; const b = String(p.butaca || "").toUpperCase(); const o = b && demoDB.inv.find(z => z !== x && (z.butaca || "").toUpperCase() === b); if (o) return { ok: false, error: "Esa butaca ya está reservada para " + o.codigo }; x.butaca = b; return { ok: true, butaca: b }; }
-  if (action === "inv_compartir") { if (user.rol !== "admin") return { ok: false, error: "Solo el administrador puede hacer esto" }; const cs = (p.codes || []).map(c => demoDB.inv.find(z => z.codigo === norm(c))); if (!p.nombre) return { ok: false, error: "Falta el nombre y apellido" }; if (cs.some(x => !x || x.tipo !== "EXTRA" || x.invitado)) return { ok: false, error: "Alguna invitación ya fue compartida o no es extra" }; const ah = nowStr(); cs.forEach(x => { x.invitado = p.nombre; x.cargo = "Compartida"; x.correo = p.correo || ""; x.enviado = ah; }); return { ok: true, enviado: ah, cantidad: cs.length }; }
+  if (action === "inv_compartir") { if (user.rol !== "admin") return { ok: false, error: "Solo el administrador puede hacer esto" }; const cs = (p.codes || []).map(c => demoDB.inv.find(z => z.codigo === norm(c))); if (!p.nombre) return { ok: false, error: "Falta el nombre y apellido" }; if (cs.some(x => !x || (!p.soloEnviar && (x.tipo !== "EXTRA" || x.invitado)))) return { ok: false, error: "Alguna invitación ya fue compartida o no es extra" }; const ah = nowStr(); cs.forEach(x => { if (p.soloEnviar) { x.enviado = ah; return; } x.invitado = p.nombre; x.cargo = "Compartida"; x.correo = p.correo || ""; x.enviado = ah; }); return { ok: true, enviado: ah, cantidad: cs.length }; }
   if (action === "inv_bulk") {
     const out = [], om = []; let m = Math.max(0, ...demoDB.inv.filter(x => /^V\d+$/.test(x.codigo)).map(x => +x.codigo.slice(1)));
     (p.items || []).forEach(it => { const c = String(it.correo || "").toLowerCase(); if (c && demoDB.inv.some(x => x.tipo === "ESPECIAL" && x.correo === c)) { om.push({ nombre: it.nombre, motivo: "Ya tiene invitación" }); return; } m++;
@@ -767,7 +785,7 @@ function demoApi(action, p) {
       for (let k = 0; k < Math.min(10, +p.cantidad || 1); k++) { n++; const t = { codigo: p.codEst + String(n).padStart(2, "0"), token: tk(), curso: base[0].curso, codEst: p.codEst, numero: n, estudiante: base[0].estudiante, entro: false, hora: "", oper: "", invitado: nombre, cargo, tipo: "ADICIONAL" }; demoDB.inv.push(t); out.push({ ...t }); log(t, "CREADA (ADICIONAL)"); }
     } else {
       const m = Math.max(0, ...demoDB.inv.filter(x => /^V\d+$/.test(x.codigo)).map(x => +x.codigo.slice(1)));
-      const t = { codigo: "V" + String(m + 1).padStart(5, "0"), token: tk(), curso: CURSO_ESPECIAL, numero: 1, estudiante: nombre || "Invitado especial", entro: false, hora: "", oper: "", invitado: nombre, cargo, correo: String(p.correo || ""), butaca: String(p.butaca || ""), tipo: "ESPECIAL" }; t.codEst = t.codigo; demoDB.inv.push(t); out.push({ ...t }); log(t, "CREADA (ESPECIAL)");
+      for (let k = 0; k < Math.min(10, +p.cantidad || 1); k++) { const t = { codigo: "V" + String(m + 1 + k).padStart(5, "0"), token: tk(), curso: CURSO_ESPECIAL, numero: 1, estudiante: nombre || "Invitado especial", entro: false, hora: "", oper: "", invitado: nombre, cargo, correo: String(p.correo || ""), butaca: k === 0 ? String(p.butaca || "") : "", tipo: "ESPECIAL" }; t.codEst = t.codigo; demoDB.inv.push(t); out.push({ ...t }); log(t, "CREADA (ESPECIAL)"); }
     }
     return { ok: true, invitaciones: out, antes: out.antes };
   }
@@ -1577,7 +1595,7 @@ $("#iRsvMapa").onclick = () => mapaButaca(getRsv(), k => getRsv.set(k));
 /* ───────── Nueva invitación (administrador): especial · adicional de un alumno · extra ───────── */
 $("#dlDominios").innerHTML = ["gmail.com", "hotmail.com", "outlook.com", "outlook.es", "yahoo.com", "yahoo.es", "live.com", "icloud.com", "protonmail.com", "udec.cl", "uc.cl", "uchile.cl"].map(d => `<option value="${d}">`).join("");
 const tipoSel = () => $('input[name="tipo"]:checked').value;
-function ajustaTipo() { const x = tipoSel(); $("#boxAlumno").hidden = x !== "adicional"; $("#boxExtra").hidden = x !== "extra"; $("#boxOrigen").hidden = $("#boxRsv").hidden = x === "extra"; }
+function ajustaTipo() { const x = tipoSel(); $("#boxAlumno").hidden = x !== "adicional"; $("#boxExtra").hidden = x !== "extra"; $("#boxOrigen").hidden = $("#boxRsv").hidden = x === "extra"; $("#boxCantE").hidden = x !== "especial"; }
 $$('input[name="tipo"]').forEach(r => r.onchange = ajustaTipo);
 $$('input[name="origen"]').forEach(r => r.onchange = () => { const o = $('input[name="origen"]:checked').value === "otro"; $("#gColegio").hidden = o; $("#gOtro").hidden = !o; });
 $("#iNom").oninput = () => { if (!$("#iMailL").dataset.edited) $("#iMailL").value = sugerirLocal($("#iNom").value) || ""; };
@@ -1595,6 +1613,7 @@ $("#btnIAdd").onclick = async () => {
     if (!al) { msg.textContent = "Elige un alumno de la lista (aparece al escribir)."; return; }
     params.codEst = al.codEst; params.cantidad = Math.max(1, Math.min(10, +$("#iCant").value || 1));
   } else if (tipo === "extra") { params.tipo = "EXTRA"; params.cantidad = Math.max(1, Math.min(50, +$("#iCantX").value || 1)); }
+  else params.cantidad = Math.max(1, Math.min(10, +$("#iCantE").value || 1));
   if (tipo !== "extra") {
     const otro = $('input[name="origen"]:checked').value === "otro", u = $("#iMailO").value.trim(), dom = $("#iDom").value.trim().replace(/^@/, ""), l = $("#iMailL").value.trim().replace(/@.*/, "");
     const correo = otro ? (u && dom ? u + "@" + dom : "") : (l ? l + DOMINIO : "");
@@ -1606,7 +1625,8 @@ $("#btnIAdd").onclick = async () => {
     const r = await api("inv_add", params);
     msg.textContent = `✔ ${r.invitaciones.length} invitación(es) creada(s) y agregada(s) al listado. Descárgala abajo.`;
     $("#iNuevas").hidden = false; const box = $("#iNuevasList"); box.innerHTML = ""; for (const inv of r.invitaciones) await invCardHtml(inv, box);
-    $("#iRsv").checked = false; $("#iRsvBox").hidden = $("#iRsvMapa").hidden = true; $("#iNom").value = ""; $("#iCargo").value = ""; $("#iMailL").value = ""; delete $("#iMailL").dataset.edited; $("#iMailO").value = "";
+    nuevasMail(r.invitaciones, params.correo);
+    $("#iCantE").value = 1; $("#iRsv").checked = false; $("#iRsvBox").hidden = $("#iRsvMapa").hidden = true; $("#iNom").value = ""; $("#iCargo").value = ""; $("#iMailL").value = ""; delete $("#iMailL").dataset.edited; $("#iMailO").value = "";
     refresh(true); loadCheck(); loadInv();
   } catch (e) { if (!onAuthFail(e)) msg.textContent = "✖ " + e.message; }
   finally { b.disabled = false; }
@@ -1804,10 +1824,10 @@ const thumbObs = "IntersectionObserver" in window ? new IntersectionObserver(es 
 function pintaThumb(c) { drawInvitation(c._inv, false).then(cv => c.getContext("2d").drawImage(cv, 0, 0, 168, 237)); }
 function lazyThumb(c, inv) { c._inv = inv; if (thumbObs) thumbObs.observe(c); else pintaThumb(c); }
 async function invCardHtml(inv, cont) {
-  const div = document.createElement("div"); div.className = "invcard"; div.dataset.cod = inv.codigo; div.dataset.q = [inv.invitado, inv.cargo, inv.correo, inv.codigo, inv.estudiante].join(" ").toLowerCase();
+  const div = document.createElement("div"); div.className = "invcard"; div.dataset.cod = inv.codigo; div.dataset.st = envioK(inv); div.dataset.q = [inv.invitado, inv.cargo, inv.correo, inv.codigo, inv.estudiante].join(" ").toLowerCase();
   const mini = document.createElement("canvas"); mini.width = 168; mini.height = 237; div.appendChild(mini); lazyThumb(mini, inv);
   const d = document.createElement("div"); d.style.minWidth = 0; d.style.flex = "1";
-  d.innerHTML = `${grupoDe(inv) !== "extra" ? `<label class="chk" style="display:flex;gap:8px;align-items:center;margin:0 0 4px;color:var(--ink)"><input type="checkbox" data-sel style="width:auto"${selInv.has(inv.codigo) ? " checked" : ""}>Seleccionar</label>` : ""}<b>${esc(inv.invitado || (inv.tipo === "ESPECIAL" ? "Invitado especial" : inv.tipo === "EXTRA" ? "Invitación extra" : "Invitación adicional"))}</b>${inv.cargo ? `<div class="muted">${esc(inv.cargo)}</div>` : ""}<div class="muted">${inv.tipo === "ESPECIAL" ? "Invitado especial" : inv.tipo === "EXTRA" ? (inv.invitado ? "Invitación extra · compartida" : "Invitación extra · sin asignar") : "De " + esc(inv.estudiante) + " · " + esc(inv.curso)} · <b>${esc(inv.codigo)}</b>${inv.entro ? " · ✔ ya ingresó" : ""}</div>${inv.butaca ? `<div class="muted">🪑 Butaca reservada: <b>${esc(butacaTxt(inv.butaca))}</b></div>` : ""}${inv.tipo === "EXTRA" && inv.invitado ? `<div class="compart">📤 YA COMPARTIDA con ${esc(inv.invitado)}${inv.correo ? " · " + esc(inv.correo) : " (sin correo)"}${inv.enviado ? " · " + esc(String(inv.enviado).slice(0, 16).replace("T", " ")) : ""} — no la imprimas</div>` : ""}${grupoDe(inv) !== "extra" ? `<div class="muted" data-env>${esc(enviadoTxt(inv))}</div>` : ""}
+  d.innerHTML = `${grupoDe(inv) !== "extra" ? `<label class="chk" style="display:flex;gap:8px;align-items:center;margin:0 0 4px;color:var(--ink)"><input type="checkbox" data-sel style="width:auto"${selInv.has(inv.codigo) ? " checked" : ""}>Seleccionar</label>` : ""}<b>${esc(inv.invitado || (inv.tipo === "ESPECIAL" ? "Invitado especial" : inv.tipo === "EXTRA" ? "Invitación extra" : "Invitación adicional"))}</b>${inv.cargo ? `<div class="muted">${esc(inv.cargo)}</div>` : ""}<div class="muted">${inv.tipo === "ESPECIAL" ? "Invitado especial" : inv.tipo === "EXTRA" ? (inv.invitado ? "Invitación extra · compartida" : "Invitación extra · sin asignar") : "De " + esc(inv.estudiante) + " · " + esc(inv.curso)} · <b>${esc(inv.codigo)}</b>${inv.entro ? " · ✔ ya ingresó" : ""}</div>${inv.butaca ? `<div class="muted">🪑 Butaca reservada: <b>${esc(butacaTxt(inv.butaca))}</b></div>` : ""}${inv.tipo === "EXTRA" && inv.invitado ? `<div class="compart">📤 YA COMPARTIDA con ${esc(inv.invitado)}${inv.correo ? " · " + esc(inv.correo) : " (sin correo)"}${inv.enviado ? " · " + esc(String(inv.enviado).slice(0, 16).replace("T", " ")) : ""} — no la imprimas</div>` : ""}${grupoDe(inv) !== "extra" ? `<div class="envio ${envioK(inv)}" data-env>${esc(enviadoTxt(inv))}</div>` : ""}
     <div class="acts"><button class="sm" data-a="view">Ver completa</button><button class="sm sec" data-a="png">Digital (imagen)</button><button class="sm sec" data-a="pdf">Imprimir (PDF 11×15)</button><button class="sm sec" data-a="share">Compartir</button>${/^E/.test(inv.codigo) ? `<button class="sm" data-a="asig">${inv.tipo === "EXTRA" ? "Asignar a alumno" : "Reasignar"}</button>` : ""}<button class="sm sec" data-a="seat">Butaca</button><button class="sm sec" data-a="mail">Correo</button><button class="sm danger" data-a="del">Eliminar</button></div>
     <div class="mailrow"><input list="dlSaludo" placeholder="Saludo (Estimado / Estimada)" autocomplete="off"><input placeholder="Nombre del funcionario (editable)" autocomplete="off"><input placeholder="correo@andaliensur.cl (o el dominio que corresponda)" autocomplete="off" autocapitalize="none" inputmode="email"><input placeholder="Mensaje adicional (opcional)" autocomplete="off"><button class="sm" data-a="send">Enviar invitación por correo</button><span class="muted" data-m></span></div>
     <div class="seatrow"><div class="pk"></div><div class="row"><button class="sm" data-a="seat-ok">Reservar esta butaca</button><button class="sm sec" data-a="seat-no">Quitar reserva</button><button class="sm sec" data-a="seat-map">Elegir en el mapa</button></div><span class="muted" data-sm></span></div>
@@ -1859,8 +1879,9 @@ async function invCardHtml(inv, cont) {
 let invData = [], selInv = new Set(), grp = "func", est = "all", bulkStop = false;
 const esFunc = i => i.tipo === "ESPECIAL" && /@andaliensur\.cl$/i.test(i.correo || "");
 const grupoDe = i => i.tipo === "ESPECIAL" ? (esFunc(i) ? "func" : "otros") : "extra";
-const enviadoTxt = i => i.enviado ? "✉ Enviada el " + String(i.enviado).slice(0, 16).replace("T", " ") : (i.correo ? "✉ Sin enviar · " + i.correo : "Sin correo registrado");
-function marcarEnviada(i) { $$("#iList .invcard").forEach(el => { if (el.dataset.cod === i.codigo) { const b = el.querySelector("[data-env]"); if (b) b.textContent = enviadoTxt(i); } }); }
+const enviadoTxt = i => i.enviado ? "✉ ENVIADA · " + String(i.enviado).slice(0, 16).replace("T", " ") : (i.correo ? "⏳ PENDIENTE de enviar · " + i.correo : "Sin correo registrado");
+const envioK = i => i.tipo === "EXTRA" ? (i.invitado ? "comp" : "libre") : (i.enviado ? "env" : i.correo ? "pend" : "sin");
+function marcarEnviada(i) { $$("#iList .invcard, #iNuevasList .invcard").forEach(el => { if (el.dataset.cod === i.codigo) { el.dataset.st = envioK(i); const b = el.querySelector("[data-env]"); if (b) { b.textContent = enviadoTxt(i); b.className = "envio " + envioK(i); } } }); }
 async function loadInv() {
   if (!isAdmin()) return;
   try { const r = await api("inv_list"); invData = r.invitaciones; selInv = new Set([...selInv].filter(c => invData.some(i => i.codigo === c))); await renderInvList(); fillPdfQue(); }
@@ -1869,11 +1890,14 @@ async function loadInv() {
 async function renderInvList() {
   const nombres = { func: "Funcionarios", otros: "Otros invitados", extra: "Extras y adicionales" }, cnt = { func: 0, otros: 0, extra: 0 };
   invData.forEach(i => cnt[grupoDe(i)]++);
-  $$("#grpTabs button").forEach(b => { b.classList.toggle("on", b.dataset.g === grp); b.textContent = `${nombres[b.dataset.g]} (${cnt[b.dataset.g]})`; });
+  $$("#grpTabs button").forEach(b => { b.classList.toggle("on", b.dataset.g === grp); b.textContent = `${nombres[b.dataset.g]} (${cnt[b.dataset.g]})` + (b.dataset.g === "extra" ? ` · ${invData.filter(i => i.tipo === "EXTRA" && !i.invitado && !i.entro).length} sin asignar` : ""); });
   const enGrupo = invData.filter(i => grupoDe(i) === grp).sort((a, b) => grp === "extra" ? 0 : String(a.invitado || "").localeCompare(String(b.invitado || ""), "es")), pend = enGrupo.filter(i => !i.enviado).length;
-  $$("#estTabs button").forEach(b => { b.style.background = b.dataset.e === est ? "var(--line)" : ""; b.textContent = { all: `Todas (${enGrupo.length})`, pend: `Sin enviar (${pend})`, env: `Enviadas (${enGrupo.length - pend})` }[b.dataset.e]; });
+  $$("#estTabs button").forEach(b => { b.style.background = b.dataset.e === est ? "var(--line)" : ""; b.textContent = { all: `Todas (${enGrupo.length})`, pend: `⏳ Pendientes (${pend})`, env: `✉ Enviadas (${enGrupo.length - pend})` }[b.dataset.e]; });
   $("#estTabs").hidden = $("#bulkBar").hidden = grp === "extra";
-  $("#cardCompartir").hidden = grp !== "extra"; $("#cmpDisp").textContent = invData.filter(i => i.tipo === "EXTRA" && !i.invitado && !i.entro).length;
+  if (!$("#envResumen")) { const rs = document.createElement("div"); rs.id = "envResumen"; rs.className = "envres"; $("#estTabs").insertAdjacentElement("beforebegin", rs); }
+  { const cc = enGrupo.filter(i => !i.enviado && i.correo).length, sc = enGrupo.filter(i => !i.enviado && !i.correo).length; $("#envResumen").hidden = grp === "extra";
+    $("#envResumen").innerHTML = `<span class="envio env">✉ Enviadas: ${enGrupo.length - pend}</span><span class="envio pend">⏳ Pendientes de enviar: ${cc}</span><span class="envio sin">Sin correo: ${sc}</span>`; }
+  { const ex = invData.filter(i => i.tipo === "EXTRA"), lib = ex.filter(i => !i.invitado && !i.entro).length; $("#cardCompartir").hidden = grp !== "extra"; $("#cmpDisp").textContent = lib; $("#cmpComp").textContent = ex.filter(i => i.invitado).length; $("#cmpTot").textContent = ex.length; $("#iExtraDisp").innerHTML = `Ahora hay <b>${lib}</b> extras sin asignar disponibles (${ex.length} en total).`; }
   const list = enGrupo.filter(i => est === "all" || (est === "pend" ? !i.enviado : !!i.enviado)); $("#iCount").textContent = `${list.length} de ${enGrupo.length}`;
   const box = $("#iList"); box.innerHTML = "";
   if (!list.length) { box.innerHTML = `<p class="muted">No hay invitaciones en esta vista.</p>`; updBulk(); return; }
@@ -1907,6 +1931,21 @@ async function enviarSeleccion() {
   $("#bulkSend").disabled = false; $("#bulkStop").hidden = true; selInv.clear(); await renderInvList();
 }
 $("#bulkSend").onclick = enviarSeleccion;
+/** Varias invitaciones recién creadas para el mismo invitado: se envían juntas en un solo correo. */
+function nuevasMail(invs, correo) {
+  const box = $("#iNuevasMail"); if (!(invs.length > 1 && correo)) { box.hidden = true; return; }
+  const b = $("#iNuevasEnviar"), msg = $("#iNuevasMsg"); box.hidden = false; msg.textContent = ""; b.textContent = `✉ Enviar las ${invs.length} invitaciones juntas a ${correo}`;
+  b.onclick = async () => {
+    b.disabled = true;
+    try {
+      const nombre = invs[0].invitado || "Invitado", body = { codes: invs.map(i => i.codigo), nombre, correo, soloEnviar: true, saludo: saludoPara(nombre) || "Estimado/a", imagenes: [] };
+      for (const i of invs) { msg.textContent = `Preparando… ${body.imagenes.length + 1} de ${invs.length}`; body.imagenes.push(await imagenCorreo(i)); }
+      body.banner = (await recortesCorreo()).banner; msg.textContent = "Enviando…";
+      const r = await apiPost("inv_compartir", body); msg.innerHTML = `✔ Las ${invs.length} invitaciones se enviaron juntas a <b>${esc(correo)}</b>.`;
+      invs.forEach(i => { i.enviado = r.enviado; i.correo = correo; marcarEnviada(i); }); loadInv();
+    } catch (e) { if (!onAuthFail(e)) msg.textContent = "✖ " + e.message; } finally { b.disabled = false; }
+  };
+}
 async function compartirExtras(conCorreo) {
   const msg = $("#cmpMsg"), nombre = $("#cmpNom").value.trim().replace(/\s+/g, " "), n = Math.max(1, Math.min(10, +$("#cmpCant").value || 1)), correo = correoCompleto($("#cmpMail").value);
   if (nombre.split(" ").length < 2) { msg.textContent = "Escribe nombre y apellido de la persona."; return; }
