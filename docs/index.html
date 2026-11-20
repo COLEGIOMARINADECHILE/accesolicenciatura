@@ -246,6 +246,38 @@ label.pq{display:flex;gap:10px;align-items:center;margin:6px 0;color:var(--ink);
 .seatrow{display:none;margin-top:8px;gap:6px;flex-direction:column}.seatrow.on{display:flex}
 #ov .butaca{background:#fff;color:#0b1f3a;border-radius:16px;padding:12px 20px;margin-top:14px;font-size:13px;letter-spacing:2px;box-shadow:0 6px 20px rgba(0,0,0,.3)}
 #ov .butaca b{display:block;letter-spacing:0;font-size:clamp(20px,4.4vh,28px);margin-top:4px}
+/* resultado de escaneo: todo visible, botones siempre a la vista */
+#ov{top:0;left:0;right:0;bottom:auto;height:var(--vh,100dvh);padding:0;overflow:hidden;justify-content:flex-start}
+#ov .ovb{flex:1;min-height:0;width:100%;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:safe center;padding:calc(54px + env(safe-area-inset-top)) 16px 6px}
+#ov .ovf{flex:none;width:100%;display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 16px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(180deg,transparent,rgba(0,0,0,.18))}
+#ov .ic{font-size:clamp(44px,9vh,70px)}
+#ov h3{font-size:clamp(19px,3.4vh,25px);margin:4px 0}
+#ov p{font-size:clamp(14px,2.3vh,18px);margin:3px 0}
+#ov .nm{font-size:clamp(19px,3.6vh,27px)}
+#ov .nm.big{font-size:clamp(21px,4.2vh,32px);line-height:1.15}
+#ov .cargo{font-size:clamp(15px,2.8vh,22px);padding:8px 14px;margin-top:8px}
+#ov .butaca{padding:10px 16px;margin-top:10px;font-size:12px}
+#ov .butaca b{font-size:clamp(16px,3.2vh,24px)}
+#ov .vipbadge{font-size:clamp(12px,1.9vh,15px);padding:6px 14px;margin:6px 0 4px}
+#ov .pips{margin:8px 0}
+#ov .pip{width:30px;height:30px;font-size:13px}
+#ov button{margin-top:0;padding:12px 28px;font-size:17px}
+#ov button.undo{padding:9px 18px;font-size:15px}
+.seat.llego{stroke:#fde047;stroke-width:3;animation:llego 1s ease-in-out infinite}
+@keyframes llego{50%{stroke-width:1}}
+.legend .lg-ll{background:#ec4899;border:3px solid #fde047}
+#paneAlu .row{flex-wrap:wrap}#paneAlu .row>button{flex:1 1 auto}
+.seg button{padding-left:4px;padding-right:4px;min-width:0;font-size:13.5px}
+.agrad{border:1px solid var(--line);border-radius:14px;padding:10px;margin:0 0 8px;background:var(--card)}
+.agrad .t{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.agrad .chip{font-size:12px;font-weight:700;padding:3px 9px;border-radius:99px;background:var(--line);color:var(--ink);white-space:nowrap}
+.agrad .chip.ok{background:var(--okbg);color:var(--ok)}.agrad .chip.aus{background:var(--badbg);color:var(--bad)}
+.agrad .acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.agrad input.rut{margin-top:6px}
+#mailprev{position:fixed;inset:0;z-index:80;background:rgba(8,17,31,.7);display:flex;align-items:center;justify-content:center;padding:10px}
+#mailprev .mp{background:var(--card);border-radius:16px;width:100%;max-width:680px;height:calc(var(--vh,100dvh) - 20px);display:flex;flex-direction:column;padding:12px;gap:8px}
+#mailprev iframe{flex:1;min-height:0;width:100%;border:1px solid var(--line);border-radius:10px;background:#fff}
+#mailprev .mh{font-size:13px;line-height:1.4}
 </style>
 </head>
 <body>
@@ -325,7 +357,7 @@ label.pq{display:flex;gap:10px;align-items:center;margin:6px 0;color:var(--ink);
         <div class="row" style="margin-top:8px;flex-wrap:wrap"><button class="sm" id="mkGuardar">Guardar</button><button class="sm sec" id="mkReset">Volver al automático</button><button class="sm sec" id="mkCancel">Cancelar</button></div><span class="muted" id="mkMsg"></span></div>
       <svg id="salaSvg" viewBox="-24 -30 424 190" role="img" aria-label="Mapa de la sala"></svg>
       <div class="infobox" id="salaInfo">Toca un asiento para ver quién se sienta ahí.</div>
-      <div class="legend"><span><i class="lg-C"></i>Funcionarios del colegio</span><span><i class="lg-E"></i>Otros invitados</span><span><i class="lg-A"></i>Invitados de alumnos</span><span><i class="lg-g"></i>Alumnos (graduados)</span><span><i class="lg-r"></i>Butaca reservada</span><span><i class="lg-m"></i>Marcadas p/ funcionarios</span></div><p class="muted" style="margin:6px 0 0;font-size:12px">Color sólido = ya ingresó · color claro = por llegar.</p>
+      <div class="legend"><span><i class="lg-C"></i>Funcionarios del colegio</span><span><i class="lg-E"></i>Otros invitados</span><span><i class="lg-A"></i>Invitados de alumnos</span><span><i class="lg-g"></i>Alumnos (graduados)</span><span><i class="lg-ll"></i>Alumno que acaba de llegar</span><span><i class="lg-r"></i>Butaca reservada</span><span><i class="lg-m"></i>Marcadas p/ funcionarios</span></div><p class="muted" style="margin:6px 0 0;font-size:12px">Color sólido = ya ingresó · color claro = por llegar.</p>
       <p class="muted" style="margin:8px 0 0;font-size:12px">Simulación por cantidad de personas: los invitados de los alumnos no tienen número, solo importa cuántos han ingresado. Orden: alumnos graduados (lado par del piso 2) · invitados especiales (funcionarios y luego otros, lado impar del piso 2 y siguientes) · invitados de los alumnos desde el piso 3 en adelante. Si agregas invitados especiales, los invitados de los alumnos se corren hacia atrás. Quien tiene butaca reservada va en ella (borde dorado).</p>
     </div>
     <div class="kpis">
@@ -359,7 +391,7 @@ label.pq{display:flex;gap:10px;align-items:center;margin:6px 0;color:var(--ink);
   </section>
 
   <section id="s-func">
-    <div class="seg"><button id="segInv" class="on">Invitaciones</button><button id="segImp">Importar</button><button id="segTeam">Equipo</button></div>
+    <div class="seg"><button id="segInv" class="on">Invitaciones</button><button id="segAlu">Alumnos</button><button id="segImp">Importar</button><button id="segTeam">Equipo</button></div>
 
     <div id="paneInv">
       <div class="card">
@@ -434,6 +466,28 @@ label.pq{display:flex;gap:10px;align-items:center;margin:6px 0;color:var(--ink);
       </div>
     </div>
 
+    <div id="paneAlu" hidden>
+      <div class="card">
+        <h2>Alumnos graduados</h2>
+        <p class="muted" style="margin:0 0 8px">Cada alumno graduado tiene su propio QR y su butaca. Cuenta como asistente y aparece ocupado en el mapa. Control de acceso y administradores pueden marcar a quien <b>no asiste</b>.</p>
+        <div class="row"><button class="sm" id="aluCrear">Crear lista desde los alumnos</button><button class="sm sec" id="aluNuevo">+ Agregar alumno</button><button class="sm sec" id="aluAuto">Asignar butacas en orden</button></div>
+        <div id="aluNuevoBox" class="mailrow" style="display:none"><input id="anNom" placeholder="Nombre completo (APELLIDOS NOMBRES)" autocomplete="off"><input id="anCur" placeholder="Curso (ej. 4°A)" autocomplete="off"><input id="anRut" placeholder="RUT (ej. 12345678-9)" autocomplete="off" inputmode="text"><button class="sm" id="anOk">Guardar alumno</button><span class="muted" id="anMsg"></span></div>
+        <p class="muted" id="aluMsg" style="margin:8px 0 0"></p>
+      </div>
+      <div class="card">
+        <h2>Correo para los alumnos</h2>
+        <p class="muted" style="margin:0 0 8px">Se envía a <b>RUT@andaliensur.cl</b> con su QR, su butaca y la indicación de a quién acercarse al llegar. Siempre verás una vista previa antes de enviar.</p>
+        <input id="aluPersona" placeholder="Persona que pasa lista al llegar (ej. Prof. Marcela Soto)" autocomplete="off">
+        <input id="aluMsgExtra" placeholder="Mensaje adicional (opcional)" autocomplete="off" style="margin-top:8px">
+        <div class="row" style="margin-top:8px"><button class="sm sec" id="aluSelSin">Marcar sin enviar</button><button class="sm sec" id="aluSelTodos">Todos</button><button class="sm sec" id="aluSelNada">Ninguno</button></div>
+        <button id="aluEnviar" style="width:100%;margin-top:8px">Vista previa y enviar</button>
+        <p class="muted" id="aluOut" style="margin:8px 0 0"></p>
+      </div>
+      <input id="aluBuscar" placeholder="Buscar alumno, curso o RUT…" autocomplete="off" style="margin:0 0 8px">
+      <div class="seg" id="aluTabs" style="margin-bottom:8px"><button data-f="all" class="on">Todos</button><button data-f="falta">Sin butaca</button><button data-f="aus">Ausentes</button></div>
+      <div id="aluList"></div>
+    </div>
+
     <div id="paneImp" hidden>
       <div class="card">
         <h2>Importar listado de funcionarios</h2>
@@ -458,12 +512,12 @@ label.pq{display:flex;gap:10px;align-items:center;margin:6px 0;color:var(--ink);
         <label>Nombre completo <span class="muted">(el correo se completa solo)</span></label><input id="fNom" autocomplete="off" placeholder="Ej: Juan Andrés Pérez González">
         <label>Correo electrónico <span class="muted">(editable)</span></label><input id="fMail" type="text" autocomplete="off" autocapitalize="none" inputmode="email" placeholder="nombre.apellido@andaliensur.cl">
         <label>Perfil</label>
-        <select id="fRol"><option>Funcionario</option><option>Administrador</option></select>
+        <select id="fRol"><option value="Acceso">Control de acceso (puertas: registra y contabiliza ingresos)</option><option value="Orden">Orden y ubicación (consulta el QR, no registra)</option><option value="Administrador">Administrador (todo, puede revertir)</option></select>
         <button id="btnFAdd" style="width:100%;margin-top:14px">Crear y enviar PIN por correo</button>
         <p class="muted" id="fMsg" style="margin:8px 0 0"></p>
       </div>
       <div class="card"><h2>Funcionarios con acceso</h2><div id="fList"><p class="muted">Cargando…</p></div></div>
-      <p class="muted" style="padding:0 6px">Funcionario: escanea, ve el panel y la lista de alumnos, y puede deshacer su propio ingreso durante 3 minutos. Administrador: además anula ingresos, crea invitaciones y gestiona el equipo.</p>
+      <p class="muted" style="padding:0 6px">Perfiles: <b>Control de acceso</b> (puertas) escanea, registra y contabiliza ingresos y no deja pasar a quien ya ingresó; puede marcar ausentes a los alumnos graduados. <b>Orden y ubicación</b> escanea solo para consultar de quién es la invitación y su butaca, sin registrar. <b>Administrador</b> además revierte ingresos, crea invitaciones y gestiona el equipo.</p>
     </div>
   </section>
 
@@ -525,6 +579,9 @@ const state = {
   stats: null, filtro: "todos", last: { code: "", t: 0 }, inv: new Map(), invReady: false, marks: { a: new Set(), f: new Set(), o: new Set() }, alumN: 131, marksV: 0, queue: [], scanSeq: 0, shown: { id: 0, cls: "" }, t1: 0, t2: 0
 };
 const isAdmin = () => state.user?.rol === "admin";
+const esOrden = () => state.user?.rol === "orden";                                   // ordena al público: solo consulta
+const puedeRegistrar = () => state.user?.rol === "admin" || state.user?.rol === "acceso";   // puertas: registra y contabiliza ingresos
+const rolTxt = () => isAdmin() ? "Administrador" : esOrden() ? "Orden y ubicación" : "Control de acceso";
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const pct = (a, b) => b ? Math.round(a * 100 / b) : 0;
 const CURSO_ESPECIAL = "Invitados especiales";
@@ -540,7 +597,7 @@ const nowStr = () => { const d = new Date(), p = n => String(n).padStart(2, "0")
 function demoApi(action, p) {
   const norm = s => String(s || "").trim().toUpperCase().replace(/\s+/g, "");
   const pin = norm(p.pin);
-  const user = pin === "ADMIN1" ? { nombre: "Administrador Demo", rol: "admin" } : (demoDB.fun.find(f => f.pin === pin && f.activo) ? { nombre: demoDB.fun.find(f => f.pin === pin).nombre, rol: "funcionario" } : null);
+  const user = pin === "ADMIN1" ? { nombre: "Administrador Demo", rol: "admin" } : (pin === "ORDEN1" ? { nombre: "Persona de Orden", rol: "orden" } : (demoDB.fun.find(f => f.pin === pin && f.activo) ? { nombre: demoDB.fun.find(f => f.pin === pin).nombre, rol: "acceso" } : null));
   if (!user) return { ok: false, auth: false, error: "PIN incorrecta o desactivada" };
   const resumen = ce => { const l = demoDB.inv.filter(x => x.codEst === ce); return { ingresados: l.filter(x => x.entro).length, total: l.length }; };
   const log = (t, res) => demoDB.log.unshift({ fecha: nowStr(), codigo: t.codigo || "", estudiante: t.estudiante || "", curso: t.curso || "", resultado: res, operador: user.nombre });
@@ -552,6 +609,7 @@ function demoApi(action, p) {
     case "scan": case "manual": {
       const [cod, tok = ""] = norm(p.code).split("-");
       const t = demoDB.inv.find(x => x.codigo === cod);
+      if (user.rol === "orden") { if (!t || ((action === "scan" || tok) && tok !== t.token)) return { ok: true, status: "invalid", message: "Código no existe o mal leído" }; return { ok: true, status: "consulta", ticket: info(t), ingresado: !!t.entro, usadoEn: t.hora, usadoPor: t.oper }; }
       if (!t) { log({ codigo: norm(p.code) }, "INVÁLIDO (no existe)"); return { ok: true, status: "invalid", message: "Código no existe" }; }
       if ((action === "scan" || tok) && tok !== t.token) { log(t, "INVÁLIDO (token)"); return { ok: true, status: "invalid", message: "Código falsificado o mal leído" }; }
       if (t.entro) { log(t, "DUPLICADO"); return { ok: true, status: "duplicate", ticket: info(t), alumno: resumen(t.codEst), usadoEn: t.hora, usadoPor: t.oper }; }
@@ -559,17 +617,17 @@ function demoApi(action, p) {
       return { ok: true, status: "ok", ticket: info(t), alumno: resumen(t.codEst), hora: t.hora };
     }
     case "undo": { const t = demoDB.inv.find(x => x.codigo === norm(p.code).split("-")[0]); if (!t || !t.entro) return { ok: false, error: "Esa invitación no tiene ingreso registrado" };
-      if (user.rol !== "admin" && t.oper !== user.nombre) return { ok: false, error: "Solo un administrador puede anular este ingreso" };
+      if (user.rol !== "admin" && !(user.rol === "acceso" && t.tipo === "GRADUADO")) return { ok: false, error: "Solo los administradores pueden revertir ingresos." };
       t.entro = false; t.hora = ""; log(t, "ANULADO"); return { ok: true, status: "undone", estudiante: t.estudiante }; }
     case "stats": {
       const cursos = {}, alumnos = {};
-      demoDB.inv.forEach(x => {
+      demoDB.inv.filter(x => x.tipo !== "GRADUADO").forEach(x => {
         const esp = x.tipo === "ESPECIAL", cu = esp ? CURSO_ESPECIAL : x.curso, ce = esp ? x.codigo : x.codEst;
         (cursos[cu] ??= { curso: cu, total: 0, ingresados: 0 }); cursos[cu].total++; if (x.entro) cursos[cu].ingresados++;
         const a = (alumnos[ce] ??= { codEst: ce, nombre: esp ? (x.invitado || "Invitado sin nombre") : x.estudiante, cargo: esp ? x.cargo : "", especial: esp, extra: x.tipo === "EXTRA", curso: cu, total: 0, ingresados: 0, invitaciones: [] });
         a.total++; if (x.entro) a.ingresados++; a.invitaciones.push({ n: x.numero, codigo: x.codigo, entro: x.entro, hora: x.hora, invitado: esp ? "" : x.invitado, cargo: esp ? "" : x.cargo });
       });
-      return { ok: true, total: demoDB.inv.length, ingresados: demoDB.inv.filter(x => x.entro).length, cursos: Object.values(cursos), alumnos: Object.values(alumnos), recientes: demoDB.log.slice(0, 40), actualizado: nowStr() };
+      return { ok: true, total: demoDB.inv.filter(x => x.tipo !== "GRADUADO").length, ingresados: demoDB.inv.filter(x => x.entro && x.tipo !== "GRADUADO").length, cursos: Object.values(cursos), alumnos: Object.values(alumnos), recientes: demoDB.log.slice(0, 40), actualizado: nowStr() };
     }
   }
   if (action === "inv_del") { const i = demoDB.inv.findIndex(x => x.codigo === norm(p.code)); if (i < 0) return { ok: false, error: "La invitación no existe" }; const x = demoDB.inv[i]; if (!x.tipo) return { ok: false, error: "Solo se pueden eliminar invitaciones adicionales o especiales." }; if (x.entro) return { ok: false, error: "Esa invitación ya ingresó. Anula primero el ingreso." }; demoDB.inv.splice(i, 1); return { ok: true }; }
@@ -579,6 +637,19 @@ function demoApi(action, p) {
     else { x.curso = "Invitaciones extra"; x.codEst = x.codigo; x.numero = 1; x.estudiante = "Invitación extra"; x.tipo = "EXTRA"; x.invitado = ""; x.cargo = ""; }
     return { ok: true }; }
   if (action === "cuota") return { ok: true, restante: 100 };
+  if (action.startsWith("grad_") || action === "mail_html") {
+    const norm2 = s => String(s || "").trim().toUpperCase();
+    if (action === "grad_aus") { if (user.rol === "orden") return { ok: false, error: "Tu perfil no puede hacer esto" }; const x = demoDB.inv.find(z => z.codigo === norm2(p.code) && z.tipo === "GRADUADO"); if (!x) return { ok: false, error: "No existe ese alumno graduado" }; x.aus = p.ausente === "1"; if (x.aus) { x.entro = false; x.hora = ""; } return { ok: true }; }
+    if (user.rol !== "admin") return { ok: false, error: "Solo el administrador puede hacer esto" };
+    const tk = () => Array.from({ length: 5 }, () => "23456789ABCDEFGHJKMNPQRSTUVWXYZ"[Math.floor(Math.random() * 31)]).join("");
+    const rc = r => { r = String(r || "").trim().toLowerCase().replace(/[.\s]/g, ""); return r ? r + "@andaliensur.cl" : ""; };
+    if (action === "grad_list") return { ok: true, graduados: demoDB.inv.filter(x => x.tipo === "GRADUADO").map(x => ({ codigo: x.codigo, token: x.token, curso: x.curso, nombre: x.estudiante, rut: x.rut || "", correo: x.correo || "", butaca: x.butaca || "", estado: x.aus ? "AUSENTE" : (x.entro ? "INGRESÓ" : ""), enviado: x.enviado || "" })) };
+    if (action === "grad_crear") { const vistos = new Set(), ya = new Set(demoDB.inv.filter(x => x.tipo === "GRADUADO").map(x => x.estudiante)); let n = 0; demoDB.inv.filter(x => !x.tipo).forEach(x => { if (vistos.has(x.codEst) || ya.has(x.estudiante)) return; vistos.add(x.codEst); demoDB.inv.push({ codigo: "G" + x.codEst, token: tk(), curso: x.curso, codEst: "G" + x.codEst, numero: 1, estudiante: x.estudiante, entro: false, hora: "", oper: "", invitado: "", cargo: "", correo: "", tipo: "GRADUADO", rut: "", butaca: "" }); n++; }); return { ok: true, creados: n }; }
+    if (action === "grad_add") { const n = demoDB.inv.filter(x => /^GX\d+$/.test(x.codigo)).length + 1, c = "GX" + String(n).padStart(3, "0"); demoDB.inv.push({ codigo: c, token: tk(), curso: p.curso || "Sin curso", codEst: c, numero: 1, estudiante: p.nombre, entro: false, hora: "", oper: "", invitado: "", cargo: "", correo: rc(p.rut), tipo: "GRADUADO", rut: p.rut || "", butaca: "" }); return { ok: true, codigo: c }; }
+    if (action === "grad_edit") { const x = demoDB.inv.find(z => z.codigo === norm2(p.code)); if (!x) return { ok: false, error: "No existe" }; if (p.rut !== undefined) { x.rut = p.rut; x.correo = rc(p.rut); } if (p.curso) x.curso = p.curso; if (p.nombre) x.estudiante = p.nombre; return { ok: true }; }
+    if (action === "grad_butacas") { const mp = p.map || {}; Object.keys(mp).forEach(k => { const x = demoDB.inv.find(z => z.codigo === k); if (x) x.butaca = mp[k]; }); return { ok: true, cambios: Object.keys(mp).length }; }
+    if (action === "mail_html") { const x = demoDB.inv.find(z => z.codigo === norm2(p.code)); if (x) x.enviado = nowStr(); return { ok: true }; }
+  }
   if (action === "inv_todas") return { ok: true, invitaciones: demoDB.inv.map(x => ({ codigo: x.codigo, token: x.token, curso: x.curso, ce: x.codEst, nombre: x.estudiante, numero: x.numero, tipo: x.tipo || "", invitado: x.invitado || "", cargo: x.cargo || "", correo: x.correo || "" })) };
   if (action === "inv_seat") { const x = demoDB.inv.find(z => z.codigo === norm(p.code)); if (!x) return { ok: false, error: "La invitación no existe" }; const b = String(p.butaca || "").toUpperCase(); const o = b && demoDB.inv.find(z => z !== x && (z.butaca || "").toUpperCase() === b); if (o) return { ok: false, error: "Esa butaca ya está reservada para " + o.codigo }; x.butaca = b; return { ok: true, butaca: b }; }
   if (action === "inv_bulk") {
@@ -590,7 +661,7 @@ function demoApi(action, p) {
   if (action === "inv_mail") { if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(p.correo || ""))) return { ok: false, error: "Correo no válido" }; const xm = demoDB.inv.find(z => z.codigo === norm(p.code)); if (xm) xm.enviado = nowStr(); return { ok: true }; }
   if (action === "inv_add" || action === "inv_list") {
     if (user.rol !== "admin") return { ok: false, error: "Solo el administrador puede hacer esto" };
-    if (action === "inv_list") return { ok: true, invitaciones: demoDB.inv.filter(x => x.tipo).map(x => ({ codigo: x.codigo, token: x.token, invitado: x.invitado, cargo: x.cargo, correo: x.correo || "", butaca: x.butaca || "", enviado: x.enviado || "", estudiante: x.estudiante, curso: x.curso, numero: x.numero, tipo: x.tipo, entro: x.entro })) };
+    if (action === "inv_list") return { ok: true, invitaciones: demoDB.inv.filter(x => x.tipo && x.tipo !== "GRADUADO").map(x => ({ codigo: x.codigo, token: x.token, invitado: x.invitado, cargo: x.cargo, correo: x.correo || "", butaca: x.butaca || "", enviado: x.enviado || "", estudiante: x.estudiante, curso: x.curso, numero: x.numero, tipo: x.tipo, entro: x.entro })) };
     const tk = () => Array.from({ length: 5 }, () => "23456789ABCDEFGHJKMNPQRSTUVWXYZ"[Math.floor(Math.random() * 31)]).join("");
     const out = [], nombre = String(p.nombre || "").trim(), cargo = String(p.cargo || "").trim();
     if (p.tipo === "EXTRA") { let m = Math.max(0, ...demoDB.inv.filter(x => /^E\d+$/.test(x.codigo)).map(x => +x.codigo.slice(1))); for (let k = 0; k < Math.min(50, +p.cantidad || 1); k++) { m++; const t = { codigo: "E" + String(m).padStart(5, "0"), token: tk(), curso: "Invitaciones extra", numero: 1, estudiante: "Invitación extra", entro: false, hora: "", oper: "", invitado: "", cargo: "", correo: "", tipo: "EXTRA" }; t.codEst = t.codigo; demoDB.inv.push(t); out.push({ ...t }); } return { ok: true, invitaciones: out }; }
@@ -622,7 +693,7 @@ function demoApi(action, p) {
 async function api(action, params = {}) {
   if (state.demo) {
     if (action === "checklist") return { ok: true, l: await Promise.all(demoDB.inv.map(async x => ({ c: x.codigo, h: await sha16(x.codigo + "|" + x.token), s: x.estudiante, u: x.curso, e: x.codEst, n: x.numero, i: x.invitado, k: x.cargo, t: x.tipo, b: x.butaca || "", f: /@andaliensur\.cl$/i.test(x.correo || "") ? 1 : 0 }))), m: demoDB.marksObj || { a: [], f: [], o: [], n: 131 }, mv: demoDB.mv || 0 };
-    if (action === "used") return { ok: true, n: demoDB.inv.length, u: demoDB.inv.filter(x => x.entro).map(x => ({ c: x.codigo, h: x.hora, o: x.oper })), mv: demoDB.mv || 0 };
+    if (action === "used") return { ok: true, n: demoDB.inv.length, u: demoDB.inv.filter(x => x.entro).map(x => ({ c: x.codigo, h: x.hora, o: x.oper })), aus: demoDB.inv.filter(x => x.aus).map(x => x.codigo), mv: demoDB.mv || 0 };
     return unwrap(demoApi(action, { pin: state.pin, ...params }));
   }
   if (!state.url) throw new Error("Falta la URL del Apps Script (Yo → Avanzado).");
@@ -702,15 +773,17 @@ function logout() {
 }
 function enterApp() {
   $("#login").hidden = true; $("#app").hidden = false; document.body.classList.add("in");
-  const rol = isAdmin() ? "Administrador" : "Funcionario";
+  const rol = rolTxt();
   $("#who").innerHTML = `Hola, <b>${esc(state.user.nombre)}</b><span class="role ${isAdmin() ? "" : "f"}">${rol}</span>`;
   $("#meName").textContent = state.user.nombre; $("#meRol").textContent = rol + (state.demo ? " · modo demo" : "");
   $$("[data-admin]").forEach(e => e.hidden = !isAdmin());
+  $("#btnManual").textContent = esOrden() ? "Consultar" : "Registrar";
+  $("#camMsg").textContent = esOrden() ? "Modo consulta: el QR muestra de quién es y su butaca, pero NO registra el ingreso." : "Apunta la cámara al QR de la invitación.";
   $("#cfgUrl").value = state.url; $("#cfgSound").checked = state.sound; $("#cfgVoice").checked = state.voice; $("#cfgVol").value = state.vol;
   saveQueue(); goTab("scan"); refresh(true); startSync();
 }
 $("#loginForm").addEventListener("submit", e => { e.preventDefault(); try { audio(); } catch {} login($("#pin").value); });
-$("#btnDemo").onclick = () => { state.demo = true; store.set("demo", "1"); $("#pin").value = "ADMIN1"; $("#loginMsg").style.color = "#d7e6ff"; $("#loginMsg").textContent = "Demo: ADMIN1 (administrador) o FUNC01 (funcionario). Pulsa Ingresar."; };
+$("#btnDemo").onclick = () => { state.demo = true; store.set("demo", "1"); $("#pin").value = "ADMIN1"; $("#loginMsg").style.color = "#d7e6ff"; $("#loginMsg").textContent = "Demo: ADMIN1 (administrador), FUNC01 (control de acceso) u ORDEN1 (orden). Pulsa Ingresar."; };
 $("#togglePin").onclick = () => { const p = $("#pin"), v = p.type === "password"; p.type = v ? "text" : "password"; $("#togglePin").textContent = v ? "Ocultar" : "Mostrar"; };
 $("#btnLogout").onclick = logout;
 $("#btnSaveUrl").onclick = () => { state.url = $("#cfgUrl").value.trim(); store.set("url", state.url); alert("URL guardada."); };
@@ -744,7 +817,7 @@ async function sha16(s) {
 async function loadCheck() {
   try {
     const r = await api("checklist"), m = new Map(), old = state.inv;
-    r.l.forEach(x => m.set(String(x.c).toUpperCase(), { c: x.c, h: x.h, s: x.s, cu: x.u, ce: String(x.e), n: x.n, i: x.i || "", k: x.k || "", t: x.t || "", b: x.b || "", f: x.f || 0, used: old.get(String(x.c).toUpperCase())?.used || null }));
+    r.l.forEach(x => m.set(String(x.c).toUpperCase(), { c: x.c, h: x.h, s: x.s, cu: x.u, ce: String(x.e), n: x.n, i: x.i || "", k: x.k || "", t: x.t || "", b: x.b || "", f: x.f || 0, aus: old.get(String(x.c).toUpperCase())?.aus || false, used: old.get(String(x.c).toUpperCase())?.used || null }));
     state.inv = m; state.invReady = true; cargarMarcas(r.m); state.marksV = r.mv; sala.plan = null; await syncUsed(true);
   } catch (e) { if (!onAuthFail(e)) setConn("err"); }
 }
@@ -753,16 +826,27 @@ async function syncUsed(force) {
   if (!state.user || !state.invReady || syncing || (document.hidden && !force)) return; syncing = true;
   try {
     const r = await api("used"), srv = new Map(r.u.map(x => [String(x.c).toUpperCase(), x])), pend = new Set(state.queue.map(q => q.cod));
-    for (const [c, rec] of state.inv) { const s = srv.get(c); if (s) rec.used = { h: s.h, o: s.o }; else if (rec.used && !pend.has(c)) rec.used = null; }
+    const aus = new Set((r.aus || []).map(x => String(x).toUpperCase()));
+    for (const [c, rec] of state.inv) { const s = srv.get(c); if (s) rec.used = { h: s.h, o: s.o }; else if (rec.used && !pend.has(c)) rec.used = null; rec.aus = aus.has(c); }
     setConn("on"); renderMini();
     if (r.n !== state.inv.size || (r.mv !== undefined && r.mv !== state.marksV)) loadCheck();        // se agregaron invitaciones nuevas
   } catch (e) { if (!onAuthFail(e)) setConn("err"); }
   finally { syncing = false; }
 }
+function liveStats() {   // todo se calcula con los datos que ya tiene el teléfono: se actualiza al instante
+  let tot = 0, ing = 0, gradTot = 0, gradLleg = 0, gradAus = 0; const cursos = new Map();
+  state.inv.forEach(r => {
+    if (r.t === "GRADUADO") { if (r.aus) gradAus++; else { gradTot++; if (r.used) gradLleg++; } return; }
+    tot++; if (r.used) ing++;
+    const cu = r.t === "ESPECIAL" ? CURSO_ESPECIAL : r.cu, c = cursos.get(cu) || { curso: cu, total: 0, ingresados: 0 }; c.total++; if (r.used) c.ingresados++; cursos.set(cu, c);
+  });
+  return { tot, ing, gradTot, gradLleg, gradAus, cursos: [...cursos.values()].sort((x, y) => x.curso.localeCompare(y.curso, "es")) };
+}
 function renderMini() {
-  let ing = 0; for (const r of state.inv.values()) if (r.used) ing++;
-  const t = state.inv.size, p = pct(ing, t);
-  $("#miniBig").textContent = t ? `${ing} / ${t}` : "–"; $("#miniTxt").textContent = t ? p + "%" : ""; $("#miniBar").style.width = p + "%";
+  if (!state.inv.size) return;
+  const L = liveStats(), X = L.ing + L.gradTot, Y = L.tot + L.gradTot, p = pct(X, Y);   // los alumnos graduados cuentan como asistentes (ocupados)
+  $("#miniBig").textContent = `${X} / ${Y}`; $("#miniTxt").textContent = p + "%"; $("#miniBar").style.width = p + "%";
+  renderPanel(); if ($("#s-alum").classList.contains("active")) renderAlumnos();
   updateSala();
 }
 function startSync() {
@@ -772,7 +856,7 @@ function startSync() {
   state.t2 = setInterval(() => { if (!document.hidden) flushQueue(); }, 4000);
 }
 function resumen(ce) { let total = 0, ing = 0; for (const r of state.inv.values()) if (r.ce === ce) { total++; if (r.used) ing++; } return { total, ingresados: ing }; }
-function recInfo(r) { return { codigo: r.c, curso: r.cu, codEst: r.ce, numero: r.n, estudiante: r.s, invitado: r.i, cargo: r.k, tipo: r.t, butaca: r.b, func: r.f }; }
+function recInfo(r) { return { codigo: r.c, curso: r.cu, codEst: r.ce, numero: r.n, estudiante: r.s, invitado: r.i, cargo: r.k, tipo: r.t, butaca: r.b, func: r.f }; }   // (también sirve para alumnos graduados)
 function markLocal(code, hora, oper) { const r = state.inv.get(String(code).toUpperCase()); if (r && !r.used) r.used = { h: hora || nowStr(), o: oper || "" }; return r; }
 
 /* Cola de registros pendientes (se guarda en el teléfono; sobrevive a cortes de señal) */
@@ -804,6 +888,7 @@ function pips(a) {
   return `<div class="pips">${h}</div>`;
 }
 function quienBase(t, a) {   // bloque "de quién es la invitación"
+  if (t.tipo === "GRADUADO") return `<span class="vipbadge" style="background:linear-gradient(180deg,#f9a8d4,#ec4899);color:#fff">🎓 ALUMNO GRADUADO</span><p class="nm big">${esc(t.estudiante)}</p><p>${esc(t.curso)}</p>`;
   if (t.tipo === "EXTRA") return `<span class="vipbadge" style="background:rgba(255,255,255,.25);color:#fff">INVITACIÓN EXTRA</span><p class="nm">Aún sin asignar a un alumno</p><p>Código ${esc(t.codigo)}</p>`;
   const especial = t.tipo === "ESPECIAL";
   if (especial) return `<span class="vipbadge${t.func ? " fn" : ""}">★ ${t.func ? "FUNCIONARIO DEL COLEGIO" : "INVITADO ESPECIAL"}</span><p class="nm big">${esc(t.invitado || "Invitado sin nombre")}</p>${t.cargo ? `<div class="cargo">${esc(t.cargo)}</div>` : ""}`;
@@ -818,26 +903,33 @@ function onAuthFail(e) { if (e.auth) { closeOv(); logout(); $("#loginMsg").style
 function showResult(r, id, extra = "") {
   const ov = $("#ov"); clearTimeout(ovTimer);
   let cls, ic, title, body = "";
-  const al = r.ticket ? resumen(r.ticket.codEst) : null;
+  const noFam = tk => tk.tipo === "ESPECIAL" || tk.tipo === "EXTRA" || tk.tipo === "GRADUADO";
   if (r.status === "ok") {
     markLocal(r.ticket.codigo, r.hora, state.user?.nombre);
-    cls = "ok"; ic = "✔"; title = "INVITACIÓN ESCANEADA";
-    const a2 = r.ticket ? resumen(r.ticket.codEst) : al;
-    body = quien(r.ticket, a2) + (r.ticket.tipo === "ESPECIAL" || r.ticket.tipo === "EXTRA" || !a2.total ? "" : `<p>Han ingresado <b>${a2.ingresados} de ${a2.total}</b> invitados de este alumno</p>${pips(a2)}`);
+    cls = "ok"; ic = "✔"; title = r.ticket.tipo === "GRADUADO" ? "ALUMNO PRESENTE" : "INVITACIÓN ESCANEADA";
+    const a2 = resumen(r.ticket.codEst);
+    body = quien(r.ticket, a2) + (noFam(r.ticket) || !a2.total ? "" : `<p>Han ingresado <b>${a2.ingresados} de ${a2.total}</b> invitados de este alumno</p>${pips(a2)}`);
   } else if (r.status === "duplicate") {
     markLocal(r.ticket.codigo, r.usadoEn, r.usadoPor);
-    cls = "dup"; ic = "!"; title = "INVITACIÓN YA USADA";
+    cls = "dup"; ic = "!"; title = r.ticket.tipo === "GRADUADO" ? "ALUMNO YA REGISTRADO" : "INVITACIÓN YA USADA";
     const a2 = resumen(r.ticket.codEst);
-    body = quien(r.ticket, a2, true) + `<p>Ya ingresó: ${esc(r.usadoEn || "—")}${r.usadoPor ? " · registrada por " + esc(r.usadoPor) : ""}</p>` + (r.ticket.tipo === "ESPECIAL" || r.ticket.tipo === "EXTRA" || !a2.total ? "" : pips(a2));
+    body = quien(r.ticket, a2, true) + `<p>Ya ingresó: ${esc(r.usadoEn || "—")}${r.usadoPor ? " · registrada por " + esc(r.usadoPor) : ""}</p>` + (noFam(r.ticket) || !a2.total ? "" : pips(a2));
+  } else if (r.status === "consulta") {      // perfil Orden: solo informa, no registra
+    cls = r.ingresado ? "dup" : "ok"; ic = r.ingresado ? "i" : "✔"; title = r.ingresado ? "YA INGRESÓ" : "INVITACIÓN VÁLIDA";
+    body = quien(r.ticket, resumen(r.ticket.codEst), !!r.ingresado) + `<p class="small">Modo consulta: no se registra el ingreso${r.ingresado ? " · ingresó " + esc(r.usadoEn || "") : " · aún no ha ingresado"}</p>`;
   } else {
     cls = "bad"; ic = "✖"; title = "INVITACIÓN NO VÁLIDA"; body = `<p>${esc(r.message || "No se pudo validar")}</p>`;
   }
-  if (!(state.shown.id === id && state.shown.cls === cls)) beep(cls);
+  if (!(state.shown.id === id && state.shown.cls === cls)) {
+    beep(cls);
+    if (r.status === "ok" || r.status === "duplicate" || r.status === "invalid") logLocal(r.status === "ok" ? "INGRESO" : r.status === "duplicate" ? "DUPLICADO" : "INVÁLIDO", r.ticket || { codigo: "?", estudiante: "" });
+  }
   state.shown = { id, cls };
   ov.className = "show " + cls;
-  ov.innerHTML = `<div class="ic">${ic}</div><h3>${title}</h3>${body}${extra}<button id="ovNext">Siguiente</button>`;
+  ov.innerHTML = `<div class="ovb"><div class="ic">${ic}</div><h3>${title}</h3>${body}${extra}</div><div class="ovf"><button id="ovNext">Siguiente</button></div>`;
   $("#ovNext").onclick = closeOv;
-  if (r.ticket && (r.status === "ok" || (r.status === "duplicate" && isAdmin()))) {
+  const puedeRevertir = r.ticket && (isAdmin() || (puedeRegistrar() && r.ticket.tipo === "GRADUADO"));      // revertir: solo administradores (y los alumnos graduados, también acceso)
+  if (puedeRevertir && (r.status === "ok" || r.status === "duplicate")) {
     const b = document.createElement("button");
     b.id = "ovUndo"; b.className = "undo";
     b.textContent = r.status === "ok" ? "↩ Deshacer este ingreso" : "↩ Anular ingreso anterior";
@@ -850,14 +942,14 @@ function showResult(r, id, extra = "") {
         await api("undo", { code: r.ticket.codigo }); beep("dup");
         const rec = state.inv.get(String(r.ticket.codigo).toUpperCase()); if (rec) rec.used = null; renderMini();
         ov.className = "show dup";
-        ov.innerHTML = `<div class="ic">↩</div><h3>INGRESO REVERTIDO</h3>${quien(r.ticket)}<p>Invitación disponible de nuevo</p><button id="ovNext">Siguiente</button>`;
+        ov.innerHTML = `<div class="ovb"><div class="ic">↩</div><h3>INGRESO REVERTIDO</h3>${quien(r.ticket)}<p>Disponible de nuevo</p></div><div class="ovf"><button id="ovNext">Siguiente</button></div>`;
         $("#ovNext").onclick = closeOv; ovTimer = setTimeout(closeOv, 3000);
       } catch (e) { b.disabled = false; b.textContent = "Error: " + e.message; }
     };
-    ov.appendChild(b);
+    $(".ovf", ov).appendChild(b);
   }
-  const conNombre = r.ticket && (r.ticket.tipo === "ESPECIAL" || r.ticket.invitado || r.ticket.cargo || r.ticket.butaca);   // especiales: más tiempo para leer nombre y cargo
-  ovTimer = setTimeout(closeOv, cls === "ok" ? (conNombre ? 8000 : 2300) : (conNombre ? 9000 : 7000));
+  const conNombre = r.ticket && (r.ticket.tipo === "ESPECIAL" || r.ticket.invitado || r.ticket.cargo || r.ticket.butaca || r.ticket.tipo === "GRADUADO");   // más tiempo para leer
+  ovTimer = setTimeout(closeOv, cls === "ok" ? (conNombre ? 9000 : 2300) : (conNombre ? 10000 : 7000));
   renderMini();
 }
 function closeOv() { clearTimeout(ovTimer); const o = $("#ov"); o.className = ""; state.shown = { id: 0, cls: "" }; try { speechSynthesis.cancel(); } catch {} }
@@ -884,6 +976,7 @@ async function handleCode(text, manual = false) {
   const now = Date.now();
   if (!manual && text === state.last.code && now - state.last.t < 4000) return;
   state.last = { code: text, t: now };
+  if (esOrden()) { await consultar(text, manual); return; }
   const id = ++state.scanSeq, [cod, tok = ""] = text.toUpperCase().replace(/\s+/g, "").split("-"), rec = state.inv.get(cod);
   let valid = false;
   if (rec) { if (!tok) valid = manual; else valid = (await sha16(cod + "|" + tok)) === rec.h; }
@@ -898,6 +991,15 @@ async function handleCode(text, manual = false) {
   rec.used = { h: nowStr(), o: state.user.nombre };
   showResult({ status: "ok", ticket: info, hora: rec.used.h }, id);       // respuesta inmediata
   enqueue({ rid, code: text, manual, cod, t: Date.now() });               // el registro viaja en segundo plano
+}
+
+/** Perfil «Orden»: solo consulta (de quién es, su butaca, si ya ingresó); no registra nada. */
+async function consultar(text, manual) {
+  const id = ++state.scanSeq, [cod, tok = ""] = text.toUpperCase().replace(/\s+/g, "").split("-"), rec = state.inv.get(cod);
+  let valid = false; if (rec) valid = tok ? (await sha16(cod + "|" + tok)) === rec.h : manual;
+  if (valid) { showResult({ status: "consulta", ticket: recInfo(rec), ingresado: !!rec.used, usadoEn: rec.used?.h, usadoPor: rec.used?.o }, id); return; }
+  try { showResult(await api(manual ? "manual" : "scan", { code: text }), id); }
+  catch (e) { if (!onAuthFail(e)) showResult({ status: "invalid", message: e.message }, id); }
 }
 
 /* ───────── Cámara: lector propio, rápido (detector nativo del teléfono o jsQR) ───────── */
@@ -983,25 +1085,48 @@ function hace(f) {
   if (!f) return ""; const t = new Date(f.replace(" ", "T")); const s = Math.max(0, (Date.now() - t.getTime()) / 1000);
   if (isNaN(s)) return f.slice(11, 16); if (s < 60) return "ahora"; if (s < 3600) return "hace " + Math.floor(s / 60) + " min"; return f.slice(11, 16);
 }
-function render() {
-  const s = state.stats; if (!s) return;
-  const p = pct(s.ingresados, s.total), completos = s.alumnos.filter(a => a.ingresados === a.total && a.total > 0).length;
-  $("#pBig").textContent = `${s.ingresados} / ${s.total}`; $("#ringTxt").textContent = p + "%"; $("#pBar").style.width = p + "%";
-  $("#pTxt").textContent = `${s.total - s.ingresados} invitaciones por ingresar`;
-  $("#kIng").textContent = s.ingresados; $("#kFal").textContent = s.total - s.ingresados; $("#kAl").textContent = completos;
-  $("#updated").textContent = "act. " + (s.actualizado || "").slice(11, 19);
-  $("#pCursos").innerHTML = s.cursos.map(c => `<div class="course"><b><span>${esc(c.curso)}</span><span>${c.ingresados}/${c.total} · ${pct(c.ingresados, c.total)}%</span></b><div class="bar"><i style="width:${pct(c.ingresados, c.total)}%"></i></div></div>`).join("");
-  $("#pLog").innerHTML = s.recientes.length ? s.recientes.map(r => {
+function renderPanel() {
+  if (!state.invReady) return; const L = liveStats(), X = L.ing + L.gradTot, Y = L.tot + L.gradTot, p = pct(X, Y);
+  $("#pBig").textContent = `${X} / ${Y}`; $("#ringTxt").textContent = p + "%"; $("#pBar").style.width = p + "%";
+  $("#pTxt").textContent = `${L.tot - L.ing} invitaciones por ingresar` + (L.gradTot ? ` · ${L.gradTot} alumnos graduados contabilizados` : "");
+  const completos = AL().filter(a => !a.especial && !a.extra && a.total > 0 && a.ingresados === a.total).length;
+  $("#kIng").textContent = X; $("#kFal").textContent = Y - X; $("#kAl").textContent = completos;
+  const grad = L.gradTot + L.gradAus ? `<div class="course"><b><span>Alumnos graduados</span><span>llegaron ${L.gradLleg}/${L.gradTot}${L.gradAus ? " · " + L.gradAus + " ausentes" : ""}</span></b><div class="bar"><i style="width:${pct(L.gradLleg, L.gradTot)}%"></i></div></div>` : "";
+  $("#pCursos").innerHTML = grad + L.cursos.map(c => `<div class="course"><b><span>${esc(c.curso)}</span><span>${c.ingresados}/${c.total} · ${pct(c.ingresados, c.total)}%</span></b><div class="bar"><i style="width:${pct(c.ingresados, c.total)}%"></i></div></div>`).join("");
+}
+function renderLog() {
+  const rec = state.stats?.recientes || [];
+  $("#pLog").innerHTML = rec.length ? rec.map(r => {
     const k = /^INGRESO/.test(r.resultado) ? ["ok", "✔"] : /DUPLICADO/.test(r.resultado) ? ["dup", "!"] : /INVÁLIDO/.test(r.resultado) ? ["bad", "✖"] : ["neu", "•"];
     return `<li><span class="ico ${k[0]}">${k[1]}</span><div class="who"><div><b>${esc(r.estudiante || r.codigo)}</b></div><div class="muted">${esc(r.codigo)} · ${esc(r.resultado.split(" ")[0].toLowerCase())}${r.operador ? " · " + esc(r.operador) : ""}</div></div><div class="tm">${esc(hace(r.fecha))}</div></li>`;
   }).join("") : `<li class="muted">Sin movimientos todavía.</li>`;
-  renderAlumnos();
-  const dl = $("#dlAlumnos"); if (dl && isAdmin()) dl.innerHTML = s.alumnos.filter(a => !a.especial && !a.extra).map(a => `<option value="${esc(a.nombre)} · ${esc(a.curso)} · ${a.total} inv. · ${esc(a.codEst)}"></option>`).join("");
+}
+function logLocal(res, t) {   // el movimiento aparece de inmediato, sin esperar al servidor
+  if (!state.stats) state.stats = { recientes: [] };
+  state.stats.recientes.unshift({ fecha: nowStr(), codigo: t.codigo, estudiante: t.invitado || t.estudiante, curso: t.curso, resultado: res, operador: state.user?.nombre || "" });
+  state.stats.recientes = state.stats.recientes.slice(0, 40); renderLog();
+}
+function render() {
+  const s = state.stats; if (!s) return;
+  $("#updated").textContent = "act. " + (s.actualizado || "").slice(11, 19);
+  renderPanel(); renderLog(); renderAlumnos();
+  const dl = $("#dlAlumnos"); if (dl && isAdmin()) dl.innerHTML = AL().filter(a => !a.especial && !a.extra).map(a => `<option value="${esc(a.nombre)} · ${esc(a.curso)} · ${a.total} inv. · ${esc(a.codEst)}"></option>`).join("");
+}
+/** Alumnos con sus invitaciones y especiales, calculados con los datos del teléfono (al instante). */
+function AL() {
+  const m = new Map();
+  state.inv.forEach(r => {
+    if (r.t === "GRADUADO") return;
+    const esp = r.t === "ESPECIAL", key = esp ? r.c : r.ce; let a = m.get(key);
+    if (!a) { a = { codEst: key, nombre: esp ? (r.i || "Invitado sin nombre") : r.s, cargo: esp ? r.k : "", especial: esp, extra: r.t === "EXTRA", curso: esp ? CURSO_ESPECIAL : r.cu, total: 0, ingresados: 0, invitaciones: [] }; m.set(key, a); }
+    a.total++; if (r.used) a.ingresados++;
+    a.invitaciones.push({ n: r.n, codigo: r.c, entro: !!r.used, hora: r.used?.h || "", invitado: esp ? "" : r.i, cargo: esp ? "" : r.k });
+  });
+  return [...m.values()].sort((x, y) => x.curso.localeCompare(y.curso, "es") || x.nombre.localeCompare(y.nombre, "es"));
 }
 function renderAlumnos() {
-  const s = state.stats; if (!s) return;
   const q = $("#q").value.trim().toLowerCase();
-  let l = s.alumnos.filter(a => (a.nombre + " " + a.curso + " " + a.codEst + " " + (a.cargo || "")).toLowerCase().includes(q));
+  let l = AL().filter(a => (a.nombre + " " + a.curso + " " + a.codEst + " " + (a.cargo || "")).toLowerCase().includes(q));
   if (state.filtro === "sin") l = l.filter(a => a.ingresados === 0);
   if (state.filtro === "parcial") l = l.filter(a => a.ingresados > 0 && a.ingresados < a.total);
   if (state.filtro === "completo") l = l.filter(a => a.ingresados === a.total);
@@ -1010,7 +1135,7 @@ function renderAlumnos() {
     <div class="student ${openIds.has(a.codEst) ? "open" : ""}" data-id="${esc(a.codEst)}">
       <div class="top"><div><div class="name">${esc(a.nombre)}${a.especial ? (state.inv.get(String(a.invitaciones[0]?.codigo || "").toUpperCase())?.f ? '<span class="vip fn">FUNCIONARIO</span>' : '<span class="vip">INVITADO</span>') : a.extra ? '<span class="vip">EXTRA</span>' : ""}</div><div class="muted">${a.especial ? esc(a.cargo || "Invitado") + " · " : esc(a.curso) + " · "}${esc(a.codEst)}</div></div><b>${a.ingresados}/${a.total}</b></div>
       ${pips(a)}
-      <div class="detail"><table>${a.invitaciones.map(i => `<tr><td>N.º ${i.n} · ${esc(i.codigo)}${i.invitado ? `<br><span class="muted">${esc(i.invitado)}${i.cargo ? " · " + esc(i.cargo) : ""}</span>` : ""}</td><td>${i.entro ? "✔ " + esc((i.hora || "").slice(11, 19)) : "—"}</td><td style="text-align:right">${i.entro ? (isAdmin() ? `<button class="sec sm" data-undo="${esc(i.codigo)}">Anular</button>` : "") : `<button class="sec sm" data-in="${esc(i.codigo)}">Marcar ingreso</button>`}</td></tr>`).join("")}</table></div>
+      <div class="detail"><table>${a.invitaciones.map(i => `<tr><td>N.º ${i.n} · ${esc(i.codigo)}${i.invitado ? `<br><span class="muted">${esc(i.invitado)}${i.cargo ? " · " + esc(i.cargo) : ""}</span>` : ""}</td><td>${i.entro ? "✔ " + esc((i.hora || "").slice(11, 19)) : "—"}</td><td style="text-align:right">${i.entro ? (isAdmin() ? `<button class="sec sm" data-undo="${esc(i.codigo)}">Anular</button>` : "") : (puedeRegistrar() ? `<button class="sec sm" data-in="${esc(i.codigo)}">Marcar ingreso</button>` : "")}</td></tr>`).join("")}</table></div>
     </div>`).join("");
 }
 $("#q").oninput = renderAlumnos;
@@ -1018,8 +1143,8 @@ $$("[data-f]").forEach(b => b.onclick = () => { state.filtro = b.dataset.f; $$("
 $("#aList").addEventListener("click", async e => {
   const u = e.target.closest("[data-undo]"), m = e.target.closest("[data-in]");
   try {
-    if (u) { if (confirm("¿Anular el ingreso de " + u.dataset.undo + "?")) { await api("undo", { code: u.dataset.undo }); refresh(true); } return; }
-    if (m) { await api("manual", { code: m.dataset.in }); refresh(true); return; }
+    if (u) { if (confirm("¿Anular el ingreso de " + u.dataset.undo + "?")) { await api("undo", { code: u.dataset.undo }); const rc = state.inv.get(String(u.dataset.undo).toUpperCase()); if (rc) rc.used = null; renderMini(); } return; }
+    if (m) { await api("manual", { code: m.dataset.in }); const rc = state.inv.get(String(m.dataset.in).toUpperCase()); if (rc) rc.used = { h: nowStr(), o: state.user.nombre }; renderMini(); return; }
   } catch (er) { if (!onAuthFail(er)) alert(er.message); return; }
   const st = e.target.closest(".student"); if (st) st.classList.toggle("open");
 });
@@ -1073,12 +1198,12 @@ function cargarMarcas(m) {
  *  · desde el piso 3 en adelante, por orden → invitados de los alumnos. Si se agregan invitados especiales, los invitados de los alumnos se corren hacia atrás.
  *  Quien tiene butaca reservada va en ella. El administrador puede marcar a mano las butacas de alumnos, funcionarios y otros invitados. */
 function planSala() {
-  const S = SALA.seats, recs = [...state.inv.values()], conB = r => r.b && SALA.byKey.has(String(r.b).toUpperCase());
-  const rsv = recs.filter(conB), libres = recs.filter(r => !conB(r)), grupo = r => r.t === "ESPECIAL" ? (r.f ? "f" : "o") : "fam";
-  const tot = { f: 0, o: 0, fam: 0 }, arr = { f: 0, o: 0, fam: 0 };
+  const S = SALA.seats, recs = [...state.inv.values()].filter(r => !(r.t === "GRADUADO" && r.aus)), conB = r => r.b && SALA.byKey.has(String(r.b).toUpperCase());
+  const rsv = recs.filter(conB), libres = recs.filter(r => !conB(r)), grupo = r => r.t === "GRADUADO" ? "a" : r.t === "ESPECIAL" ? (r.f ? "f" : "o") : "fam";
+  const tot = { f: 0, o: 0, fam: 0, a: 0 }, arr = { f: 0, o: 0, fam: 0, a: 0 }, hayGrad = recs.some(r => r.t === "GRADUADO");
   libres.forEach(r => { const g = grupo(r); tot[g]++; if (r.used) arr[g]++; });
   const mk = c => [...state.marks[c]].sort().join(",");
-  const sig = [tot.f, tot.o, tot.fam, rsv.map(r => r.c + r.b).join(), mk("a"), mk("f"), mk("o"), state.alumN].join("|");
+  const sig = [tot.f, tot.o, tot.fam, tot.a, hayGrad, rsv.map(r => r.c + r.b).join(), mk("a"), mk("f"), mk("o"), state.alumN].join("|");
   if (sala.plan?.sig === sig) { sala.plan.arr = arr; sala.plan.tot = tot; return sala.plan; }
   const usado = new Set(), cat = new Array(S.length).fill(""), pos = new Array(S.length).fill(0), reg = { a: [], f: [], o: [], fam: [] }, rsvIdx = new Map();
   rsv.forEach(r => { const i = SALA.byKey.get(String(r.b).toUpperCase()); if (!usado.has(i)) { usado.add(i); rsvIdx.set(i, r); } });
@@ -1087,7 +1212,7 @@ function planSala() {
   const ro = i => SALA.rowOrd.get(SALA.pisos[S[i].piso].num + S[i].fila), libre = i => !usado.has(i);
   if (!reg.a.length) {      // alumnos graduados: lado par del piso 2, fila por fila desde la A (de la pared hacia el pasillo)
     const pool = []; S.forEach((s, i) => { if (s.piso === 0 && s.n % 2 === 0 && libre(i)) pool.push(i); });
-    pool.sort((x, y) => (ro(x) - ro(y)) || (S[y].n - S[x].n)); reg.a = pool.slice(0, state.alumN); reg.a.forEach(i => usado.add(i));
+    pool.sort((x, y) => (ro(x) - ro(y)) || (S[y].n - S[x].n)); reg.a = pool.slice(0, hayGrad ? tot.a : state.alumN); reg.a.forEach(i => usado.add(i));
   }
   const impar = [], resto = []; S.forEach((s, i) => { if (!libre(i)) return; (s.piso === 0 && s.n % 2 === 1 ? impar : resto).push(i); });
   impar.sort((x, y) => (ro(x) - ro(y)) || (S[x].n - S[y].n));
@@ -1139,6 +1264,8 @@ function pintarEdicion() {   // modo "editar distribución": cada butaca es de a
   });
   $("#mkMsg").textContent = `Alumnos: ${cnt.a} · Funcionarios: ${cnt.f} · Otros invitados: ${cnt.o}`;
 }
+const reciente = h => { if (!h) return false; const ms = new Date(String(h).replace(" ", "T")).getTime(); return !isNaN(ms) && Date.now() - ms < 120000; };   // llegó hace menos de 2 min → círculo
+function ultimaLlegadaGrad() { let mx = ""; state.inv.forEach(r => { if (r.t === "GRADUADO" && !r.aus && !r.b && r.used?.h > mx) mx = r.used.h; }); return mx; }
 function updateSala(force) {
   if (!sala.built) return;
   if (sala.edit) { pintarEdicion(); return; }
@@ -1146,8 +1273,8 @@ function updateSala(force) {
   const pl = planSala(); sala.plan = pl; sala.usedIdx = new Array(SALA.seats.length).fill(false);
   SALA.seats.forEach((s, i) => {
     const el = sala.els[i], r = pl.rsvIdx.get(i), c = pl.cat[i], k = pl.pos[i]; let cls = "s0";
-    if (r) { cls = r.t === "ESPECIAL" ? (r.f ? (r.used ? "sC" : "sc") : (r.used ? "sE" : "se")) : (r.used ? "sA" : "sa"); sala.usedIdx[i] = !!r.used; }
-    else if (c === "a") cls = "sg";
+    if (r) { cls = r.t === "GRADUADO" ? "sg" : r.t === "ESPECIAL" ? (r.f ? (r.used ? "sC" : "sc") : (r.used ? "sE" : "se")) : (r.used ? "sA" : "sa"); sala.usedIdx[i] = r.t === "GRADUADO" ? true : !!r.used; if (r.t === "GRADUADO" && reciente(r.used?.h)) cls += " llego"; }
+    else if (c === "a") { cls = "sg"; sala.usedIdx[i] = true; if (k === pl.arr.a - 1 && reciente(ultimaLlegadaGrad(pl))) cls += " llego"; }
     else if (c === "f") { cls = k < pl.arr.f ? "sC" : k < pl.tot.f ? "sc" : "sf"; sala.usedIdx[i] = k < pl.arr.f; }
     else if (c === "o") { cls = k < pl.arr.o ? "sE" : k < pl.tot.o ? "se" : "so"; sala.usedIdx[i] = k < pl.arr.o; }
     else if (c === "fam") { cls = k < pl.arr.fam ? "sA" : "sa"; sala.usedIdx[i] = k < pl.arr.fam; }
@@ -1157,7 +1284,7 @@ function updateSala(force) {
       if (!force && antes && /^s[EAC]/.test(key) && !/^s[EAC]/.test(antes)) el.classList.add("pop");
     }
   });
-  let dentro = 0; state.inv.forEach(r => { if (r.used) dentro++; }); const p = pct(dentro, AFORO_REF);
+  let dentro = 0; state.inv.forEach(r => { if (r.t === "GRADUADO" ? !r.aus : r.used) dentro++; }); const p = pct(dentro, AFORO_REF);
   $("#salaTxt").textContent = `${dentro} en sala · ${p}% del aforo`; $("#salaBar").style.width = p + "%";
   $("#salaAforo").textContent = `Aforo ${AFORO_REF.toLocaleString("es-CL")} butacas · alumnos graduados ${pl.reg.a.length} · funcionarios ${pl.arr.f}/${pl.tot.f} · otros invitados ${pl.arr.o}/${pl.tot.o} · invitados de alumnos ${pl.arr.fam}/${pl.tot.fam}` + (pl.sin ? ` · ${pl.sin} sin lugar en el mapa` : "");
   pisoInfo();
@@ -1200,7 +1327,7 @@ $("#mkGuardar").onclick = () => guardarMarcas(false);
 $("#mkReset").onclick = () => { if (confirm("¿Volver al reparto automático? Se borran las marcas manuales de alumnos e invitados.")) guardarMarcas(true); };
 
 /** Selector de butaca en el mapa: muestra qué está reservado para todos (nombres, funcionarios, alumnos) y permite elegir una libre. */
-function mapaButaca(actual, onPick, propio) {
+function mapaButaca(actual, onPick, propio, permitirA) {
   const res = reservasPersonas(), pl = planSala(); let sel = actual && SALA.byKey.has(String(actual).toUpperCase()) ? String(actual).toUpperCase() : "", piso = sel ? SALA.seats[SALA.byKey.get(sel)].piso : 0;
   const m = document.createElement("div"); m.id = "pickmap";
   m.innerHTML = `<div class="pm"><div class="mini"><b>Elegir butaca en el mapa</b><button class="sm sec" data-x>Cerrar</button></div><div class="seg" style="margin:10px 0 6px"></div><svg></svg>
@@ -1215,14 +1342,14 @@ function mapaButaca(actual, onPick, propio) {
     svg.querySelectorAll(".gp").forEach(g => { g.style.display = +g.dataset.p === piso ? "" : "none"; }); svg.setAttribute("viewBox", SALA.pisos[piso].vb);
     seg.querySelectorAll("button").forEach(b => b.classList.toggle("on", +b.dataset.p === piso));
     els.forEach((el, i) => { const s = SALA.seats[i], o = res.get(s.key), c = pl.cat[i]; let cls = "s0";
-      if (s.key === sel) cls = "sel"; else if (c === "a") cls = "sg"; else if (o && o.c !== propio) cls = "sE rsv"; else if (c === "f") cls = "sf"; else if (c === "o") cls = "so";
+      if (s.key === sel) cls = "sel"; else if (c === "a" && !permitirA) cls = "sg"; else if (o && o.c !== propio) cls = "sE rsv"; else if (c === "f") cls = "sf"; else if (c === "o") cls = "so";
       el.setAttribute("class", "seat " + cls); });
     ok.disabled = !sel; if (sel) info.innerHTML = `Elegida: <b>${esc(butacaTxt(sel))}</b>`;
   };
   seg.querySelectorAll("button").forEach(b => b.onclick = () => { piso = +b.dataset.p; pintar(); });
   svg.addEventListener("click", e => {
     const c = e.target.closest(".seat"); if (!c) return; const i = +c.dataset.i, s = SALA.seats[i], o = res.get(s.key);
-    if (pl.cat[i] === "a") { info.textContent = "Esa butaca es de la zona de alumnos graduados."; return; }
+    if (pl.cat[i] === "a" && !permitirA && !(o && o.c !== propio)) { info.textContent = "Esa butaca es de la zona de alumnos graduados."; return; }
     if (o && o.c !== propio) { info.innerHTML = `Ya está reservada para <b>${esc(o.i || o.s)}</b>${o.k ? " · " + esc(o.k) : ""}.`; return; }
     sel = s.key; pintar();
   });
@@ -1261,9 +1388,9 @@ async function exportPDF(conEstado) {
     const NAVY = [11, 31, 58], BLUE = [47, 95, 167], GOLD = [224, 178, 76], PALE = [238, 243, 250], M = 14, PW = 210;
     const logo = await logoDataUrl();
     const ahora = new Date(), fecha = ahora.toLocaleDateString("es-CL", { day: "2-digit", month: "long", year: "numeric" }) + " · " + ahora.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" });
-    const cursos = [...new Set(s.alumnos.filter(a => !a.especial).map(a => a.curso))].sort((a, b) => a.localeCompare(b, "es"));
-    const especiales = s.alumnos.filter(a => a.especial).sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
-    const totalInv = s.total, totalAl = s.alumnos.filter(a => !a.especial).length;
+    const cursos = [...new Set(AL().filter(a => !a.especial).map(a => a.curso))].sort((a, b) => a.localeCompare(b, "es"));
+    const especiales = AL().filter(a => a.especial).sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+    const totalInv = s.total, totalAl = AL().filter(a => !a.especial).length;
 
     doc.setFillColor(...NAVY); doc.rect(0, 0, PW, 46, "F");
     doc.setFillColor(...GOLD); doc.rect(0, 46, PW, 1.6, "F");
@@ -1301,7 +1428,7 @@ async function exportPDF(conEstado) {
       doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.text(der, PW - M - 4, y + 6.2, { align: "right" });
     };
     for (const cu of cursos) {
-      const als = s.alumnos.filter(a => !a.especial && a.curso === cu).sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+      const als = AL().filter(a => !a.especial && a.curso === cu).sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
       const inv = als.reduce((t, a) => t + a.total, 0), ing = als.reduce((t, a) => t + a.ingresados, 0);
       banda(cu, als.length + " alumnos · " + inv + " invitaciones" + (conEstado ? " · " + ing + " ingresaron" : ""));
       const head = ["N.º", "Alumno", "Invitación 1", "Invitación 2", "Invitación 3", "Invitación 4", "Invitación 5"].concat(conEstado ? ["Ingresos"] : []);
@@ -1461,7 +1588,7 @@ async function invCardHtml(inv, cont) {
     d.querySelector('[data-a="asig"]').onclick = () => ar.classList.toggle("on");
     const asignar = async quitar => {
       const ce = quitar ? "" : ia.value.trim().split("·").pop().trim();
-      if (!quitar && !state.stats?.alumnos.find(a => !a.especial && !a.extra && a.codEst === ce)) { am.textContent = "Elige un alumno de la lista que aparece al escribir."; return; }
+      if (!quitar && !AL().find(a => !a.especial && !a.extra && a.codEst === ce)) { am.textContent = "Elige un alumno de la lista que aparece al escribir."; return; }
       am.textContent = "Guardando…";
       try { await api("inv_asignar", { code: inv.codigo, codEst: ce, nombre: inn.value.trim(), cargo: ic.value.trim() }); am.textContent = "✔ Listo"; await refresh(true); loadCheck(); loadInv(); }
       catch (e) { if (!onAuthFail(e)) am.textContent = "✖ " + e.message; }
@@ -1596,7 +1723,143 @@ $("#btnPdfAl").onclick = async () => {
     await pdfInvitaciones(items, nombre, k => { msg.textContent = `Generando… ${k} de ${items.length}`; });
     msg.textContent = `✔ PDF listo: ${items.length} invitaciones en ${Math.ceil(items.length / 2)} hojas.`;
   } catch (e) { if (!onAuthFail(e)) msg.textContent = "✖ " + e.message; } finally { $("#btnPdfAl").disabled = false; }
-};function seg(w) { ["Inv", "Imp", "Team"].forEach(k => { $("#seg" + k).classList.toggle("on", k.toLowerCase() === w); $("#pane" + k).hidden = k.toLowerCase() !== w; }); if (w === "team") loadFun(); else if (w === "inv") loadInv(); }
+};function seg(w) { ["Inv", "Alu", "Imp", "Team"].forEach(k => { $("#seg" + k).classList.toggle("on", k.toLowerCase() === w); $("#pane" + k).hidden = k.toLowerCase() !== w; }); if (w === "team") loadFun(); else if (w === "inv") loadInv(); else if (w === "alu") loadAlu(); }
+/* ───────── Alumnos graduados: lista, RUT, butaca, ausentes y correo ───────── */
+let gradData = [], gradSel = new Set(), gradFiltro = "all";
+const cap1 = s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+const rutCorreo = rut => { const r = String(rut || "").trim().toLowerCase().replace(/[.\s]/g, ""); return r ? r + DOMINIO : ""; };
+function nombreAlumno(n) {      // "APELLIDO APELLIDO NOMBRE NOMBRE" → nombre de pila y primer apellido
+  const p = String(n || "").trim().split(/\s+/).filter(Boolean), pila = p.length >= 3 ? p.slice(2) : p.slice(1).length ? p.slice(1) : p;
+  const sal = saludoPara(pila[0] || "") || "Estimado/a";
+  return { sal, corto: cap1(pila[0] || "") + (p.length >= 3 ? " " + cap1(p[0]) : ""), completo: p.map(cap1).join(" ") };
+}
+function qrDataUrl(texto, px = 440) {
+  const qr = qrcode(0, "Q"); qr.addData(String(texto).toUpperCase(), "Alphanumeric"); qr.make();
+  const n = qr.getModuleCount(), pad = 4, mod = Math.max(2, Math.floor(px / (n + 2 * pad))), size = mod * (n + 2 * pad), c = document.createElement("canvas"); c.width = c.height = size;
+  const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, size, size); x.fillStyle = "#000";
+  for (let r = 0; r < n; r++) for (let k = 0; k < n; k++) if (qr.isDark(r, k)) x.fillRect((k + pad) * mod, (r + pad) * mod, mod, mod);
+  return c.toDataURL("image/png");
+}
+function correoAlumnoHtml(g, o) {      // o = { persona, extra, qr, banner } (qr / banner: "cid:…" para enviar o data URL para la vista previa)
+  const d = nombreAlumno(g.nombre), but = g.butaca ? butacaTxt(g.butaca) : "";
+  const F = "Georgia,'Times New Roman',serif";
+  return `<div style="margin:0;padding:18px 8px;background:#f1f1ef;font-family:${F};color:#102744"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:14px;overflow:hidden"><tr><td>
+${o.banner ? `<img src="${o.banner}" alt="" width="600" style="display:block;width:100%;height:auto;border:0">` : ""}
+<div style="padding:22px 26px 6px"><div style="font-size:13px;letter-spacing:2px;text-transform:uppercase;color:#6b7c93">Ceremonia de Licenciatura 2026</div>
+<h1 style="margin:6px 0 10px;font-size:25px;line-height:1.2">${esc(d.sal)} ${esc(d.corto)}:</h1>
+<p style="margin:0 0 10px;font-size:16px;line-height:1.5">Te esperamos en tu ceremonia de licenciatura el <b>lunes 23 de noviembre a las 10:30 hrs</b>, en el <b>Teatro Bío Bío, Concepción</b>. Este es tu pase como <b>alumno graduado</b>.</p>
+${o.extra ? `<p style="margin:0 0 10px;font-size:16px;line-height:1.5">${esc(o.extra)}</p>` : ""}</div>
+<div style="padding:6px 26px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:2px solid #102744;border-radius:12px"><tr><td align="center" style="padding:16px">
+<img src="${o.qr}" alt="Tu código QR" width="220" height="220" style="display:block;width:220px;height:220px;border:0">
+<div style="margin-top:8px;font-size:15px"><b>${esc(d.completo)}</b></div><div style="font-size:14px;color:#51627a">${esc(g.curso || "")} · Código ${esc(g.codigo)}</div></td></tr></table></div>
+<div style="padding:14px 26px 4px"><div style="background:#fdf3d7;border-left:5px solid #c9971c;border-radius:8px;padding:12px 14px"><div style="font-size:13px;text-transform:uppercase;letter-spacing:1px;color:#7a5a08">Tu butaca</div>
+<div style="font-size:21px;font-weight:bold">${but ? esc(but) : "Se te indicará el día de la ceremonia"}</div></div></div>
+<div style="padding:12px 26px 24px"><div style="background:#e8f1fb;border-left:5px solid #2d6cb5;border-radius:8px;padding:12px 14px;font-size:16px;line-height:1.5"><b>Al llegar al teatro</b>, acércate a <b>${o.persona ? esc(o.persona) : "la persona encargada"}</b> para que te pase lista con este código QR. Puedes mostrarlo desde tu celular o impreso.</div></div>
+</td></tr></table></div>`;
+}
+async function armaCorreoAlumno(g, ops) {
+  const qr = qrDataUrl(g.codigo + "-" + g.token), rc = await recortesCorreo();
+  return { qr, banner: rc.banner, html: correoAlumnoHtml(g, { ...ops, qr: "cid:qr", banner: rc.banner ? "cid:banner" : "" }), vista: correoAlumnoHtml(g, { ...ops, qr, banner: rc.banner }) };
+}
+/** Vista previa del correo tal como lo verá el alumno; devuelve true si se confirma el envío. */
+function vistaPrevia(para, asunto, vista, textoOk) {
+  return new Promise(res => {
+    const m = document.createElement("div"); m.id = "mailprev";
+    m.innerHTML = `<div class="mp"><div class="mh"><b>Así lo verá el alumno</b> (vista previa, aún no se ha enviado)<br>Para: <b>${esc(para)}</b> · Asunto: ${esc(asunto)}</div><iframe sandbox></iframe><div class="row"><button class="sec" data-n style="flex:1">Cancelar</button><button data-y style="flex:2">${esc(textoOk)}</button></div></div>`;
+    document.body.appendChild(m); m.querySelector("iframe").srcdoc = `<meta charset="utf-8"><body style="margin:0">${vista}</body>`;
+    const fin = v => { m.remove(); res(v); }; m.querySelector("[data-n]").onclick = () => fin(false); m.querySelector("[data-y]").onclick = () => fin(true);
+  });
+}
+const ASUNTO_AL = "Tu invitación y tu butaca · Licenciatura 2026";
+const opsAlumno = () => ({ persona: $("#aluPersona").value.trim(), extra: $("#aluMsgExtra").value.trim() });
+try { $("#aluPersona").value = localStorage.getItem("personaLista") || ""; } catch {}
+$("#aluPersona").oninput = () => { try { localStorage.setItem("personaLista", $("#aluPersona").value); } catch {} };
+async function enviarCorreoAlumno(g, ops) {
+  const correo = g.correo || rutCorreo(g.rut); if (!correo) throw new Error("Sin RUT/correo");
+  const a = await armaCorreoAlumno(g, ops), images = { qr: a.qr }; if (a.banner) images.banner = a.banner;
+  await apiPost("mail_html", { code: g.codigo, correo, nombre: g.nombre, asunto: ASUNTO_AL, texto: `Tu invitación como alumno graduado. Butaca: ${g.butaca ? butacaTxt(g.butaca) : "por indicar"}.`, html: a.html, images });
+  g.enviado = nowStr();
+}
+const recG = g => state.inv.get(String(g.codigo).toUpperCase());
+function estadoG(g) { const r = recG(g); return r?.aus || g.estado === "AUSENTE" ? "aus" : (r?.used || g.estado === "INGRESÓ") ? "ok" : ""; }
+async function loadAlu() {
+  if (!isAdmin()) return;
+  try { gradData = (await api("grad_list")).graduados; renderAlu(); } catch (e) { if (!onAuthFail(e)) $("#aluMsg").textContent = "✖ " + e.message; }
+}
+function renderAlu() {
+  const q = $("#aluBuscar").value.trim().toLowerCase(), sin = gradData.filter(g => !g.butaca).length, aus = gradData.filter(g => estadoG(g) === "aus").length, llegaron = gradData.filter(g => estadoG(g) === "ok").length;
+  $("#aluMsg").textContent = gradData.length ? `${gradData.length} alumnos · ${llegaron} ya llegaron · ${aus} ausentes · ${sin} sin butaca · ${gradData.filter(g => g.enviado).length} con correo enviado` : "Aún no hay alumnos graduados: pulsa «Crear lista desde los alumnos».";
+  $$("#aluTabs button").forEach(b => b.classList.toggle("on", b.dataset.f === gradFiltro));
+  let l = gradData.filter(g => (g.nombre + " " + g.curso + " " + g.rut + " " + g.codigo).toLowerCase().includes(q));
+  if (gradFiltro === "falta") l = l.filter(g => !g.butaca); if (gradFiltro === "aus") l = l.filter(g => estadoG(g) === "aus");
+  l.sort((a, b) => a.curso.localeCompare(b.curso, "es") || a.nombre.localeCompare(b.nombre, "es"));
+  const box = $("#aluList"); box.innerHTML = l.length ? "" : `<p class="muted">Sin resultados.</p>`;
+  l.slice(0, 200).forEach(g => {
+    const st = estadoG(g), div = document.createElement("div"); div.className = "agrad"; div.dataset.cod = g.codigo;
+    div.innerHTML = `<div class="t"><label style="display:flex;gap:8px;align-items:flex-start;margin:0;color:var(--ink)"><input type="checkbox" data-sel style="width:auto;margin-top:4px"${gradSel.has(g.codigo) ? " checked" : ""}><span><b>${esc(g.nombre)}</b><br><span class="muted">${esc(g.curso)} · ${esc(g.codigo)}</span></span></label><span class="chip ${st}">${st === "aus" ? "Ausente" : st === "ok" ? "✔ Llegó" : "Esperado"}</span></div>
+      <input class="rut" placeholder="RUT (ej. 12345678-9)" value="${esc(g.rut || "")}" autocomplete="off"><div class="muted" data-c>${g.rut ? "✉ " + esc(rutCorreo(g.rut)) : "Sin RUT: no se puede enviar correo"}${g.enviado ? " · enviado " + esc(String(g.enviado).slice(0, 16).replace("T", " ")) : ""}</div>
+      <div class="muted">🪑 ${g.butaca ? esc(butacaTxt(g.butaca)) : "Sin butaca asignada"}</div>
+      <div class="acts"><button class="sm sec" data-a="rut">Guardar RUT</button><button class="sm sec" data-a="seat">Butaca en mapa</button>${g.butaca ? `<button class="sm sec" data-a="noseat">Quitar butaca</button>` : ""}<button class="sm sec" data-a="aus">${st === "aus" ? "Quitar ausencia" : "Marcar ausente"}</button>${st !== "ok" && st !== "aus" ? `<button class="sm sec" data-a="in">Marcar llegada</button>` : ""}<button class="sm" data-a="mail">Correo…</button><button class="sm danger" data-a="x" hidden></button></div><span class="muted" data-m></span>`;
+    const m = div.querySelector("[data-m]"), say = s => { m.textContent = s; };
+    div.querySelector("[data-sel]").onchange = e => { e.target.checked ? gradSel.add(g.codigo) : gradSel.delete(g.codigo); };
+    const guarda = async fn => { say("Guardando…"); try { await fn(); } catch (e) { if (!onAuthFail(e)) say("✖ " + e.message); } };
+    div.querySelector('[data-a="rut"]').onclick = () => guarda(async () => { const v = div.querySelector(".rut").value.trim(); await api("grad_edit", { code: g.codigo, rut: v }); g.rut = v; g.correo = rutCorreo(v); say("✔ RUT guardado"); div.querySelector("[data-c]").textContent = g.rut ? "✉ " + g.correo : "Sin RUT"; });
+    div.querySelector('[data-a="seat"]').onclick = () => mapaButaca(g.butaca, k => guarda(async () => { await apiPost("grad_butacas", { map: { [g.codigo]: k } }); g.butaca = k; const r = recG(g); if (r) r.b = k; sala.plan = null; updateSala(true); renderAlu(); }), g.codigo, true);
+    const nb = div.querySelector('[data-a="noseat"]'); if (nb) nb.onclick = () => guarda(async () => { await apiPost("grad_butacas", { map: { [g.codigo]: "" } }); g.butaca = ""; const r = recG(g); if (r) r.b = ""; sala.plan = null; updateSala(true); renderAlu(); });
+    div.querySelector('[data-a="aus"]').onclick = () => guarda(async () => { const nuevo = st !== "aus"; await api("grad_aus", { code: g.codigo, ausente: nuevo ? "1" : "0" }); const r = recG(g); if (r) { r.aus = nuevo; if (nuevo) r.used = null; } g.estado = nuevo ? "AUSENTE" : ""; sala.plan = null; renderMini(); renderAlu(); });
+    const bi = div.querySelector('[data-a="in"]'); if (bi) bi.onclick = () => guarda(async () => { await api("manual", { code: g.codigo }); const r = recG(g); if (r) r.used = { h: nowStr(), o: state.user.nombre }; renderMini(); renderAlu(); });
+    div.querySelector('[data-a="mail"]').onclick = () => guarda(async () => {
+      const ops = opsAlumno(); if (!ops.persona) { say("Escribe arriba quién pasa lista al llegar."); return; }
+      const correo = rutCorreo(g.rut); if (!correo) { say("Falta el RUT de este alumno."); return; }
+      const a = await armaCorreoAlumno(g, ops); say("");
+      if (!(await vistaPrevia(correo, ASUNTO_AL, a.vista, "Enviar a " + correo))) return;
+      say("Enviando…"); g.correo = correo; await enviarCorreoAlumno(g, ops); say("✔ Enviado a " + correo); renderAlu();
+    });
+    box.appendChild(div);
+  });
+  if (l.length > 200) box.insertAdjacentHTML("beforeend", `<p class="muted">Mostrando 200 de ${l.length}. Usa el buscador.</p>`);
+}
+$("#aluBuscar").oninput = renderAlu;
+$$("#aluTabs button").forEach(b => b.onclick = () => { gradFiltro = b.dataset.f; renderAlu(); });
+$("#aluSelTodos").onclick = () => { gradData.filter(g => g.rut).forEach(g => gradSel.add(g.codigo)); renderAlu(); };
+$("#aluSelSin").onclick = () => { gradSel.clear(); gradData.filter(g => g.rut && !g.enviado).forEach(g => gradSel.add(g.codigo)); renderAlu(); };
+$("#aluSelNada").onclick = () => { gradSel.clear(); renderAlu(); };
+$("#aluCrear").onclick = async () => {
+  if (!confirm("Se creará un alumno graduado (con su QR) por cada alumno de la lista que aún no lo tenga. ¿Continuar?")) return;
+  $("#aluMsg").textContent = "Creando…"; try { const r = await api("grad_crear"); await loadCheck(); await loadAlu(); $("#aluMsg").textContent = `✔ ${r.creados} alumnos creados. ` + $("#aluMsg").textContent; } catch (e) { if (!onAuthFail(e)) $("#aluMsg").textContent = "✖ " + e.message; }
+};
+$("#aluNuevo").onclick = () => { const b = $("#aluNuevoBox"); b.style.display = b.style.display === "none" ? "" : "none"; };
+$("#anOk").onclick = async () => {
+  const nombre = $("#anNom").value.trim(); if (!nombre) { $("#anMsg").textContent = "Escribe el nombre."; return; }
+  $("#anMsg").textContent = "Guardando…";
+  try { await api("grad_add", { nombre, curso: $("#anCur").value.trim(), rut: $("#anRut").value.trim() }); $("#anNom").value = $("#anRut").value = ""; $("#anMsg").textContent = "✔ Agregado"; await loadCheck(); await loadAlu(); } catch (e) { if (!onAuthFail(e)) $("#anMsg").textContent = "✖ " + e.message; }
+};
+$("#aluAuto").onclick = async () => {
+  const pl = planSala(), libres = pl.reg.a.map(i => SALA.seats[i].key), pend = gradData.filter(g => !g.butaca && estadoG(g) !== "aus").sort((a, b) => a.curso.localeCompare(b.curso, "es") || a.nombre.localeCompare(b.nombre, "es"));
+  if (!pend.length) { $("#aluMsg").textContent = "Todos los alumnos ya tienen butaca."; return; }
+  if (pend.length > libres.length) { $("#aluMsg").textContent = `Faltan butacas: ${pend.length} alumnos y solo ${libres.length} en la zona de graduados (puedes ampliarla con «Editar butacas» en el mapa).`; return; }
+  if (!confirm(`Se asignarán ${pend.length} butacas a los alumnos sin butaca, en orden de curso y nombre, dentro de la zona de graduados (piso 2, lado par). ¿Continuar?`)) return;
+  const map = {}; pend.forEach((g, k) => { map[g.codigo] = libres[k]; });
+  $("#aluMsg").textContent = "Asignando…";
+  try { await apiPost("grad_butacas", { map }); pend.forEach(g => { g.butaca = map[g.codigo]; const r = recG(g); if (r) r.b = g.butaca; }); sala.plan = null; updateSala(true); renderAlu(); $("#aluMsg").textContent = `✔ ${pend.length} butacas asignadas. ` + $("#aluMsg").textContent; }
+  catch (e) { if (!onAuthFail(e)) $("#aluMsg").textContent = "✖ " + e.message; }
+};
+$("#aluEnviar").onclick = async () => {
+  const out = $("#aluOut"), ops = opsAlumno(), sel = gradData.filter(g => gradSel.has(g.codigo) && g.rut);
+  if (!ops.persona) { out.textContent = "Escribe quién pasa lista al llegar (ej. Prof. Marcela Soto)."; return; }
+  if (!sel.length) { out.textContent = "Marca al menos un alumno con RUT en la lista."; return; }
+  let cuota = null; try { cuota = (await api("cuota")).restante; } catch {}
+  if (cuota != null && sel.length > cuota) { out.textContent = `Hoy solo puedes enviar ${cuota} correos más (límite diario de Google).`; return; }
+  const a = await armaCorreoAlumno(sel[0], ops);
+  if (!(await vistaPrevia(rutCorreo(sel[0].rut), ASUNTO_AL, a.vista, `Enviar a ${sel.length} alumno${sel.length > 1 ? "s" : ""}`))) { out.textContent = "Envío cancelado."; return; }
+  $("#aluEnviar").disabled = true; let ok = 0; const fallos = [];
+  for (let k = 0; k < sel.length; k++) {
+    const g = sel[k]; out.textContent = `Enviando ${k + 1} de ${sel.length}… ${g.nombre}`; g.correo = rutCorreo(g.rut);
+    try { await enviarCorreoAlumno(g, ops); ok++; gradSel.delete(g.codigo); } catch (e) { if (e.auth) { onAuthFail(e); break; } fallos.push(g.nombre + ": " + e.message); }
+  }
+  out.innerHTML = `✔ <b>${ok}</b> enviados` + (fallos.length ? `. Fallaron ${fallos.length}: ${esc(fallos.slice(0, 3).join("; "))}` : ""); $("#aluEnviar").disabled = false; renderAlu();
+};
+$("#segAlu").onclick = () => seg("alu");
 $("#segInv").onclick = () => seg("inv"); $("#segImp").onclick = () => seg("imp"); $("#segTeam").onclick = () => seg("team");
 
 /* ───────── Importar listado de funcionarios (Excel / CSV) ───────── */

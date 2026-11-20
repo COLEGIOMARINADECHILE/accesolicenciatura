@@ -112,3 +112,14 @@ En **Ajustes → Modo demo** (o `index.html?demo=1`) puedes probar todo sin cone
 
 
 
+
+## Perfiles del equipo
+- **Control de acceso** (puertas): escanea, registra y contabiliza ingresos; no deja pasar a quien ya ingresó; puede marcar como *ausente* a un alumno graduado.
+- **Orden y ubicación**: escanea solo para *consultar* de quién es la invitación y su butaca. No registra nada.
+- **Administrador**: todo lo anterior, además de revertir ingresos, crear invitaciones, gestionar alumnos graduados y el equipo.
+
+## Alumnos graduados (Admin → Alumnos)
+- «Crear lista desde los alumnos» genera un QR por alumno graduado. Cuentan como asistentes y salen ocupados en el mapa; un círculo amarillo marca al que acaba de llegar.
+- Se puede guardar el RUT (correo = `RUT@andaliensur.cl`), asignar butaca (en el mapa o «Asignar butacas en orden») y marcar ausentes.
+- El correo para el alumno lleva su QR, su butaca y a quién acercarse para pasar lista. Siempre se muestra una **vista previa** antes de enviar.
+- Para que funcione, pega el nuevo `Code.gs` en Apps Script y publica una **nueva versión** de la implementación.
