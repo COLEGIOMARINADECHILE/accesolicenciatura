@@ -1557,6 +1557,44 @@ function pickerInit(root, valor) {
 const getRsv = pickerInit($("#iRsvBox"));
 $("#iRsv").onchange = () => { $("#iRsvBox").hidden = $("#iRsvMapa").hidden = !$("#iRsv").checked; };
 $("#iRsvMapa").onclick = () => mapaButaca(getRsv(), k => getRsv.set(k));
+
+/* ───────── Nueva invitación (administrador): especial · adicional de un alumno · extra ───────── */
+$("#dlDominios").innerHTML = ["gmail.com", "hotmail.com", "outlook.com", "outlook.es", "yahoo.com", "yahoo.es", "live.com", "icloud.com", "protonmail.com", "udec.cl", "uc.cl", "uchile.cl"].map(d => `<option value="${d}">`).join("");
+const tipoSel = () => $('input[name="tipo"]:checked').value;
+function ajustaTipo() { const x = tipoSel(); $("#boxAlumno").hidden = x !== "adicional"; $("#boxExtra").hidden = x !== "extra"; $("#boxOrigen").hidden = $("#boxRsv").hidden = x === "extra"; }
+$$('input[name="tipo"]').forEach(r => r.onchange = ajustaTipo);
+$$('input[name="origen"]').forEach(r => r.onchange = () => { const o = $('input[name="origen"]:checked').value === "otro"; $("#gColegio").hidden = o; $("#gOtro").hidden = !o; });
+$("#iNom").oninput = () => { if (!$("#iMailL").dataset.edited) $("#iMailL").value = sugerirLocal($("#iNom").value) || ""; };
+$("#iMailL").oninput = () => { $("#iMailL").dataset.edited = "1"; };
+$("#iAlumno").oninput = () => {      // antes de crear una adicional, muestra cuántas invitaciones ya tiene el alumno
+  const box = $("#iInfo"), ce = $("#iAlumno").value.trim().split("·").pop().trim(), al = AL().find(a => !a.especial && !a.extra && a.codEst === ce);
+  if (!al) { box.hidden = true; return; }
+  const adi = [...state.inv.values()].filter(r => r.ce === al.codEst && r.t === "ADICIONAL").length;
+  box.hidden = false; box.innerHTML = `<b>${esc(al.nombre)}</b> · ${esc(al.curso)}<br>Ya tiene <b>${al.total}</b> invitación(es) (${adi} adicional(es)); han ingresado ${al.ingresados}.`;
+};
+$("#btnIAdd").onclick = async () => {
+  const msg = $("#iMsg"), tipo = tipoSel(), nombre = $("#iNom").value.trim(), cargo = $("#iCargo").value.trim(), params = { nombre, cargo };
+  if (tipo === "adicional") {
+    const ce = $("#iAlumno").value.trim().split("·").pop().trim(), al = AL().find(a => !a.especial && !a.extra && a.codEst === ce);
+    if (!al) { msg.textContent = "Elige un alumno de la lista (aparece al escribir)."; return; }
+    params.codEst = al.codEst; params.cantidad = Math.max(1, Math.min(10, +$("#iCant").value || 1));
+  } else if (tipo === "extra") { params.tipo = "EXTRA"; params.cantidad = Math.max(1, Math.min(50, +$("#iCantX").value || 1)); }
+  if (tipo !== "extra") {
+    const otro = $('input[name="origen"]:checked').value === "otro", u = $("#iMailO").value.trim(), dom = $("#iDom").value.trim().replace(/^@/, ""), l = $("#iMailL").value.trim().replace(/@.*/, "");
+    const correo = otro ? (u && dom ? u + "@" + dom : "") : (l ? l + DOMINIO : "");
+    if (correo) params.correo = correo.toLowerCase();
+    if ($("#iRsv").checked) params.butaca = getRsv();
+  }
+  const b = $("#btnIAdd"); b.disabled = true; msg.textContent = "Creando…";
+  try {
+    const r = await api("inv_add", params);
+    msg.textContent = `✔ ${r.invitaciones.length} invitación(es) creada(s) y agregada(s) al listado. Descárgala abajo.`;
+    $("#iNuevas").hidden = false; const box = $("#iNuevasList"); box.innerHTML = ""; for (const inv of r.invitaciones) await invCardHtml(inv, box);
+    $("#iRsv").checked = false; $("#iRsvBox").hidden = $("#iRsvMapa").hidden = true; $("#iNom").value = ""; $("#iCargo").value = ""; $("#iMailL").value = ""; delete $("#iMailL").dataset.edited; $("#iMailO").value = "";
+    refresh(true); loadCheck(); loadInv();
+  } catch (e) { if (!onAuthFail(e)) msg.textContent = "✖ " + e.message; }
+  finally { b.disabled = false; }
+};
 /* ───────── Exportar listado a PDF ───────── */
 function logoDataUrl() {
   return new Promise(res => {
