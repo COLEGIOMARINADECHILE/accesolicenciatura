@@ -272,6 +272,19 @@ label.pq{display:flex;gap:10px;align-items:center;margin:6px 0;color:var(--ink);
 .agrad .t{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
 .agrad .chip{font-size:12px;font-weight:700;padding:3px 9px;border-radius:99px;background:var(--line);color:var(--ink);white-space:nowrap}
 .agrad .chip.ok{background:var(--okbg);color:var(--ok)}.agrad .chip.aus{background:var(--badbg);color:var(--bad)}
+.as-hero{display:flex;gap:10px;margin-bottom:12px}
+.as-k{flex:1;border-radius:16px;padding:12px 6px;text-align:center;color:#fff;font-size:13px;font-weight:600;box-shadow:var(--shadow)}
+.as-k b{display:block;font-size:30px;line-height:1.1}
+.as-k.p{background:linear-gradient(135deg,#15803d,#22c55e)}.as-k.f{background:linear-gradient(135deg,#b45309,#f59e0b)}.as-k.a{background:linear-gradient(135deg,#b91c1c,#ef4444)}
+.as-sec{background:var(--card);border-radius:16px;margin:0 0 12px;box-shadow:var(--shadow);overflow:hidden}
+.as-sec>summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:14px;font-weight:700;font-size:16px;border-left:6px solid var(--line)}
+.as-sec>summary::-webkit-details-marker{display:none}
+.as-sec.f>summary{border-color:#f59e0b}.as-sec.a>summary{border-color:#ef4444}.as-sec.p>summary{border-color:#22c55e}
+.as-sec>summary b{background:var(--line);border-radius:99px;padding:2px 13px}
+.as-cuh{display:flex;justify-content:space-between;padding:7px 14px;background:var(--bg);font-size:12.5px;font-weight:700;color:var(--brand);text-transform:uppercase;letter-spacing:.5px}
+.as-row{display:flex;align-items:center;gap:8px;padding:9px 14px;border-top:1px solid var(--line)}
+.as-n{flex:1;min-width:0}.as-n b{display:block;font-size:14.5px}.as-n small{color:var(--muted);font-size:12.5px}
+.as-b{display:flex;gap:6px;flex:none}.as-b button{padding:7px 11px;font-size:13px;margin:0}
 .cursohd{margin:16px 2px 6px;font-size:15px;color:var(--brand)}
 .editfun{margin-top:8px;border-top:1px dashed var(--line);padding-top:8px}
 .agrad .acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
@@ -369,6 +382,13 @@ label.pq{display:flex;gap:10px;align-items:center;margin:6px 0;color:var(--ink);
     </div>
     <div class="card"><h2>Avance por curso</h2><div id="pCursos"></div></div>
     <div class="card"><h2>Últimos movimientos</h2><ul class="log" id="pLog"></ul></div>
+  </section>
+
+  <section id="s-asist">
+    <div class="as-hero"><div class="as-k p"><b id="asP">0</b>Presentes</div><div class="as-k f"><b id="asF">0</b>Faltan</div><div class="as-k a"><b id="asA">0</b>Ausentes</div></div>
+    <div class="card" style="padding:12px"><div class="bar" style="height:12px"><i id="asBar" style="width:0%"></i></div><p class="muted" id="asTxt" style="margin:6px 0 10px"></p>
+      <select id="asCurso" style="margin-bottom:8px"></select><input id="asQ" placeholder="Buscar alumno…" autocomplete="off"></div>
+    <div id="asList"></div>
   </section>
 
   <section id="s-alum">
@@ -564,6 +584,7 @@ label.pq{display:flex;gap:10px;align-items:center;margin:6px 0;color:var(--ink);
 
 <nav>
   <button data-tab="scan" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M4 12h16"/></svg>Escanear</button>
+  <button data-tab="asist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>Asistencia</button>
   <button data-tab="panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Panel</button>
   <button data-tab="alum"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/></svg>Alumnos</button>
   <button data-tab="func" data-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M12 9v6M9 12h6"/></svg>Admin</button>
@@ -823,6 +844,7 @@ function goTab(t) {
   if (t === "panel" || t === "alum") refresh(true);
   if (t === "panel") { buildSala(); updateSala(true); }
   if (t === "func") { loadInv(); }
+  if (t === "asist") renderAsist();
   try { $("main").scrollTo(0, 0); } catch {}
 }
 $$("nav button").forEach(b => b.onclick = () => goTab(b.dataset.tab));
@@ -872,7 +894,7 @@ function renderMini() {
   if (!state.inv.size) return;
   const L = liveStats(), X = L.ing + L.gradTot, Y = L.tot + L.gradTot, p = pct(X, Y);   // los alumnos graduados cuentan como asistentes (ocupados)
   $("#miniBig").textContent = `${X} / ${Y}`; $("#miniTxt").textContent = p + "%"; $("#miniBar").style.width = p + "%";
-  renderPanel(); if ($("#s-alum").classList.contains("active")) renderAlumnos();
+  renderPanel(); if ($("#s-alum").classList.contains("active")) renderAlumnos(); if ($("#s-asist").classList.contains("active")) renderAsist();
   updateSala();
 }
 function startSync() {
@@ -1248,8 +1270,10 @@ function planSala() {
   const ultEsp = Math.max(-1, ...reg.f, ...reg.o), ini = Math.max(S.findIndex(s => s.piso === 1), ultEsp + 1);   // invitados de alumnos: piso 3 en adelante, tras los especiales
   for (let i = ini; i < S.length && reg.fam.length < tot.fam; i++) if (libre(i)) { usado.add(i); reg.fam.push(i); }
   sin += Math.max(0, tot.fam - reg.fam.length);
+  if (hayGrad) sin += Math.max(0, tot.a - reg.a.length);      // graduados que no caben en la zona marcada
   ["a", "f", "o", "fam"].forEach(c => reg[c].forEach((i, k) => { cat[i] = c; pos[i] = k; }));
-  return (sala.plan = { sig, reg, cat, pos, rsvIdx, tot, arr, sin });
+  const gradProp = rsv.filter(r => r.t === "GRADUADO").length;   // graduados con butaca propia (fuera de la zona)
+  return (sala.plan = { sig, reg, cat, pos, rsvIdx, tot, arr, sin, gradProp, gradTotal: tot.a + gradProp });
 }
 /** Escenario: la línea ondulada del plano, arriba, con su rotulo. */
 function escenarioSvg(w) {
@@ -1312,7 +1336,7 @@ function updateSala(force) {
   });
   let dentro = 0; state.inv.forEach(r => { if (r.t === "GRADUADO" ? !esAus(r) : r.used) dentro++; }); const p = pct(dentro, AFORO_REF);
   $("#salaTxt").textContent = `${dentro} en sala · ${p}% del aforo`; $("#salaBar").style.width = p + "%";
-  $("#salaAforo").textContent = `Aforo ${AFORO_REF.toLocaleString("es-CL")} butacas · alumnos graduados ${pl.reg.a.length} · funcionarios ${pl.arr.f}/${pl.tot.f} · otros invitados ${pl.arr.o}/${pl.tot.o} · invitados de alumnos ${pl.arr.fam}/${pl.tot.fam}` + (pl.sin ? ` · ${pl.sin} sin lugar en el mapa` : "");
+  $("#salaAforo").textContent = `Aforo ${AFORO_REF.toLocaleString("es-CL")} butacas · alumnos graduados ${pl.gradTotal}` + (pl.gradProp ? ` (${pl.reg.a.length} en la zona + ${pl.gradProp} con butaca propia)` : "") + (liveStats().gradAus ? ` · ${liveStats().gradAus} ausentes` : "") + ` · funcionarios ${pl.arr.f}/${pl.tot.f} · otros invitados ${pl.arr.o}/${pl.tot.o} · invitados de alumnos ${pl.arr.fam}/${pl.tot.fam}` + (pl.sin ? ` · ${pl.sin} sin lugar en el mapa` : "");
   pisoInfo();
 }
 $("#salaSvg").addEventListener("click", e => {
@@ -1750,7 +1774,45 @@ $("#btnPdfAl").onclick = async () => {
     msg.textContent = `✔ PDF listo: ${items.length} invitaciones en ${Math.ceil(items.length / 2)} hojas.`;
   } catch (e) { if (!onAuthFail(e)) msg.textContent = "✖ " + e.message; } finally { $("#btnPdfAl").disabled = false; }
 };function seg(w) { ["Inv", "Alu", "Imp", "Team"].forEach(k => { $("#seg" + k).classList.toggle("on", k.toLowerCase() === w); $("#pane" + k).hidden = k.toLowerCase() !== w; }); if (w === "team") loadFun(); else if (w === "inv") loadInv(); else if (w === "alu") loadAlu(); }
-/* ───────── Alumnos graduados: lista, RUT, butaca, ausentes y correo ───────── */
+/* ───────── Asistencia de alumnos graduados: quién falta, quién está y quién está ausente ───────── */
+const asEstado = r => r.used ? "p" : esAus(r) ? "a" : "f";
+const asOpen = { f: true, a: true, p: false };
+function renderAsist() {
+  if (!state.invReady) return;
+  const G = []; state.inv.forEach(r => { if (r.t === "GRADUADO") G.push(r); });
+  const cnt = { p: 0, a: 0, f: 0 }; G.forEach(r => cnt[asEstado(r)]++);
+  $("#asP").textContent = cnt.p; $("#asF").textContent = cnt.f; $("#asA").textContent = cnt.a;
+  const esp = G.length - cnt.a; $("#asBar").style.width = pct(cnt.p, esp) + "%"; $("#asTxt").textContent = G.length ? `${cnt.p} de ${esp} esperados ya llegaron (${pct(cnt.p, esp)}%)` : "Aún no hay alumnos graduados cargados (el administrador los crea en Admin → Alumnos).";
+  const cursos = [...new Set(G.map(r => r.cu))].sort((a, b) => a.localeCompare(b, "es")), sc = $("#asCurso"), cur = sc.value || "*", key = cursos.map(c => c + G.filter(r => r.cu === c && asEstado(r) === "f").length).join("|");
+  if (sc.dataset.k !== key) { sc.dataset.k = key; sc.innerHTML = `<option value="*">Todos los cursos</option>` + cursos.map(c => `<option value="${esc(c)}">${esc(c)} · faltan ${G.filter(r => r.cu === c && asEstado(r) === "f").length}</option>`).join(""); sc.value = cursos.includes(cur) ? cur : "*"; }
+  const q = nrm($("#asQ").value), cs = sc.value;
+  const vis = G.filter(r => (cs === "*" || r.cu === cs) && (!q || nrm(r.s + " " + r.cu + " " + r.c).includes(q)));
+  $$("#asList details").forEach(d => { asOpen[d.dataset.k] = d.open; });
+  const puede = puedeRegistrar(), fila = (r, e) => {
+    const h = r.used?.h ? String(r.used.h).slice(11, 16) : "";
+    const b = !puede ? "" : e === "f" ? `<button class="sm" data-as="in">✔ Presente</button><button class="sm sec" data-as="aus">Ausente</button>` : e === "a" ? `<button class="sm" data-as="in">✔ Presente</button>${r.aus ? `<button class="sm sec" data-as="back">Esperar</button>` : ""}` : `<button class="sm sec" data-as="undo">Quitar</button>`;
+    return `<div class="as-row" data-c="${esc(r.c)}"><div class="as-n"><b>${esc(r.s)}</b><small>${esc(r.cu)}${r.b ? " · 🪑 " + esc(butacaTxt(r.b)) : ""}${h ? " · llegó " + h : ""}</small></div><div class="as-b">${b}</div></div>`;
+  };
+  const sec = (k, titulo, e) => {
+    const l = vis.filter(r => asEstado(r) === e); if (!l.length) return "";
+    const m = new Map(); l.sort((a, b) => a.cu.localeCompare(b.cu, "es") || a.s.localeCompare(b.s, "es")).forEach(r => { if (!m.has(r.cu)) m.set(r.cu, []); m.get(r.cu).push(r); });
+    return `<details class="as-sec ${e}" data-k="${e}"${asOpen[e] ? " open" : ""}><summary><span>${titulo}</span><b>${l.length}</b></summary>${[...m].map(([cu, a]) => `<div class="as-cuh"><span>${esc(cu)}</span><span>${a.length}</span></div>${a.map(r => fila(r, e)).join("")}`).join("")}</details>`;
+  };
+  $("#asList").innerHTML = (sec("f", "⏳ Faltan por llegar", "f") + sec("a", "✖ Ausentes", "a") + sec("p", "✔ Presentes", "p")) || `<p class="muted">Sin resultados.</p>`;
+}
+$("#asQ").oninput = renderAsist; $("#asCurso").onchange = renderAsist;
+$("#asList").addEventListener("click", async e => {
+  const b = e.target.closest("[data-as]"); if (!b) return; const row = b.closest(".as-row"), cod = row.dataset.c, r = state.inv.get(String(cod).toUpperCase()); if (!r) return;
+  b.disabled = true;
+  try {
+    if (b.dataset.as === "in") { if (r.aus) await api("grad_aus", { code: cod, ausente: "0" }); await api("manual", { code: cod }); r.aus = false; r.used = { h: nowStr(), o: state.user.nombre }; beep("ok"); }
+    else if (b.dataset.as === "aus") { await api("grad_aus", { code: cod, ausente: "1" }); r.aus = true; r.used = null; }
+    else if (b.dataset.as === "back") { await api("grad_aus", { code: cod, ausente: "0" }); r.aus = false; }
+    else if (b.dataset.as === "undo") { await api("undo", { code: cod }); r.used = null; }
+    sala.plan = null; renderMini(); renderAsist();
+  } catch (er) { if (!onAuthFail(er)) alert(er.message); b.disabled = false; }
+});
+/* ───────── Alumnos graduados: lista, RUT, butaca, ausentes y correo ─────────
 let gradData = [], gradSel = new Set(), gradFiltro = "all";
 const cap1 = s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 const rutCorreo = rut => { const r = String(rut || "").trim().toLowerCase().replace(/[.\s]/g, ""); return r ? r + DOMINIO : ""; };
