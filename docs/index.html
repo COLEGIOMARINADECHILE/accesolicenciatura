@@ -263,6 +263,10 @@ label.pq{display:flex;gap:10px;align-items:center;margin:6px 0;color:var(--ink);
 #ov .pip{width:30px;height:30px;font-size:13px}
 #ov button{margin-top:0;padding:12px 28px;font-size:17px}
 #ov button.undo{padding:9px 18px;font-size:15px}
+.seat.aqui{fill:#ef4444;stroke:#fff;stroke-width:1.4}
+.seat.zona{stroke:#ef4444;stroke-width:1.8;animation:llego 1s ease-in-out infinite}
+.ringp{fill:none;stroke:#ef4444;stroke-width:2.2;transform-box:fill-box;transform-origin:center;animation:ringp 1.1s ease-out infinite;pointer-events:none}
+@keyframes ringp{0%{transform:scale(.6);opacity:1}100%{transform:scale(2.4);opacity:0}}
 .seat.llego{stroke:#fde047;stroke-width:3;animation:llego 1s ease-in-out infinite}
 @keyframes llego{50%{stroke-width:1}}
 .legend .lg-ll{background:#ec4899;border:3px solid #fde047}
@@ -800,13 +804,15 @@ function audio() {
   if (actx.state === "suspended") actx.resume();
   return actx;
 }
-function tone(freq, t0, dur, type = "sine", vol = .8, freqEnd) {
-  const a = audio(), t = a.currentTime + t0, o = a.createOscillator(), g = a.createGain();
+function tone(freq, t0, dur, type = "sine", vol = .8, freqEnd, hold = 0) {
+  const a = audio(), t = a.currentTime + .04 + t0, o = a.createOscillator(), g = a.createGain();
   o.type = type; o.frequency.setValueAtTime(freq, t); if (freqEnd) o.frequency.exponentialRampToValueAtTime(freqEnd, t + dur);
-  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .012); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .012); if (hold) g.gain.setValueAtTime(vol, t + dur * hold); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
   o.connect(g); g.connect(comp); o.start(t); o.stop(t + dur + .03);
 }
-function bell(freq, t0, dur, vol) { tone(freq, t0, dur, "sine", vol); tone(freq * 2, t0, dur * .7, "sine", vol * .28); tone(freq * 3, t0, dur * .4, "sine", vol * .1); }
+/* onda triangular con armónicos y sostenida: los parlantes de celular la reproducen mucho más fuerte que un seno puro */
+function bell(freq, t0, dur, vol) { tone(freq, t0, dur, "triangle", vol, 0, .6); tone(freq * 2, t0, dur * .7, "sine", vol * .35, 0, .5); }
+["pointerdown", "touchend", "click"].forEach(ev => document.addEventListener(ev, () => { try { audio(); } catch {} }, { once: true, passive: true }));   // desbloquea el audio con el primer toque
 function speak(txt) {
   if (!state.voice || !("speechSynthesis" in window)) return;
   try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(txt); u.lang = "es-ES"; u.rate = 1; u.volume = 1; speechSynthesis.speak(u); } catch {}
@@ -816,7 +822,7 @@ function beep(kind) {
   try {
     if (navigator.vibrate) navigator.vibrate(kind === "ok" ? 60 : kind === "tick" ? 25 : [120, 70, 120]);
     if (kind === "tick") { tone(1400, 0, .05, "sine", .4); return; }
-    if (kind === "ok") { bell(784, 0, .5, .8); bell(1047, .15, .8, .8); setTimeout(() => speak("Aprobado"), 450); }
+    if (kind === "ok") { bell(880, 0, .4, 1); bell(1319, .18, .9, 1); setTimeout(() => speak("Aprobado"), 450); }
     else if (kind === "dup") { tone(587, 0, .2, "triangle", .9); tone(587, .26, .32, "triangle", .9); setTimeout(() => speak("Ya utilizada"), 700); }
     else { tone(330, 0, .75, "triangle", 1, 165); setTimeout(() => speak("No válida"), 800); }
   } catch {}
@@ -1004,6 +1010,7 @@ function showResult(r, id, extra = "") {
   ov.className = "show " + cls;
   ov.innerHTML = `<div class="ovb"><div class="ic">${ic}</div><h3>${title}</h3>${body}${extra}</div><div class="ovf"><button id="ovNext">Siguiente</button></div>`;
   $("#ovNext").onclick = closeOv;
+  if (r.ticket && r.ticket.codigo) { const bm = document.createElement("button"); bm.className = "sec"; bm.style.cssText = "background:rgba(255,255,255,.22);color:#fff;border:1.5px solid rgba(255,255,255,.65);box-shadow:none"; bm.textContent = "📍 Ver en el mapa"; bm.onclick = () => { clearTimeout(ovTimer); ubicarEnMapa(r.ticket.codigo); }; $(".ovf", ov).appendChild(bm); }
   const puedeRevertir = r.ticket && (isAdmin() || (puedeRegistrar() && r.ticket.tipo === "GRADUADO"));      // revertir: solo administradores (y los alumnos graduados, también acceso)
   if (puedeRevertir && (r.status === "ok" || r.status === "duplicate")) {
     const b = document.createElement("button");
@@ -1028,7 +1035,7 @@ function showResult(r, id, extra = "") {
   ovTimer = setTimeout(closeOv, cls === "ok" ? (conNombre ? 9000 : 2300) : (conNombre ? 10000 : 7000));
   renderMini();
 }
-function closeOv() { clearTimeout(ovTimer); const o = $("#ov"); o.className = ""; state.shown = { id: 0, cls: "" }; try { speechSynthesis.cancel(); } catch {} }
+function closeOv() { clearTimeout(ovTimer); const o = $("#ov"); o.className = ""; state.shown = { id: 0, cls: "" }; try { speechSynthesis.cancel(); } catch {} if (cam.run && cam.video?.paused) cam.video.play().catch(() => {}); }
 $("#ovX").onclick = closeOv;
 $("#ov").addEventListener("click", e => { if (e.target === $("#ov") && !$("#ov").classList.contains("wait")) closeOv(); });
 
@@ -1037,7 +1044,7 @@ async function serverDecides(text, manual, id) {
   const ov = $("#ov"); clearTimeout(ovTimer); ov.dataset.cls = ""; ov.className = "show wait";
   ov.innerHTML = `<div class="spin"></div><h3>Validando…</h3>`; beep("tick");
   try {
-    const r = await api(manual ? "manual" : "scan", { code: text, rid: Math.random().toString(36).slice(2, 10) });
+    const r = await Promise.race([api(manual ? "manual" : "scan", { code: text, rid: Math.random().toString(36).slice(2, 10) }), new Promise((_, ko) => setTimeout(() => ko(new Error("Tiempo de espera agotado")), 10000))]);
     if (state.scanSeq === id || r.status !== "ok") showResult(r, id); else markLocal(r.ticket.codigo, r.hora, state.user.nombre);
     if (!state.inv.has(String(r.ticket?.codigo || "").toUpperCase())) loadCheck();
   } catch (e) {
@@ -1108,9 +1115,13 @@ function camLoop() {
   if (!cam.run) return;
   cam.raf = requestAnimationFrame(async () => {
     const t = performance.now();
+    if (cam.video.paused) cam.video.play().catch(() => {});
     if (!cam.dec && t - cam.last >= 55 && cam.video.readyState >= 2 && cam.video.videoWidth) {
       cam.last = t; cam.dec = true;
-      try { const txt = await decodeFrame(); if (txt) handleCode(txt); } catch {}
+      try {
+        const txt = await Promise.race([decodeFrame(), new Promise(r => setTimeout(() => r(""), 1200))]);   // nunca se queda esperando al detector
+        if (txt) { const n = Date.now(), igual = txt === cam.lastTxt && n - cam.lastSeen < 1500; cam.lastSeen = n; cam.lastTxt = txt; if (!igual) handleCode(txt); }   // el mismo QR a la vista no reabre el aviso
+      } catch {}
       cam.dec = false;
     }
     camLoop();
@@ -1135,6 +1146,7 @@ async function stopCam() {
   $("#btnCam").textContent = "Iniciar cámara"; $("#btnTorch").style.display = "none"; $("#idle").hidden = false;
 }
 $("#btnCam").onclick = () => cam.run ? stopCam() : startCam();
+document.addEventListener("visibilitychange", () => { if (document.hidden || !cam.run) return; const tr = cam.stream?.getVideoTracks()[0]; if (!tr || tr.readyState === "ended") stopCam().then(startCam); else cam.video.play().catch(() => {}); });
 $("#btnTorch").onclick = async () => { try { cam.torch = !cam.torch; await cam.stream.getVideoTracks()[0].applyConstraints({ advanced: [{ torch: cam.torch }] }); } catch {} };
 $("#btnManual").onclick = () => { try { audio(); } catch {} const v = $("#manual").value; $("#manual").value = ""; handleCode(v, true); };
 $("#btnRevert").onclick = async () => {
@@ -1211,7 +1223,7 @@ function renderAlumnos() {
     <div class="student ${openIds.has(a.codEst) ? "open" : ""}" data-id="${esc(a.codEst)}">
       <div class="top"><div><div class="name">${esc(a.nombre)}${a.especial ? (state.inv.get(String(a.invitaciones[0]?.codigo || "").toUpperCase())?.f ? '<span class="vip fn">FUNCIONARIO</span>' : '<span class="vip">INVITADO</span>') : a.extra ? '<span class="vip">EXTRA</span>' : ""}</div><div class="muted">${a.especial ? esc(a.cargo || "Invitado") + " · " : esc(a.curso) + " · "}${esc(a.codEst)}</div></div><b>${a.ingresados}/${a.total}</b></div>
       ${pips(a)}
-      <div class="detail"><table>${a.invitaciones.map(i => `<tr><td>N.º ${i.n} · ${esc(i.codigo)}${i.invitado ? `<br><span class="muted">${esc(i.invitado)}${i.cargo ? " · " + esc(i.cargo) : ""}</span>` : ""}</td><td>${i.entro ? "✔ " + esc((i.hora || "").slice(11, 19)) : "—"}</td><td style="text-align:right">${i.entro ? (isAdmin() ? `<button class="sec sm" data-undo="${esc(i.codigo)}">Anular</button>` : "") : (puedeRegistrar() ? `<button class="sec sm" data-in="${esc(i.codigo)}">Marcar ingreso</button>` : "")}</td></tr>`).join("")}</table></div>
+      <div class="detail"><table>${a.invitaciones.map(i => `<tr><td>N.º ${i.n} · ${esc(i.codigo)}${i.invitado ? `<br><span class="muted">${esc(i.invitado)}${i.cargo ? " · " + esc(i.cargo) : ""}</span>` : ""}</td><td>${i.entro ? "✔ " + esc((i.hora || "").slice(11, 19)) : "—"}</td><td style="text-align:right"><button class="sec sm" data-map="${esc(i.codigo)}">📍</button> ${i.entro ? (isAdmin() ? `<button class="sec sm" data-undo="${esc(i.codigo)}">Anular</button>` : "") : (puedeRegistrar() ? `<button class="sec sm" data-in="${esc(i.codigo)}">Marcar ingreso</button>` : "")}</td></tr>`).join("")}</table></div>
     </div>`).join("");
 }
 $("#q").oninput = renderAlumnos;
@@ -1434,6 +1446,37 @@ function mapaButaca(actual, onPick, propio, permitirA) {
   m.querySelector("[data-x]").onclick = () => m.remove(); m.addEventListener("click", e => { if (e.target === m) m.remove(); });
   ok.onclick = () => { onPick(sel); m.remove(); }; pintar();
 }/* Selector de butaca (piso · fila · asiento) para reservar un puesto a un invitado */
+/** Muestra en el mapa dónde se sienta una persona (su butaca numerada o, si no la tiene, su zona) para quien ubica a los invitados. */
+function ubicarEnMapa(c) {
+  const r = state.inv.get(String(c).toUpperCase()); if (!r) return;
+  const pl = planSala(), res = reservasPersonas(), g = r.t === "GRADUADO" ? "a" : r.t === "ESPECIAL" ? (r.f ? "f" : "o") : "fam", zona = pl.reg[g] || [];
+  const key = r.b && SALA.byKey.has(String(r.b).toUpperCase()) ? SALA.byKey.get(String(r.b).toUpperCase()) : -1;
+  let piso = key >= 0 ? SALA.seats[key].piso : (zona.length ? SALA.seats[zona[0]].piso : 0);
+  const quien = r.t === "ESPECIAL" ? (r.i || "Invitado especial") : r.t === "GRADUADO" ? r.s : (r.i || ("Invitado de " + r.s));
+  const m = document.createElement("div"); m.id = "pickmap";
+  m.innerHTML = `<div class="pm"><div class="mini"><b>📍 ${esc(quien)}</b><button class="sm sec" data-x>Cerrar</button></div><div class="seg" style="margin:10px 0 6px"></div><svg></svg>
+    <div class="infobox pmi"></div><div class="legend"><span><i class="lg-E" style="background:#ef4444"></i>Su butaca</span><span><i class="lg-g"></i>Alumnos graduados</span><span><i class="lg-m"></i>Funcionarios</span><span><i style="background:rgba(47,95,167,.25);border:1.5px solid var(--brand)"></i>Invitados de alumnos</span></div></div>`;
+  document.body.appendChild(m);
+  const svg = m.querySelector("svg"), seg = m.querySelector(".seg"), info = m.querySelector(".pmi"); svg.innerHTML = svgSalaMarkup(); const els = [...svg.querySelectorAll(".seat")];
+  seg.innerHTML = SALA.pisos.map((p, pi) => `<button data-p="${pi}">Piso ${p.num}</button>`).join("");
+  const base = { a: "sg", f: "sf", o: "so", fam: "sa" };
+  const pintar = () => {
+    svg.querySelectorAll(".gp").forEach(x => { x.style.display = +x.dataset.p === piso ? "" : "none"; }); svg.setAttribute("viewBox", SALA.pisos[piso].vb);
+    seg.querySelectorAll("button").forEach(b => b.classList.toggle("on", +b.dataset.p === piso));
+    svg.querySelectorAll(".ringp").forEach(x => x.remove());
+    els.forEach((el, i) => { const ci = pl.cat[i]; let cls = base[ci] || "s0"; el.setAttribute("r", "4.3");
+      if (i === key) { cls = "aqui"; el.setAttribute("r", "6.8"); } else if (key < 0 && ci === g) cls += " zona";
+      el.setAttribute("class", "seat " + cls); });
+    if (key >= 0 && SALA.seats[key].piso === piso) { const s = SALA.seats[key], gp = svg.querySelector(`.gp[data-p="${piso}"]`); gp?.insertAdjacentHTML("beforeend", `<circle class="ringp" cx="${s.x}" cy="${s.y}" r="9"></circle>`); }
+  };
+  seg.querySelectorAll("button").forEach(b => b.onclick = () => { piso = +b.dataset.p; pintar(); });
+  if (key >= 0) info.innerHTML = `Su butaca: <b>${esc(butacaTxt(r.b))}</b>${r.k ? " · " + esc(r.k) : ""}.`;
+  else if (zona.length) info.innerHTML = `<b>No tiene butaca numerada.</b> Ubícalo en la zona resaltada (<b>${esc(CAT[g])}</b>), de ${esc(butacaTxt(SALA.seats[zona[0]].key))} a ${esc(butacaTxt(SALA.seats[zona[zona.length - 1]].key))}. Cambia de piso con los botones de arriba.`;
+  else info.textContent = "Aún no hay lugar asignado en el mapa para esta persona.";
+  m.querySelector("[data-x]").onclick = () => m.remove(); m.addEventListener("click", e => { if (e.target === m) m.remove(); });
+  pintar();
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-map]"); if (b) ubicarEnMapa(b.dataset.map); });
 function pickerHtml() { return `<select data-sp="p">${SALA.pisos.map(p => `<option value="${p.num}">Piso ${p.num}</option>`).join("")}</select><select data-sp="f"></select><select data-sp="n"></select>`; }
 function pickerInit(root, valor) {
   root.innerHTML = pickerHtml();
@@ -1819,7 +1862,7 @@ function renderAsist() {
   const puede = puedeRegistrar(), fila = (r, e) => {
     const h = r.used?.h ? String(r.used.h).slice(11, 16) : "";
     const b = !puede ? "" : e === "f" ? `<button class="sm" data-as="in">✔ Presente</button><button class="sm sec" data-as="aus">Ausente</button>` : e === "a" ? `<button class="sm" data-as="in">✔ Presente</button>${r.aus ? `<button class="sm sec" data-as="back">Esperar</button>` : ""}` : `<button class="sm sec" data-as="undo">Quitar</button>`;
-    return `<div class="as-row" data-c="${esc(r.c)}"><div class="as-n"><b>${esc(r.s)}</b><small>${esc(r.cu)}${r.b ? " · 🪑 " + esc(butacaTxt(r.b)) : ""}${h ? " · llegó " + h : ""}</small></div><div class="as-b">${b}</div></div>`;
+    return `<div class="as-row" data-c="${esc(r.c)}"><div class="as-n"><b>${esc(r.s)}</b><small>${esc(r.cu)}${r.b ? " · 🪑 " + esc(butacaTxt(r.b)) : ""}${h ? " · llegó " + h : ""}</small></div><div class="as-b"><button class="sec sm" data-map="${esc(r.c)}">📍</button>${b}</div></div>`;
   };
   const sec = (k, titulo, e) => {
     const l = vis.filter(r => asEstado(r) === e); if (!l.length) return "";
