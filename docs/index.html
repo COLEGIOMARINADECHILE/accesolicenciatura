@@ -293,6 +293,34 @@ label.pq{display:flex;gap:10px;align-items:center;margin:6px 0;color:var(--ink);
 #mailprev .mp{background:var(--card);border-radius:16px;width:100%;max-width:680px;height:calc(var(--vh,100dvh) - 20px);display:flex;flex-direction:column;padding:12px;gap:8px}
 #mailprev iframe{flex:1;min-height:0;width:100%;border:1px solid var(--line);border-radius:10px;background:#fff}
 #mailprev .mh{font-size:13px;line-height:1.4}
+/* ───── Tema más vivo ───── */
+:root{--muted:#46587a;--line:#d0dcee;--shadow:0 2px 4px rgba(11,31,58,.07),0 14px 32px rgba(29,74,134,.14)}
+@media (prefers-color-scheme:dark){:root{--muted:#a9bddb;--line:#26406a;--shadow:0 2px 4px rgba(0,0,0,.45),0 14px 32px rgba(0,0,0,.4)}}
+html,body{background:radial-gradient(900px 480px at 105% -8%,rgba(95,160,255,.30),transparent 62%),radial-gradient(760px 460px at -12% 38%,rgba(224,178,76,.20),transparent 60%),var(--bg);background-attachment:fixed}
+main{background:transparent}
+header{background:linear-gradient(135deg,#0a1b34 0%,#1d4a86 60%,#2f6fc4 100%);border-bottom:3px solid var(--gold)}
+.card{border:1px solid rgba(47,95,167,.16);box-shadow:var(--shadow);border-radius:20px}
+h2{color:var(--ink);font-weight:800;display:flex;align-items:center}
+h2::before{content:"";display:inline-block;width:5px;height:15px;border-radius:3px;margin-right:9px;background:linear-gradient(180deg,#f2cf79,#d9a53a);flex:none}
+button{background-image:linear-gradient(180deg,rgba(255,255,255,.20),rgba(255,255,255,0));box-shadow:0 4px 12px rgba(47,95,167,.32)}
+button.sec,button.danger,nav button,.seg button,#togglePin,.as-b button.sec{box-shadow:none}
+button.sec{background-color:var(--card);border-color:rgba(47,95,167,.35);font-weight:700}
+button.danger{background-color:var(--card);border-color:rgba(185,28,28,.4)}
+.seg{box-shadow:inset 0 1px 4px rgba(11,31,58,.12);background:linear-gradient(180deg,#d9e5f6,#e5edf9)}
+.seg button.on{font-weight:800;box-shadow:0 2px 8px rgba(11,31,58,.22)}
+nav{border-top:2px solid rgba(47,95,167,.18);box-shadow:0 -6px 22px rgba(11,31,58,.10)}
+nav button.active{color:var(--brand);font-weight:700;background:linear-gradient(180deg,rgba(47,95,167,.16),transparent)}
+nav button.active::before{height:4px;background:linear-gradient(90deg,#f2cf79,#d9a53a)}
+input,select{background:color-mix(in srgb,var(--card) 80%,var(--bg));border:1px solid rgba(47,95,167,.28)}
+.bar{height:13px;background:color-mix(in srgb,var(--brand) 14%,var(--card))}
+.bar>i{background:linear-gradient(90deg,#2f5fa7,#4fa3ff 60%,#22c55e)}
+.student{border-left:5px solid var(--brand)}
+.agrad{border-left:5px solid var(--brand);box-shadow:var(--shadow)}
+.agrad:has(.chip.ok){border-left-color:#22c55e}.agrad:has(.chip.aus){border-left-color:#ef4444}
+.as-row:nth-child(even){background:color-mix(in srgb,var(--brand) 5%,transparent)}
+.as-sec{border:1px solid rgba(47,95,167,.16)}
+.cursohd{background:linear-gradient(90deg,rgba(47,95,167,.14),transparent);padding:6px 10px;border-radius:10px;border-left:4px solid var(--gold)}
+.fun,.invcard{border-left:5px solid var(--gold)}
 </style>
 </head>
 <body>
@@ -1812,7 +1840,7 @@ $("#asList").addEventListener("click", async e => {
     sala.plan = null; renderMini(); renderAsist();
   } catch (er) { if (!onAuthFail(er)) alert(er.message); b.disabled = false; }
 });
-/* ───────── Alumnos graduados: lista, RUT, butaca, ausentes y correo ─────────
+/* ───────── Alumnos graduados: lista, RUT, butaca, ausentes y correo ───────── */
 let gradData = [], gradSel = new Set(), gradFiltro = "all";
 const cap1 = s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 const rutCorreo = rut => { const r = String(rut || "").trim().toLowerCase().replace(/[.\s]/g, ""); return r ? r + DOMINIO : ""; };
