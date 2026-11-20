@@ -272,6 +272,7 @@ label.pq{display:flex;gap:10px;align-items:center;margin:6px 0;color:var(--ink);
 .agrad .t{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
 .agrad .chip{font-size:12px;font-weight:700;padding:3px 9px;border-radius:99px;background:var(--line);color:var(--ink);white-space:nowrap}
 .agrad .chip.ok{background:var(--okbg);color:var(--ok)}.agrad .chip.aus{background:var(--badbg);color:var(--bad)}
+.editfun{margin-top:8px;border-top:1px dashed var(--line);padding-top:8px}
 .agrad .acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .agrad input.rut{margin-top:6px}
 #mailprev{position:fixed;inset:0;z-index:80;background:rgba(8,17,31,.7);display:flex;align-items:center;justify-content:center;padding:10px}
@@ -475,9 +476,24 @@ label.pq{display:flex;gap:10px;align-items:center;margin:6px 0;color:var(--ink);
         <p class="muted" id="aluMsg" style="margin:8px 0 0"></p>
       </div>
       <div class="card">
+        <h2>Lista de curso (cargar RUT)</h2>
+        <p class="muted" style="margin:0 0 8px">Sube la «Lista de Curso» del SIGE (PDF) o una planilla Excel/CSV, uno o varios cursos a la vez. Se extrae el RUT de cada alumno y se asocia por nombre. No se guarda nada hasta que confirmes.</p>
+        <input id="aluFile" type="file" accept=".pdf,.xlsx,.xls,.csv" multiple>
+        <label class="pq" style="margin-top:8px"><input type="checkbox" id="aluCreaNuevos" checked> Crear como alumnos nuevos los que no estén en la lista</label>
+        <button id="aluImpOk" style="width:100%;margin-top:8px" hidden>Cargar RUT</button>
+        <p class="muted" id="aluImpOut" style="margin:8px 0 0"></p>
+      </div>
+      <div class="card">
+        <h2>Hora de inicio y asistencia</h2>
+        <p class="muted" style="margin:0 0 8px">Quien escanea su QR queda <b>confirmado</b>. Pasada la hora de inicio, los alumnos sin marca pasan solos a <b>ausente</b> (se descuentan de los asistentes y liberan su butaca en el mapa). Sin hora definida, nadie pasa a ausente automáticamente.</p>
+        <input id="aluHora" type="datetime-local">
+        <div class="row" style="margin-top:8px"><button class="sm" id="aluCfgOk">Guardar hora y personas</button><button class="sm sec" id="aluCfgNo">Quitar hora</button></div>
+        <p class="muted" id="aluCfgMsg" style="margin:8px 0 0"></p>
+      </div>
+      <div class="card">
         <h2>Correo para los alumnos</h2>
         <p class="muted" style="margin:0 0 8px">Se envía a <b>RUT@andaliensur.cl</b> con su QR, su butaca y la indicación de a quién acercarse al llegar. Siempre verás una vista previa antes de enviar.</p>
-        <input id="aluPersona" placeholder="Persona que pasa lista al llegar (ej. Prof. Marcela Soto)" autocomplete="off">
+        <input id="aluPersona" placeholder="Personas que pasan lista (separa con coma): Prof. Marcela Soto, Inspector Pérez" autocomplete="off">
         <input id="aluMsgExtra" placeholder="Mensaje adicional (opcional)" autocomplete="off" style="margin-top:8px">
         <div class="row" style="margin-top:8px"><button class="sm sec" id="aluSelSin">Marcar sin enviar</button><button class="sm sec" id="aluSelTodos">Todos</button><button class="sm sec" id="aluSelNada">Ninguno</button></div>
         <button id="aluEnviar" style="width:100%;margin-top:8px">Vista previa y enviar</button>
@@ -511,6 +527,7 @@ label.pq{display:flex;gap:10px;align-items:center;margin:6px 0;color:var(--ink);
         <h2>Nuevo funcionario</h2>
         <label>Nombre completo <span class="muted">(el correo se completa solo)</span></label><input id="fNom" autocomplete="off" placeholder="Ej: Juan Andrés Pérez González">
         <label>Correo electrónico <span class="muted">(editable)</span></label><input id="fMail" type="text" autocomplete="off" autocapitalize="none" inputmode="email" placeholder="nombre.apellido@andaliensur.cl">
+        <label>Función <span class="muted">(opcional, ej. Puerta principal, Orden platea)</span></label><input id="fFunc" autocomplete="off" placeholder="Ej: Puerta principal">
         <label>Perfil</label>
         <select id="fRol"><option value="Acceso">Control de acceso (puertas: registra y contabiliza ingresos)</option><option value="Orden">Orden y ubicación (consulta el QR, no registra)</option><option value="Administrador">Administrador (todo, puede revertir)</option></select>
         <button id="btnFAdd" style="width:100%;margin-top:14px">Crear y enviar PIN por correo</button>
@@ -637,16 +654,18 @@ function demoApi(action, p) {
     else { x.curso = "Invitaciones extra"; x.codEst = x.codigo; x.numero = 1; x.estudiante = "Invitación extra"; x.tipo = "EXTRA"; x.invitado = ""; x.cargo = ""; }
     return { ok: true }; }
   if (action === "cuota") return { ok: true, restante: 100 };
+  if (action === "cfg_set") { if (user.rol !== "admin") return { ok: false, error: "Solo el administrador puede hacer esto" }; demoDB.hi = p.hi || ""; demoDB.personas = p.personas || ""; return { ok: true }; }
   if (action.startsWith("grad_") || action === "mail_html") {
     const norm2 = s => String(s || "").trim().toUpperCase();
     if (action === "grad_aus") { if (user.rol === "orden") return { ok: false, error: "Tu perfil no puede hacer esto" }; const x = demoDB.inv.find(z => z.codigo === norm2(p.code) && z.tipo === "GRADUADO"); if (!x) return { ok: false, error: "No existe ese alumno graduado" }; x.aus = p.ausente === "1"; if (x.aus) { x.entro = false; x.hora = ""; } return { ok: true }; }
     if (user.rol !== "admin") return { ok: false, error: "Solo el administrador puede hacer esto" };
     const tk = () => Array.from({ length: 5 }, () => "23456789ABCDEFGHJKMNPQRSTUVWXYZ"[Math.floor(Math.random() * 31)]).join("");
     const rc = r => { r = String(r || "").trim().toLowerCase().replace(/[.\s]/g, ""); return r ? r + "@andaliensur.cl" : ""; };
-    if (action === "grad_list") return { ok: true, graduados: demoDB.inv.filter(x => x.tipo === "GRADUADO").map(x => ({ codigo: x.codigo, token: x.token, curso: x.curso, nombre: x.estudiante, rut: x.rut || "", correo: x.correo || "", butaca: x.butaca || "", estado: x.aus ? "AUSENTE" : (x.entro ? "INGRESÓ" : ""), enviado: x.enviado || "" })) };
+    if (action === "grad_list") return { ok: true, cfg: { hi: demoDB.hi || "", personas: demoDB.personas || "" }, graduados: demoDB.inv.filter(x => x.tipo === "GRADUADO").map(x => ({ codigo: x.codigo, token: x.token, curso: x.curso, nombre: x.estudiante, rut: x.rut || "", correo: x.correo || "", butaca: x.butaca || "", estado: x.aus ? "AUSENTE" : (x.entro ? "INGRESÓ" : ""), enviado: x.enviado || "" })) };
     if (action === "grad_crear") { const vistos = new Set(), ya = new Set(demoDB.inv.filter(x => x.tipo === "GRADUADO").map(x => x.estudiante)); let n = 0; demoDB.inv.filter(x => !x.tipo).forEach(x => { if (vistos.has(x.codEst) || ya.has(x.estudiante)) return; vistos.add(x.codEst); demoDB.inv.push({ codigo: "G" + x.codEst, token: tk(), curso: x.curso, codEst: "G" + x.codEst, numero: 1, estudiante: x.estudiante, entro: false, hora: "", oper: "", invitado: "", cargo: "", correo: "", tipo: "GRADUADO", rut: "", butaca: "" }); n++; }); return { ok: true, creados: n }; }
     if (action === "grad_add") { const n = demoDB.inv.filter(x => /^GX\d+$/.test(x.codigo)).length + 1, c = "GX" + String(n).padStart(3, "0"); demoDB.inv.push({ codigo: c, token: tk(), curso: p.curso || "Sin curso", codEst: c, numero: 1, estudiante: p.nombre, entro: false, hora: "", oper: "", invitado: "", cargo: "", correo: rc(p.rut), tipo: "GRADUADO", rut: p.rut || "", butaca: "" }); return { ok: true, codigo: c }; }
     if (action === "grad_edit") { const x = demoDB.inv.find(z => z.codigo === norm2(p.code)); if (!x) return { ok: false, error: "No existe" }; if (p.rut !== undefined) { x.rut = p.rut; x.correo = rc(p.rut); } if (p.curso) x.curso = p.curso; if (p.nombre) x.estudiante = p.nombre; return { ok: true }; }
+    if (action === "grad_ruts") { let na = 0, nc = 0; (p.items || []).forEach(it => { if (it.code) { const x = demoDB.inv.find(z => z.codigo === it.code); if (x) { x.rut = it.rut; x.correo = rc(it.rut); na++; } } else { const n = demoDB.inv.filter(x => /^GX\d+$/.test(x.codigo)).length + 1, cc = "GX" + String(n).padStart(3, "0"); demoDB.inv.push({ codigo: cc, token: tk(), curso: it.curso || "Sin curso", codEst: cc, numero: 1, estudiante: it.nombre, entro: false, hora: "", oper: "", invitado: "", cargo: "", correo: rc(it.rut), tipo: "GRADUADO", rut: it.rut, butaca: "" }); nc++; } }); return { ok: true, actualizados: na, creados: nc }; }
     if (action === "grad_butacas") { const mp = p.map || {}; Object.keys(mp).forEach(k => { const x = demoDB.inv.find(z => z.codigo === k); if (x) x.butaca = mp[k]; }); return { ok: true, cambios: Object.keys(mp).length }; }
     if (action === "mail_html") { const x = demoDB.inv.find(z => z.codigo === norm2(p.code)); if (x) x.enviado = nowStr(); return { ok: true }; }
   }
@@ -679,8 +698,9 @@ function demoApi(action, p) {
     if (user.rol !== "admin") return { ok: false, error: "Solo el administrador puede hacer esto" };
     const gen = () => Array.from({ length: 6 }, () => "ABCDEFGHJKMNPQRSTUVWXYZ23456789"[Math.floor(Math.random() * 31)]).join("");
     if (action === "func_list") return { ok: true, funcionarios: demoDB.fun };
-    if (action === "func_add") { if (fun(p.correo)) return { ok: false, error: "Ese correo ya está registrado" }; const f = { nombre: p.nombre, correo: String(p.correo).toLowerCase(), pin: gen(), rol: p.rol, activo: true, ultimo: "", enviado: p.enviar === "1" ? nowStr() : "" }; demoDB.fun.push(f); return { ok: true, pin: f.pin, enviado: p.enviar === "1" }; }
+    if (action === "func_add") { if (fun(p.correo)) return { ok: false, error: "Ese correo ya está registrado" }; const f = { nombre: p.nombre, correo: String(p.correo).toLowerCase(), pin: gen(), rol: p.rol, funcion: p.funcion || "", activo: true, ultimo: "", enviado: p.enviar === "1" ? nowStr() : "" }; demoDB.fun.push(f); return { ok: true, pin: f.pin, enviado: p.enviar === "1" }; }
     const f = fun(p.correo); if (!f) return { ok: false, error: "No existe" };
+    if (action === "func_edit") { if (p.nuevoCorreo) f.correo = String(p.nuevoCorreo).toLowerCase(); if (p.nombre) f.nombre = p.nombre; if (p.rol) f.rol = p.rol; if (p.funcion !== undefined) f.funcion = p.funcion; return { ok: true }; }
     if (action === "func_toggle") { f.activo = !f.activo; return { ok: true, activo: f.activo }; }
     if (action === "func_reset") { f.pin = gen(); return { ok: true, pin: f.pin, enviado: p.enviar === "1" }; }
     if (action === "func_send") { f.enviado = nowStr(); return { ok: true, enviado: true }; }
@@ -693,7 +713,7 @@ function demoApi(action, p) {
 async function api(action, params = {}) {
   if (state.demo) {
     if (action === "checklist") return { ok: true, l: await Promise.all(demoDB.inv.map(async x => ({ c: x.codigo, h: await sha16(x.codigo + "|" + x.token), s: x.estudiante, u: x.curso, e: x.codEst, n: x.numero, i: x.invitado, k: x.cargo, t: x.tipo, b: x.butaca || "", f: /@andaliensur\.cl$/i.test(x.correo || "") ? 1 : 0 }))), m: demoDB.marksObj || { a: [], f: [], o: [], n: 131 }, mv: demoDB.mv || 0 };
-    if (action === "used") return { ok: true, n: demoDB.inv.length, u: demoDB.inv.filter(x => x.entro).map(x => ({ c: x.codigo, h: x.hora, o: x.oper })), aus: demoDB.inv.filter(x => x.aus).map(x => x.codigo), mv: demoDB.mv || 0 };
+    if (action === "used") return { ok: true, n: demoDB.inv.length, u: demoDB.inv.filter(x => x.entro).map(x => ({ c: x.codigo, h: x.hora, o: x.oper })), aus: demoDB.inv.filter(x => x.aus).map(x => x.codigo), mv: demoDB.mv || 0, hi: demoDB.hi || "" };
     return unwrap(demoApi(action, { pin: state.pin, ...params }));
   }
   if (!state.url) throw new Error("Falta la URL del Apps Script (Yo → Avanzado).");
@@ -826,6 +846,7 @@ async function syncUsed(force) {
   if (!state.user || !state.invReady || syncing || (document.hidden && !force)) return; syncing = true;
   try {
     const r = await api("used"), srv = new Map(r.u.map(x => [String(x.c).toUpperCase(), x])), pend = new Set(state.queue.map(q => q.cod));
+    state.hi = r.hi || "";
     const aus = new Set((r.aus || []).map(x => String(x).toUpperCase()));
     for (const [c, rec] of state.inv) { const s = srv.get(c); if (s) rec.used = { h: s.h, o: s.o }; else if (rec.used && !pend.has(c)) rec.used = null; rec.aus = aus.has(c); }
     setConn("on"); renderMini();
@@ -833,10 +854,12 @@ async function syncUsed(force) {
   } catch (e) { if (!onAuthFail(e)) setConn("err"); }
   finally { syncing = false; }
 }
+const esAus = r => r.t === "GRADUADO" && (r.aus || (state.hi && !r.used && nowStr().slice(0, 16).replace(" ", "T") >= state.hi));   // sin marca a la hora de inicio → ausente
+setInterval(() => { if (state.hi && state.user) renderMini(); }, 30000);
 function liveStats() {   // todo se calcula con los datos que ya tiene el teléfono: se actualiza al instante
   let tot = 0, ing = 0, gradTot = 0, gradLleg = 0, gradAus = 0; const cursos = new Map();
   state.inv.forEach(r => {
-    if (r.t === "GRADUADO") { if (r.aus) gradAus++; else { gradTot++; if (r.used) gradLleg++; } return; }
+    if (r.t === "GRADUADO") { if (esAus(r)) gradAus++; else { gradTot++; if (r.used) gradLleg++; } return; }
     tot++; if (r.used) ing++;
     const cu = r.t === "ESPECIAL" ? CURSO_ESPECIAL : r.cu, c = cursos.get(cu) || { curso: cu, total: 0, ingresados: 0 }; c.total++; if (r.used) c.ingresados++; cursos.set(cu, c);
   });
@@ -1198,7 +1221,7 @@ function cargarMarcas(m) {
  *  · desde el piso 3 en adelante, por orden → invitados de los alumnos. Si se agregan invitados especiales, los invitados de los alumnos se corren hacia atrás.
  *  Quien tiene butaca reservada va en ella. El administrador puede marcar a mano las butacas de alumnos, funcionarios y otros invitados. */
 function planSala() {
-  const S = SALA.seats, recs = [...state.inv.values()].filter(r => !(r.t === "GRADUADO" && r.aus)), conB = r => r.b && SALA.byKey.has(String(r.b).toUpperCase());
+  const S = SALA.seats, recs = [...state.inv.values()].filter(r => !esAus(r)), conB = r => r.b && SALA.byKey.has(String(r.b).toUpperCase());
   const rsv = recs.filter(conB), libres = recs.filter(r => !conB(r)), grupo = r => r.t === "GRADUADO" ? "a" : r.t === "ESPECIAL" ? (r.f ? "f" : "o") : "fam";
   const tot = { f: 0, o: 0, fam: 0, a: 0 }, arr = { f: 0, o: 0, fam: 0, a: 0 }, hayGrad = recs.some(r => r.t === "GRADUADO");
   libres.forEach(r => { const g = grupo(r); tot[g]++; if (r.used) arr[g]++; });
@@ -1284,7 +1307,7 @@ function updateSala(force) {
       if (!force && antes && /^s[EAC]/.test(key) && !/^s[EAC]/.test(antes)) el.classList.add("pop");
     }
   });
-  let dentro = 0; state.inv.forEach(r => { if (r.t === "GRADUADO" ? !r.aus : r.used) dentro++; }); const p = pct(dentro, AFORO_REF);
+  let dentro = 0; state.inv.forEach(r => { if (r.t === "GRADUADO" ? !esAus(r) : r.used) dentro++; }); const p = pct(dentro, AFORO_REF);
   $("#salaTxt").textContent = `${dentro} en sala · ${p}% del aforo`; $("#salaBar").style.width = p + "%";
   $("#salaAforo").textContent = `Aforo ${AFORO_REF.toLocaleString("es-CL")} butacas · alumnos graduados ${pl.reg.a.length} · funcionarios ${pl.arr.f}/${pl.tot.f} · otros invitados ${pl.arr.o}/${pl.tot.o} · invitados de alumnos ${pl.arr.fam}/${pl.tot.fam}` + (pl.sin ? ` · ${pl.sin} sin lugar en el mapa` : "");
   pisoInfo();
@@ -1754,7 +1777,7 @@ ${o.extra ? `<p style="margin:0 0 10px;font-size:16px;line-height:1.5">${esc(o.e
 <div style="margin-top:8px;font-size:15px"><b>${esc(d.completo)}</b></div><div style="font-size:14px;color:#51627a">${esc(g.curso || "")} · Código ${esc(g.codigo)}</div></td></tr></table></div>
 <div style="padding:14px 26px 4px"><div style="background:#fdf3d7;border-left:5px solid #c9971c;border-radius:8px;padding:12px 14px"><div style="font-size:13px;text-transform:uppercase;letter-spacing:1px;color:#7a5a08">Tu butaca</div>
 <div style="font-size:21px;font-weight:bold">${but ? esc(but) : "Se te indicará el día de la ceremonia"}</div></div></div>
-<div style="padding:12px 26px 24px"><div style="background:#e8f1fb;border-left:5px solid #2d6cb5;border-radius:8px;padding:12px 14px;font-size:16px;line-height:1.5"><b>Al llegar al teatro</b>, acércate a <b>${o.persona ? esc(o.persona) : "la persona encargada"}</b> para que te pase lista con este código QR. Puedes mostrarlo desde tu celular o impreso.</div></div>
+<div style="padding:12px 26px 24px"><div style="background:#e8f1fb;border-left:5px solid #2d6cb5;border-radius:8px;padding:12px 14px;font-size:16px;line-height:1.5"><b>Al llegar al teatro</b>, acércate a <b>${o.persona ? esc(personasTexto(o.persona)) : "la persona encargada"}</b> para que te ${listaPersonas(o.persona).length > 1 ? "pasen" : "pase"} lista con este código QR. Puedes mostrarlo desde tu celular o impreso.</div></div>
 </td></tr></table></div>`;
 }
 async function armaCorreoAlumno(g, ops) {
@@ -1762,18 +1785,22 @@ async function armaCorreoAlumno(g, ops) {
   return { qr, banner: rc.banner, html: correoAlumnoHtml(g, { ...ops, qr: "cid:qr", banner: rc.banner ? "cid:banner" : "" }), vista: correoAlumnoHtml(g, { ...ops, qr, banner: rc.banner }) };
 }
 /** Vista previa del correo tal como lo verá el alumno; devuelve true si se confirma el envío. */
-function vistaPrevia(para, asunto, vista, textoOk) {
+function vistaPrevia(para, asunto, vista, textoOk, soloVer) {
   return new Promise(res => {
     const m = document.createElement("div"); m.id = "mailprev";
-    m.innerHTML = `<div class="mp"><div class="mh"><b>Así lo verá el alumno</b> (vista previa, aún no se ha enviado)<br>Para: <b>${esc(para)}</b> · Asunto: ${esc(asunto)}</div><iframe sandbox></iframe><div class="row"><button class="sec" data-n style="flex:1">Cancelar</button><button data-y style="flex:2">${esc(textoOk)}</button></div></div>`;
+    m.innerHTML = `<div class="mp"><div class="mh"><b>Así lo verá el alumno</b> (vista previa, aún no se ha enviado)<br>Para: <b>${esc(para)}</b> · Asunto: ${esc(asunto)}</div><iframe sandbox></iframe>${soloVer ? `<div class="row"><button class="sec" data-n style="flex:1">Cerrar</button></div>` : `<div class="row"><button class="sec" data-n style="flex:1">Cancelar</button><button data-y style="flex:2">${esc(textoOk)}</button></div>`}</div>`;
     document.body.appendChild(m); m.querySelector("iframe").srcdoc = `<meta charset="utf-8"><body style="margin:0">${vista}</body>`;
-    const fin = v => { m.remove(); res(v); }; m.querySelector("[data-n]").onclick = () => fin(false); m.querySelector("[data-y]").onclick = () => fin(true);
+    const fin = v => { m.remove(); res(v); }; m.querySelector("[data-n]").onclick = () => fin(false); const y = m.querySelector("[data-y]"); if (y) y.onclick = () => fin(true);
   });
 }
 const ASUNTO_AL = "Tu invitación y tu butaca · Licenciatura 2026";
 const opsAlumno = () => ({ persona: $("#aluPersona").value.trim(), extra: $("#aluMsgExtra").value.trim() });
 try { $("#aluPersona").value = localStorage.getItem("personaLista") || ""; } catch {}
 $("#aluPersona").oninput = () => { try { localStorage.setItem("personaLista", $("#aluPersona").value); } catch {} };
+async function guardarCfg(msg) { try { await api("cfg_set", { hi: $("#aluHora").value, personas: $("#aluPersona").value.trim() }); state.hi = $("#aluHora").value; renderMini(); if ($("#paneAlu") && !$("#paneAlu").hidden) renderAlu(); if (msg) msg.textContent = "✔ Guardado" + (state.hi ? ": pasada esa hora, los alumnos sin marca quedan ausentes." : "."); } catch (e) { if (!onAuthFail(e) && msg) msg.textContent = "✖ " + e.message; } }
+$("#aluPersona").onchange = () => guardarCfg();
+$("#aluCfgOk").onclick = () => guardarCfg($("#aluCfgMsg"));
+$("#aluCfgNo").onclick = () => { $("#aluHora").value = ""; guardarCfg($("#aluCfgMsg")); };
 async function enviarCorreoAlumno(g, ops) {
   const correo = g.correo || rutCorreo(g.rut); if (!correo) throw new Error("Sin RUT/correo");
   const a = await armaCorreoAlumno(g, ops), images = { qr: a.qr }; if (a.banner) images.banner = a.banner;
@@ -1781,25 +1808,34 @@ async function enviarCorreoAlumno(g, ops) {
   g.enviado = nowStr();
 }
 const recG = g => state.inv.get(String(g.codigo).toUpperCase());
-function estadoG(g) { const r = recG(g); return r?.aus || g.estado === "AUSENTE" ? "aus" : (r?.used || g.estado === "INGRESÓ") ? "ok" : ""; }
+function estadoG(g) { const r = recG(g); return (r ? esAus(r) : g.estado === "AUSENTE") ? "aus" : (r?.used || g.estado === "INGRESÓ") ? "ok" : ""; }
+const nrm = s => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+let lastVis = [];
+/** Varias personas: "Ana, Luis y Pedro" → mismas en todos los correos. */
+function listaPersonas(txt) { return String(txt || "").split(/[,;\n]| y (?=[A-ZÁÉÍÓÚÑ])/).map(s => s.trim()).filter(Boolean); }
+function personasTexto(txt) { const p = listaPersonas(txt); return p.length > 1 ? p.slice(0, -1).join(", ") + " y " + p[p.length - 1] : (p[0] || ""); }
 async function loadAlu() {
   if (!isAdmin()) return;
-  try { gradData = (await api("grad_list")).graduados; renderAlu(); } catch (e) { if (!onAuthFail(e)) $("#aluMsg").textContent = "✖ " + e.message; }
+  try {
+    const r = await api("grad_list"); gradData = r.graduados;
+    if (r.cfg) { state.hi = r.cfg.hi || ""; $("#aluHora").value = r.cfg.hi || ""; if (r.cfg.personas) $("#aluPersona").value = r.cfg.personas; }
+    renderAlu();
+  } catch (e) { if (!onAuthFail(e)) $("#aluMsg").textContent = "✖ " + e.message + (/desconoc|Unknown|acci/i.test(e.message) ? " — Falta actualizar Code.gs en Apps Script y publicar una nueva versión." : ""); }
 }
 function renderAlu() {
-  const q = $("#aluBuscar").value.trim().toLowerCase(), sin = gradData.filter(g => !g.butaca).length, aus = gradData.filter(g => estadoG(g) === "aus").length, llegaron = gradData.filter(g => estadoG(g) === "ok").length;
+  const q = nrm($("#aluBuscar").value), sin = gradData.filter(g => !g.butaca).length, aus = gradData.filter(g => estadoG(g) === "aus").length, llegaron = gradData.filter(g => estadoG(g) === "ok").length;
   $("#aluMsg").textContent = gradData.length ? `${gradData.length} alumnos · ${llegaron} ya llegaron · ${aus} ausentes · ${sin} sin butaca · ${gradData.filter(g => g.enviado).length} con correo enviado` : "Aún no hay alumnos graduados: pulsa «Crear lista desde los alumnos».";
   $$("#aluTabs button").forEach(b => b.classList.toggle("on", b.dataset.f === gradFiltro));
-  let l = gradData.filter(g => (g.nombre + " " + g.curso + " " + g.rut + " " + g.codigo).toLowerCase().includes(q));
+  let l = gradData.filter(g => nrm(g.nombre + " " + g.curso + " " + g.rut + " " + g.codigo).includes(q));
   if (gradFiltro === "falta") l = l.filter(g => !g.butaca); if (gradFiltro === "aus") l = l.filter(g => estadoG(g) === "aus");
   l.sort((a, b) => a.curso.localeCompare(b.curso, "es") || a.nombre.localeCompare(b.nombre, "es"));
-  const box = $("#aluList"); box.innerHTML = l.length ? "" : `<p class="muted">Sin resultados.</p>`;
+  lastVis = l; const box = $("#aluList"); box.innerHTML = l.length ? (q ? `<p class="muted">${l.length} resultado(s)</p>` : "") : `<p class="muted">Sin resultados.</p>`;
   l.slice(0, 200).forEach(g => {
     const st = estadoG(g), div = document.createElement("div"); div.className = "agrad"; div.dataset.cod = g.codigo;
-    div.innerHTML = `<div class="t"><label style="display:flex;gap:8px;align-items:flex-start;margin:0;color:var(--ink)"><input type="checkbox" data-sel style="width:auto;margin-top:4px"${gradSel.has(g.codigo) ? " checked" : ""}><span><b>${esc(g.nombre)}</b><br><span class="muted">${esc(g.curso)} · ${esc(g.codigo)}</span></span></label><span class="chip ${st}">${st === "aus" ? "Ausente" : st === "ok" ? "✔ Llegó" : "Esperado"}</span></div>
+    div.innerHTML = `<div class="t"><label style="display:flex;gap:8px;align-items:flex-start;margin:0;color:var(--ink)"><input type="checkbox" data-sel style="width:auto;margin-top:4px"${gradSel.has(g.codigo) ? " checked" : ""}><span><b>${esc(g.nombre)}</b><br><span class="muted">${esc(g.curso)} · ${esc(g.codigo)}</span></span></label><span class="chip ${st}">${st === "aus" ? "Ausente" : st === "ok" ? "✔ Confirmado (QR)" : "Esperado"}</span></div>
       <input class="rut" placeholder="RUT (ej. 12345678-9)" value="${esc(g.rut || "")}" autocomplete="off"><div class="muted" data-c>${g.rut ? "✉ " + esc(rutCorreo(g.rut)) : "Sin RUT: no se puede enviar correo"}${g.enviado ? " · enviado " + esc(String(g.enviado).slice(0, 16).replace("T", " ")) : ""}</div>
       <div class="muted">🪑 ${g.butaca ? esc(butacaTxt(g.butaca)) : "Sin butaca asignada"}</div>
-      <div class="acts"><button class="sm sec" data-a="rut">Guardar RUT</button><button class="sm sec" data-a="seat">Butaca en mapa</button>${g.butaca ? `<button class="sm sec" data-a="noseat">Quitar butaca</button>` : ""}<button class="sm sec" data-a="aus">${st === "aus" ? "Quitar ausencia" : "Marcar ausente"}</button>${st !== "ok" && st !== "aus" ? `<button class="sm sec" data-a="in">Marcar llegada</button>` : ""}<button class="sm" data-a="mail">Correo…</button><button class="sm danger" data-a="x" hidden></button></div><span class="muted" data-m></span>`;
+      <div class="acts"><button class="sm sec" data-a="rut">Guardar RUT</button><button class="sm sec" data-a="seat">Butaca en mapa</button>${g.butaca ? `<button class="sm sec" data-a="noseat">Quitar butaca</button>` : ""}<button class="sm sec" data-a="aus">${st === "aus" ? "Quitar ausencia" : "Marcar ausente"}</button>${st !== "ok" && st !== "aus" ? `<button class="sm sec" data-a="in">Marcar llegada</button>` : ""}<button class="sm sec" data-a="prev">Vista previa</button><button class="sm" data-a="mail">Enviar correo</button><button class="sm danger" data-a="x" hidden></button></div><span class="muted" data-m></span>`;
     const m = div.querySelector("[data-m]"), say = s => { m.textContent = s; };
     div.querySelector("[data-sel]").onchange = e => { e.target.checked ? gradSel.add(g.codigo) : gradSel.delete(g.codigo); };
     const guarda = async fn => { say("Guardando…"); try { await fn(); } catch (e) { if (!onAuthFail(e)) say("✖ " + e.message); } };
@@ -1808,6 +1844,10 @@ function renderAlu() {
     const nb = div.querySelector('[data-a="noseat"]'); if (nb) nb.onclick = () => guarda(async () => { await apiPost("grad_butacas", { map: { [g.codigo]: "" } }); g.butaca = ""; const r = recG(g); if (r) r.b = ""; sala.plan = null; updateSala(true); renderAlu(); });
     div.querySelector('[data-a="aus"]').onclick = () => guarda(async () => { const nuevo = st !== "aus"; await api("grad_aus", { code: g.codigo, ausente: nuevo ? "1" : "0" }); const r = recG(g); if (r) { r.aus = nuevo; if (nuevo) r.used = null; } g.estado = nuevo ? "AUSENTE" : ""; sala.plan = null; renderMini(); renderAlu(); });
     const bi = div.querySelector('[data-a="in"]'); if (bi) bi.onclick = () => guarda(async () => { await api("manual", { code: g.codigo }); const r = recG(g); if (r) r.used = { h: nowStr(), o: state.user.nombre }; renderMini(); renderAlu(); });
+    div.querySelector('[data-a="prev"]').onclick = () => guarda(async () => {      // vista previa siempre disponible, aunque aún no tenga RUT
+      const a = await armaCorreoAlumno(g, opsAlumno()); say("");
+      await vistaPrevia(rutCorreo(g.rut) || "(sin RUT aún)", ASUNTO_AL, a.vista, "", true);
+    });
     div.querySelector('[data-a="mail"]').onclick = () => guarda(async () => {
       const ops = opsAlumno(); if (!ops.persona) { say("Escribe arriba quién pasa lista al llegar."); return; }
       const correo = rutCorreo(g.rut); if (!correo) { say("Falta el RUT de este alumno."); return; }
@@ -1821,7 +1861,7 @@ function renderAlu() {
 }
 $("#aluBuscar").oninput = renderAlu;
 $$("#aluTabs button").forEach(b => b.onclick = () => { gradFiltro = b.dataset.f; renderAlu(); });
-$("#aluSelTodos").onclick = () => { gradData.filter(g => g.rut).forEach(g => gradSel.add(g.codigo)); renderAlu(); };
+$("#aluSelTodos").onclick = () => { gradData.forEach(g => gradSel.add(g.codigo)); renderAlu(); $("#aluOut").textContent = `${gradSel.size} alumnos marcados` + (gradData.some(g => !g.rut) ? ` (${gradData.filter(g => !g.rut).length} sin RUT: se omitirán al enviar)` : "") + "."; };
 $("#aluSelSin").onclick = () => { gradSel.clear(); gradData.filter(g => g.rut && !g.enviado).forEach(g => gradSel.add(g.codigo)); renderAlu(); };
 $("#aluSelNada").onclick = () => { gradSel.clear(); renderAlu(); };
 $("#aluCrear").onclick = async () => {
@@ -1845,21 +1885,89 @@ $("#aluAuto").onclick = async () => {
   catch (e) { if (!onAuthFail(e)) $("#aluMsg").textContent = "✖ " + e.message; }
 };
 $("#aluEnviar").onclick = async () => {
-  const out = $("#aluOut"), ops = opsAlumno(), sel = gradData.filter(g => gradSel.has(g.codigo) && g.rut);
-  if (!ops.persona) { out.textContent = "Escribe quién pasa lista al llegar (ej. Prof. Marcela Soto)."; return; }
-  if (!sel.length) { out.textContent = "Marca al menos un alumno con RUT en la lista."; return; }
+  const out = $("#aluOut"), ops = opsAlumno(), sel = gradData.filter(g => gradSel.has(g.codigo));
+  if (!gradData.length) { out.textContent = "Aún no hay alumnos graduados: crea la lista arriba."; return; }
+  if (!sel.length) {      // sin selección: se muestra igual la vista previa del primero de la lista
+    const v = lastVis[0] || gradData[0], a = await armaCorreoAlumno(v, ops);
+    out.textContent = "No has marcado a nadie, así que te muestro cómo se ve el correo (de " + v.nombre + "). Pulsa «Todos» o marca casillas para enviar.";
+    await vistaPrevia(rutCorreo(v.rut) || "(sin RUT aún)", ASUNTO_AL, a.vista, "", true); return;
+  }
+  const conRut = sel.filter(g => g.rut), sinRut = sel.length - conRut.length, a = await armaCorreoAlumno(sel[0], ops);
+  if (!conRut.length || !ops.persona) {
+    out.textContent = !conRut.length ? "Ninguno de los marcados tiene RUT todavía (carga la lista de curso o escríbelo). Vista previa solamente." : "Escribe arriba quién(es) pasan lista para poder enviar. Vista previa solamente.";
+    await vistaPrevia(rutCorreo(sel[0].rut) || "(sin RUT aún)", ASUNTO_AL, a.vista, "", true); return;
+  }
   let cuota = null; try { cuota = (await api("cuota")).restante; } catch {}
-  if (cuota != null && sel.length > cuota) { out.textContent = `Hoy solo puedes enviar ${cuota} correos más (límite diario de Google).`; return; }
-  const a = await armaCorreoAlumno(sel[0], ops);
-  if (!(await vistaPrevia(rutCorreo(sel[0].rut), ASUNTO_AL, a.vista, `Enviar a ${sel.length} alumno${sel.length > 1 ? "s" : ""}`))) { out.textContent = "Envío cancelado."; return; }
+  if (cuota != null && conRut.length > cuota) { out.textContent = `Hoy solo puedes enviar ${cuota} correos más (límite diario de Google). Marca menos alumnos.`; return; }
+  const v1 = conRut[0], a1 = v1 === sel[0] ? a : await armaCorreoAlumno(v1, ops);
+  if (!(await vistaPrevia(rutCorreo(v1.rut), ASUNTO_AL, a1.vista, `Enviar a ${conRut.length} alumno${conRut.length > 1 ? "s" : ""}`))) { out.textContent = "Envío cancelado."; return; }
   $("#aluEnviar").disabled = true; let ok = 0; const fallos = [];
-  for (let k = 0; k < sel.length; k++) {
-    const g = sel[k]; out.textContent = `Enviando ${k + 1} de ${sel.length}… ${g.nombre}`; g.correo = rutCorreo(g.rut);
+  for (let k = 0; k < conRut.length; k++) {
+    const g = conRut[k]; out.textContent = `Enviando ${k + 1} de ${conRut.length}… ${g.nombre}`; g.correo = rutCorreo(g.rut);
     try { await enviarCorreoAlumno(g, ops); ok++; gradSel.delete(g.codigo); } catch (e) { if (e.auth) { onAuthFail(e); break; } fallos.push(g.nombre + ": " + e.message); }
   }
-  out.innerHTML = `✔ <b>${ok}</b> enviados` + (fallos.length ? `. Fallaron ${fallos.length}: ${esc(fallos.slice(0, 3).join("; "))}` : ""); $("#aluEnviar").disabled = false; renderAlu();
+  out.innerHTML = `✔ <b>${ok}</b> enviados` + (sinRut ? `. ${sinRut} omitidos por no tener RUT` : "") + (fallos.length ? `. Fallaron ${fallos.length}: ${esc(fallos.slice(0, 3).join("; "))}` : ""); $("#aluEnviar").disabled = false; renderAlu();
 };
-$("#segAlu").onclick = () => seg("alu");
+/* ───────── Lista de curso (PDF del SIGE, Excel o CSV) → RUT de cada alumno ───────── */
+async function pdfLib() {
+  if (window.pdfjsLib) return window.pdfjsLib;
+  const base = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";
+  await new Promise((ok, ko) => { const s = document.createElement("script"); s.src = base + "pdf.min.js"; s.onload = ok; s.onerror = () => ko(new Error("No se pudo cargar el lector de PDF (¿sin internet?)")); document.head.appendChild(s); });
+  try { const w = await (await fetch(base + "pdf.worker.min.js")).text(); pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(new Blob([w], { type: "text/javascript" })); } catch { pdfjsLib.GlobalWorkerOptions.workerSrc = base + "pdf.worker.min.js"; }
+  return pdfjsLib;
+}
+async function leerPdfLista(file) {
+  const lib = await pdfLib(), doc = await lib.getDocument({ data: await file.arrayBuffer() }).promise, out = []; let curso = "";
+  for (let p = 1; p <= doc.numPages; p++) {
+    const tc = await (await doc.getPage(p)).getTextContent(), rows = [];
+    tc.items.forEach(it => { if (!it.str.trim()) return; const y = Math.round(it.transform[5]); let r = rows.find(r => Math.abs(r.y - y) <= 2); if (!r) rows.push(r = { y, it: [] }); r.it.push(it); });
+    rows.sort((a, b) => b.y - a.y).forEach(r => {
+      const line = r.it.sort((a, b) => a.transform[4] - b.transform[4]).map(i => i.str.trim()).join(" ").replace(/\s+/g, " ");
+      const mc = /Curso\s*:?\s*\d+\s.*?(\d\s*°\s*medio\s*[A-Za-z])/i.exec(line); if (mc) curso = mc[1].replace(/\s+/g, " ").replace(/medio\s*([a-z])$/i, (m, l) => "medio " + l.toUpperCase());
+      const m = /^\d+\s+(\d{1,2}\.?\d{3}\.?\d{3}-[\dKk])\s+(.+?)\s+\d{1,2}\s+\d{2}\/\d{2}\/\d{4}/.exec(line);
+      if (m) out.push({ rut: m[1].replace(/\./g, "").toUpperCase(), nombre: m[2].trim(), curso });
+    });
+  }
+  return out;
+}
+async function leerTablaLista(file) {
+  const wb = XLSX.read(await file.arrayBuffer(), { type: "array" }), out = [];
+  wb.SheetNames.forEach(n => XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, defval: "", raw: false }).forEach(row => {
+    const cells = row.map(c => String(c).trim()), ir = cells.findIndex(c => /^\d{1,2}\.?\d{3}\.?\d{3}-[\dkK]$/.test(c)); if (ir < 0) return;
+    const nombre = cells.filter((c, i) => i !== ir && /[A-Za-zÁÉÍÓÚÑáéíóúñ]{2,}/.test(c) && !/^\d/.test(c)).sort((a, b) => b.length - a.length)[0];
+    if (nombre) out.push({ rut: cells[ir].replace(/\./g, "").toUpperCase(), nombre, curso: "" });
+  }));
+  return out;
+}
+const palabras = s => nrm(s).toUpperCase().replace(/[^A-Z ]/g, " ").split(/\s+/).filter(Boolean);
+function emparejaLista(lista) {
+  const idx = gradData.map(g => ({ g, t: palabras(g.nombre) })), usados = new Set();
+  return lista.map(it => {
+    const t = palabras(it.nombre), key = [...t].sort().join(" "); let hit = idx.find(x => !usados.has(x.g.codigo) && [...x.t].sort().join(" ") === key);
+    if (!hit) { let best = 0, cand = null; idx.forEach(x => { if (usados.has(x.g.codigo)) return; const com = x.t.filter(w => t.includes(w)).length, sc = com / Math.max(x.t.length, t.length); if (com >= 3 && sc > best) { best = sc; cand = x; } }); if (best >= .7) hit = cand; }
+    if (hit) usados.add(hit.g.codigo); return { ...it, g: hit ? hit.g : null };
+  });
+}
+let impAlu = [];
+$("#aluFile").onchange = async e => {
+  const out = $("#aluImpOut"), files = [...e.target.files]; if (!files.length) return; $("#aluImpOk").hidden = true; out.textContent = "Leyendo…";
+  try {
+    if (!gradData.length) await loadAlu();
+    let lista = []; for (const fl of files) lista = lista.concat(/\.pdf$/i.test(fl.name) ? await leerPdfLista(fl) : await leerTablaLista(fl));
+    if (!lista.length) { out.textContent = "No encontré alumnos con RUT en ese archivo. Debe ser la «Lista de Curso» del SIGE (PDF) o una planilla con columnas de RUT y nombre."; return; }
+    impAlu = emparejaLista(lista); const si = impAlu.filter(x => x.g), no = impAlu.filter(x => !x.g);
+    out.innerHTML = `Leí <b>${lista.length}</b> alumnos con RUT en ${files.length} archivo(s). Coinciden con alumnos graduados: <b>${si.length}</b>.` + (no.length ? ` Sin coincidencia: <b>${no.length}</b> (${esc(no.slice(0, 6).map(x => x.nombre).join("; "))}${no.length > 6 ? "…" : ""}).` : "");
+    $("#aluImpOk").textContent = `Cargar ${si.length} RUT` + (no.length && $("#aluCreaNuevos").checked ? ` y crear ${no.length} alumnos nuevos` : ""); $("#aluImpOk").hidden = !(si.length || (no.length && $("#aluCreaNuevos").checked));
+  } catch (er) { out.textContent = "✖ " + er.message; }
+};
+$("#aluCreaNuevos").onchange = () => $("#aluFile").dispatchEvent(new Event("change"));
+$("#aluImpOk").onclick = async () => {
+  const out = $("#aluImpOut"), items = impAlu.filter(x => x.g).map(x => ({ code: x.g.codigo, rut: x.rut }));
+  if ($("#aluCreaNuevos").checked) impAlu.filter(x => !x.g).forEach(x => items.push({ nombre: x.nombre, curso: x.curso, rut: x.rut }));
+  $("#aluImpOk").disabled = true; out.textContent = "Guardando…";
+  try { const r = await apiPost("grad_ruts", { items }); out.textContent = `✔ ${r.actualizados} RUT cargados` + (r.creados ? ` y ${r.creados} alumnos nuevos creados` : "") + "."; $("#aluImpOk").hidden = true; $("#aluFile").value = ""; await loadCheck(); await loadAlu(); }
+  catch (er) { if (!onAuthFail(er)) out.textContent = "✖ " + er.message; } finally { $("#aluImpOk").disabled = false; }
+};$("#segAlu").onclick = () => seg("alu");
 $("#segInv").onclick = () => seg("inv"); $("#segImp").onclick = () => seg("imp"); $("#segTeam").onclick = () => seg("team");
 
 /* ───────── Importar listado de funcionarios (Excel / CSV) ───────── */
@@ -1945,17 +2053,23 @@ $("#impCreate").onclick = async () => {
 };
 
 /* ───────── Equipo (administrador) ───────── */
+function abrirEdicionFun(el) {
+  if (el.querySelector(".editfun")) return; const d = el.dataset, bx = document.createElement("div"); bx.className = "editfun";
+  bx.innerHTML = `<label>Nombre</label><input data-e="nombre" value="${esc(d.nombre)}" autocomplete="off"><label>Correo</label><input data-e="correo" value="${esc(d.mail)}" autocapitalize="none" autocomplete="off"><label>Función (ej. Puerta principal, Orden platea)</label><input data-e="funcion" value="${esc(d.func)}" autocomplete="off"><label>Perfil</label><select data-e="rol"><option value="Acceso">Control de acceso</option><option value="Orden">Orden y ubicación</option><option value="Administrador">Administrador</option></select><div class="row" style="margin-top:8px"><button class="sm" data-fa="edit-ok">Guardar cambios</button><button class="sm sec" data-fa="edit-no">Cancelar</button></div>`;
+  el.appendChild(bx); bx.querySelector('[data-e="rol"]').value = /admin/i.test(d.rol) ? "Administrador" : /orden/i.test(d.rol) ? "Orden" : "Acceso";
+}
 async function loadFun() {
   if (!isAdmin()) return;
   try {
     const r = await api("func_list");
     $("#fList").innerHTML = r.funcionarios.length ? r.funcionarios.map(f => `
-      <div class="fun ${f.activo ? "" : "off"}" data-mail="${esc(f.correo)}">
+      <div class="fun ${f.activo ? "" : "off"}" data-mail="${esc(f.correo)}" data-nombre="${esc(f.nombre)}" data-rol="${esc(f.rol)}" data-func="${esc(f.funcion || "")}">
         <div class="h"><div class="avatar">${esc(f.nombre.trim().charAt(0).toUpperCase())}</div>
           <div style="flex:1;min-width:0"><div class="n">${esc(f.nombre)} <span class="role ${f.rol === "Administrador" ? "" : "f"}" style="${f.rol === "Administrador" ? "" : "background:var(--line);color:var(--muted)"}">${esc(f.rol)}</span></div>
-          <div class="muted" style="overflow:hidden;text-overflow:ellipsis">${esc(f.correo)}</div>
+          <div class="muted" style="overflow:hidden;text-overflow:ellipsis">${esc(f.correo)}</div>${f.funcion ? `<div class="muted">Función: <b>${esc(f.funcion)}</b></div>` : ""}
           <div class="muted">PIN: <span class="pinview" data-pin="${esc(f.pin)}">••••••</span> · ${f.activo ? "Activo" : "Desactivado"}${f.ultimo ? " · último acceso " + esc(f.ultimo.slice(0, 16)) : ""}${f.enviado ? " · correo enviado" : " · correo sin enviar"}</div></div></div>
         <div class="acts">
+          <button class="sm" data-fa="edit">Editar</button>
           <button class="sec sm" data-fa="send">Reenviar PIN</button>
           <button class="sec sm" data-fa="reset">Nueva PIN</button>
           <button class="sec sm" data-fa="toggle">${f.activo ? "Desactivar" : "Activar"}</button>
@@ -1968,9 +2082,9 @@ $("#btnFAdd").onclick = async () => {
   if (!nombre || !correo) { msg.textContent = "Completa nombre y correo."; return; }
   const b = $("#btnFAdd"); b.disabled = true; msg.textContent = "Creando y enviando correo…";
   try {
-    const r = await api("func_add", { nombre, correo, rol, enviar: "1" });
+    const r = await api("func_add", { nombre, correo, rol, funcion: $("#fFunc").value.trim(), enviar: "1" });
     msg.textContent = r.enviado ? `✔ Creado. Se envió la PIN a ${correo}.` : `Creado, pero el correo falló (${r.errorCorreo || "sin detalle"}). PIN: ${r.pin} — entrégala manualmente.`;
-    $("#fNom").value = ""; $("#fMail").value = ""; delete $("#fMail").dataset.edited; loadFun();
+    $("#fNom").value = ""; $("#fMail").value = ""; $("#fFunc").value = ""; delete $("#fMail").dataset.edited; loadFun();
   } catch (e) { if (!onAuthFail(e)) msg.textContent = "✖ " + e.message; }
   finally { b.disabled = false; }
 };
@@ -1979,6 +2093,9 @@ $("#fList").addEventListener("click", async e => {
   const btn = e.target.closest("[data-fa]"); if (!btn) return;
   const correo = btn.closest(".fun").dataset.mail, a = btn.dataset.fa;
   try {
+    if (a === "edit") { abrirEdicionFun(btn.closest(".fun")); return; }
+    if (a === "edit-no") { loadFun(); return; }
+    if (a === "edit-ok") { const bx = btn.closest(".editfun"), v = k => bx.querySelector(`[data-e="${k}"]`).value.trim(); await api("func_edit", { correo, nuevoCorreo: correoCompleto(v("correo")), nombre: v("nombre"), rol: v("rol"), funcion: v("funcion") }); loadFun(); return; }
     if (a === "del") { if (!confirm("¿Eliminar a " + correo + "? Perderá el acceso.")) return; await api("func_del", { correo }); }
     else if (a === "toggle") await api("func_toggle", { correo });
     else if (a === "reset") { if (!confirm("Se generará una PIN nueva y se enviará por correo. La anterior dejará de funcionar. ¿Continuar?")) return; const r = await api("func_reset", { correo, enviar: "1" }); alert(r.enviado ? "Nueva PIN enviada por correo." : "PIN nueva: " + r.pin + " (el correo falló: " + (r.errorCorreo || "") + ")"); }
