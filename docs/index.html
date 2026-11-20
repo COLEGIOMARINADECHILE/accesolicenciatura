@@ -1622,7 +1622,11 @@ $("#btnIAdd").onclick = async () => {
   }
   const b = $("#btnIAdd"); b.disabled = true; msg.textContent = "Creando…";
   try {
-    const r = await api("inv_add", params);
+    const r = await api("inv_add", params), quiere = params.cantidad || 1;
+    if (tipo === "especial" && r.invitaciones.length < quiere) {      // si Apps Script aún no está actualizado, se completan una a una
+      const p2 = { ...params, cantidad: 1 }; delete p2.butaca;
+      for (let k = r.invitaciones.length; k < quiere; k++) { msg.textContent = `Creando ${k + 1} de ${quiere}…`; const x = await api("inv_add", p2); r.invitaciones.push(...x.invitaciones); }
+    }
     msg.textContent = `✔ ${r.invitaciones.length} invitación(es) creada(s) y agregada(s) al listado. Descárgala abajo.`;
     $("#iNuevas").hidden = false; const box = $("#iNuevasList"); box.innerHTML = ""; for (const inv of r.invitaciones) await invCardHtml(inv, box);
     nuevasMail(r.invitaciones, params.correo);
@@ -1941,7 +1945,13 @@ function nuevasMail(invs, correo) {
       const nombre = invs[0].invitado || "Invitado", body = { codes: invs.map(i => i.codigo), nombre, correo, soloEnviar: true, saludo: saludoPara(nombre) || "Estimado/a", imagenes: [] };
       for (const i of invs) { msg.textContent = `Preparando… ${body.imagenes.length + 1} de ${invs.length}`; body.imagenes.push(await imagenCorreo(i)); }
       body.banner = (await recortesCorreo()).banner; msg.textContent = "Enviando…";
-      const r = await apiPost("inv_compartir", body); msg.innerHTML = `✔ Las ${invs.length} invitaciones se enviaron juntas a <b>${esc(correo)}</b>.`;
+      let r;
+      try { r = await apiPost("inv_compartir", body); msg.innerHTML = `✔ Las ${invs.length} invitaciones se enviaron juntas a <b>${esc(correo)}</b>.`; }
+      catch (e2) {      // Apps Script sin actualizar: se envían una por una
+        if (!/desconoc/i.test(e2.message)) throw e2; r = { enviado: nowStr() }; const rc = await recortesCorreo();
+        for (let k = 0; k < invs.length; k++) { msg.textContent = `Enviando ${k + 1} de ${invs.length} (por separado: falta actualizar Code.gs en Apps Script)…`; await apiPost("inv_mail", { code: invs[k].codigo, correo, nombre, saludo: body.saludo, imagen: body.imagenes[k], banner: rc.banner }); }
+        msg.innerHTML = `✔ Se enviaron ${invs.length} correos a <b>${esc(correo)}</b> (uno por invitación). Para enviarlas juntas en un solo correo, actualiza Code.gs en Apps Script y publica una nueva versión.`;
+      }
       invs.forEach(i => { i.enviado = r.enviado; i.correo = correo; marcarEnviada(i); }); loadInv();
     } catch (e) { if (!onAuthFail(e)) msg.textContent = "✖ " + e.message; } finally { b.disabled = false; }
   };
