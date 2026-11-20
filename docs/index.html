@@ -309,6 +309,7 @@ label.pq{display:flex;gap:10px;align-items:center;margin:6px 0;color:var(--ink);
 #mailprev{position:fixed;inset:0;z-index:80;background:rgba(8,17,31,.7);display:flex;align-items:center;justify-content:center;padding:10px}
 #mailprev .mp{background:var(--card);border-radius:16px;width:100%;max-width:680px;height:calc(var(--vh,100dvh) - 20px);display:flex;flex-direction:column;padding:12px;gap:8px}
 #mailprev iframe{flex:1;min-height:0;width:100%;border:1px solid var(--line);border-radius:10px;background:#fff}
+.cuenta{height:9px;background:var(--line);border-radius:9px;overflow:hidden}.cuenta i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#ef4444,#f59e0b,#22c55e);transition:width 1s linear}
 #mailprev .mh{font-size:13px;line-height:1.4}
 /* ───── Tema más vivo ───── */
 :root{--muted:#46587a;--line:#d0dcee;--shadow:0 2px 4px rgba(11,31,58,.07),0 14px 32px rgba(29,74,134,.14)}
@@ -1868,6 +1869,9 @@ async function invCardHtml(inv, cont) {
     const b = ev.currentTarget; b.disabled = true; mm.textContent = "Enviando…";
     try {
       const imagen = await imagenCorreo(inv), rc = await recortesCorreo();
+      mm.textContent = "Mostrando vista previa…";
+      if (!(await previaEnvio({ para: correo, asunto: ASUNTO_INV, html: htmlInvitacion({ saludo: si.value.trim(), nombre: ni.value.trim(), cargo: inv.cargo, mensaje: gi.value.trim(), butaca: inv.butaca, imgs: [imagen], banner: rc.banner }) }))) { mm.textContent = "Envío anulado: no se envió nada."; return; }
+      mm.textContent = "Enviando…";
       await apiPost("inv_mail", { code: inv.codigo, correo, nombre: ni.value.trim(), mensaje: gi.value.trim(), imagen, banner: rc.banner, saludo: si.value.trim() });
       mm.textContent = "✔ Enviada a " + correo; inv.enviado = nowStr(); marcarEnviada(inv);
     } catch (e) { if (!onAuthFail(e)) mm.textContent = "✖ " + e.message; } finally { b.disabled = false; }
@@ -1920,18 +1924,34 @@ async function imagenCorreo(inv) {   // invitación reducida (930 px) para que e
 async function enviarSeleccion() {
   const out = $("#bulkOut"), sel = invData.filter(i => selInv.has(i.codigo) && grupoDe(i) === grp), ok = sel.filter(i => i.correo);
   if (!ok.length) { out.textContent = "Marca al menos una invitación con correo."; return; }
+  // las invitaciones que van al MISMO correo se agrupan y se envían juntas en un solo mensaje
+  const gm = new Map(); ok.forEach(i => { const k = i.correo.trim().toLowerCase(); if (!gm.has(k)) gm.set(k, []); gm.get(k).push(i); });
+  const grupos = [...gm.entries()].map(([correo, items]) => ({ correo, items: items.slice(0, 20) })), juntos = grupos.filter(x => x.items.length > 1);
   let cuota = null; try { cuota = (await api("cuota")).restante; } catch {}
-  if (cuota != null && ok.length > cuota) { out.textContent = `Hoy solo puedes enviar ${cuota} correos más (límite diario de Google). Marca menos invitaciones.`; return; }
-  const ya = ok.filter(i => i.enviado).length;
-  if (!confirm(`¿Enviar ${ok.length} invitaciones por correo?` + (ya ? `\n${ya} ya se enviaron antes y se enviarán de nuevo.` : "") + (sel.length > ok.length ? `\n${sel.length - ok.length} sin correo se omiten.` : "") + (cuota != null ? `\nCupo de envíos de hoy: ${cuota}.` : ""))) return;
+  if (cuota != null && grupos.length > cuota) { out.textContent = `Hoy solo puedes enviar ${cuota} correos más (límite diario de Google). Marca menos invitaciones.`; return; }
+  const ya = ok.filter(i => i.enviado).length, rc = await recortesCorreo(), auto = $("#bulkAuto").checked, msg = $("#bulkMsg").value.trim();
+  out.textContent = "Preparando la vista previa…";
+  const g0 = grupos[0], n0 = g0.items[0].invitado || "", im0 = []; for (const i of g0.items) im0.push(await imagenCorreo(i));
+  const resumen = `<b>${grupos.length} correo${grupos.length > 1 ? "s" : ""}</b> con ${ok.length} ${ok.length > 1 ? "invitaciones" : "invitación"} en total.` +
+    (juntos.length ? ` <b>Juntas en un solo correo:</b> ` + juntos.slice(0, 5).map(x => `${esc(x.correo)} (${x.items.length})`).join(", ") + (juntos.length > 5 ? "…" : "") + "." : " Cada invitación va a un correo distinto.") +
+    (ya ? ` ${ya} ya se enviaron antes y se reenviarán.` : "") + (sel.length > ok.length ? ` ${sel.length - ok.length} sin correo se omiten.` : "") + (grupos.length > 1 ? ` <i>Se muestra el primer correo; los demás tienen el mismo formato.</i>` : "");
+  const html0 = htmlInvitacion({ saludo: auto ? (saludoPara(n0) || "Estimado/a") : "Estimado/a", nombre: n0, cargo: g0.items.length === 1 ? g0.items[0].cargo : "", mensaje: msg, butaca: g0.items.length === 1 ? g0.items[0].butaca : "", imgs: im0, banner: rc.banner });
+  if (!(await previaEnvio({ para: g0.correo, asunto: ASUNTO_INV, html: html0, resumen }))) { out.textContent = "Envío anulado: no se envió nada."; return; }
   $("#bulkSend").disabled = true; $("#bulkStop").hidden = false; bulkStop = false;
-  const rc = await recortesCorreo(), auto = $("#bulkAuto").checked, msg = $("#bulkMsg").value.trim(); let enviadas = 0; const fallos = [];
-  for (let k = 0; k < ok.length && !bulkStop; k++) {
-    const i = ok[k]; out.textContent = `Enviando ${k + 1} de ${ok.length}… ${i.invitado || i.codigo}`;
-    try { await apiPost("inv_mail", { code: i.codigo, correo: i.correo, nombre: i.invitado, saludo: auto ? saludoPara(i.invitado) : "", mensaje: msg, imagen: await imagenCorreo(i), banner: rc.banner }); i.enviado = nowStr(); enviadas++; marcarEnviada(i); }
-    catch (e) { if (e.auth) { onAuthFail(e); break; } fallos.push((i.invitado || i.codigo) + ": " + e.message); }
+  let correos = 0, invs = 0, separados = false; const fallos = [];
+  for (let k = 0; k < grupos.length && !bulkStop; k++) {
+    const { correo, items } = grupos[k], nombre = items[0].invitado || ""; out.textContent = `Enviando ${k + 1} de ${grupos.length}… ${nombre || correo}${items.length > 1 ? " (" + items.length + " invitaciones juntas)" : ""}`;
+    try {
+      const imagenes = []; for (const i of items) imagenes.push(await imagenCorreo(i));
+      if (items.length === 1) await apiPost("inv_mail", { code: items[0].codigo, correo, nombre, saludo: auto ? saludoPara(nombre) : "", mensaje: msg, imagen: imagenes[0], banner: rc.banner });
+      else {
+        try { await apiPost("inv_compartir", { codes: items.map(i => i.codigo), nombre: nombre || "Invitado", correo, soloEnviar: true, saludo: auto ? (saludoPara(nombre) || "Estimado/a") : "Estimado/a", mensaje: msg, imagenes, banner: rc.banner }); }
+        catch (e2) { if (!/desconoc/i.test(e2.message)) throw e2; separados = true; for (let j = 0; j < items.length; j++) await apiPost("inv_mail", { code: items[j].codigo, correo, nombre, saludo: auto ? saludoPara(nombre) : "", mensaje: msg, imagen: imagenes[j], banner: rc.banner }); }
+      }
+      items.forEach(i => { i.enviado = nowStr(); marcarEnviada(i); }); correos++; invs += items.length;
+    } catch (e) { if (e.auth) { onAuthFail(e); break; } fallos.push((nombre || correo) + ": " + e.message); }
   }
-  out.innerHTML = `✔ <b>${enviadas}</b> enviadas` + (bulkStop ? " (detenido)" : "") + (fallos.length ? `. Fallaron ${fallos.length}: ${esc(fallos.slice(0, 3).join("; "))}` : "");
+  out.innerHTML = `✔ <b>Enviado:</b> ${invs} invitación(es) en <b>${correos}</b> correo(s)` + (separados ? ` <span class="muted">(el servidor no está actualizado: las de una misma persona salieron en correos separados; publica el nuevo Code.gs para agruparlas)</span>` : "") + (bulkStop ? " (detenido)" : "") + (fallos.length ? `. Fallaron ${fallos.length}: ${esc(fallos.slice(0, 3).join("; "))}` : "");
   $("#bulkSend").disabled = false; $("#bulkStop").hidden = true; selInv.clear(); await renderInvList();
 }
 $("#bulkSend").onclick = enviarSeleccion;
@@ -1944,7 +1964,9 @@ function nuevasMail(invs, correo) {
     try {
       const nombre = invs[0].invitado || "Invitado", body = { codes: invs.map(i => i.codigo), nombre, correo, soloEnviar: true, saludo: saludoPara(nombre) || "Estimado/a", imagenes: [] };
       for (const i of invs) { msg.textContent = `Preparando… ${body.imagenes.length + 1} de ${invs.length}`; body.imagenes.push(await imagenCorreo(i)); }
-      body.banner = (await recortesCorreo()).banner; msg.textContent = "Enviando…";
+      body.banner = (await recortesCorreo()).banner; msg.textContent = "Mostrando vista previa…";
+      if (!(await previaEnvio({ para: correo, asunto: ASUNTO_INV, resumen: `<b>${invs.length} invitaciones juntas</b> en un solo correo.`, html: htmlInvitacion({ saludo: body.saludo, nombre, cargo: "", mensaje: "", butaca: "", imgs: body.imagenes, banner: body.banner }) }))) { msg.textContent = "Envío anulado: no se envió nada."; return; }
+      msg.textContent = "Enviando…";
       let r;
       try { r = await apiPost("inv_compartir", body); msg.innerHTML = `✔ Las ${invs.length} invitaciones se enviaron juntas a <b>${esc(correo)}</b>.`; }
       catch (e2) {      // Apps Script sin actualizar: se envían una por una
@@ -1963,11 +1985,13 @@ async function compartirExtras(conCorreo) {
   const libres = invData.filter(i => i.tipo === "EXTRA" && !i.invitado && !i.entro).sort((a, b) => a.codigo.localeCompare(b.codigo));
   if (libres.length < n) { msg.textContent = `Solo quedan ${libres.length} extras sin asignar. Crea más arriba (tipo «Extra sin asignar»).`; return; }
   const sel = libres.slice(0, n);
-  if (!confirm(`Se ${conCorreo ? "enviarán" : "marcarán como compartidas"} ${n} invitación(es) extra (${sel.map(i => i.codigo).join(", ")}) a ${nombre}${conCorreo ? " (" + correo + ")" : ""}.\nQuedarán marcadas como compartidas y no se incluirán al imprimir. ¿Continuar?`)) return;
+  if (!conCorreo && !confirm(`Se ${conCorreo ? "enviarán" : "marcarán como compartidas"} ${n} invitación(es) extra (${sel.map(i => i.codigo).join(", ")}) a ${nombre}${conCorreo ? " (" + correo + ")" : ""}.\nQuedarán marcadas como compartidas y no se incluirán al imprimir. ¿Continuar?`)) return;
   $("#cmpEnviar").disabled = $("#cmpMarcar").disabled = true; msg.textContent = "Preparando…";
   try {
     const body = { codes: sel.map(i => i.codigo), nombre, correo: conCorreo ? correo : "", saludo: saludoPara(nombre) || "Estimado/a", mensaje: $("#cmpTxt").value.trim() };
-    if (conCorreo) { body.imagenes = []; for (const i of sel) { msg.textContent = `Preparando invitaciones… ${body.imagenes.length + 1} de ${n}`; body.imagenes.push(await imagenCorreo({ ...i, invitado: nombre })); } body.banner = (await recortesCorreo()).banner; msg.textContent = "Enviando…"; }
+    if (conCorreo) { body.imagenes = []; for (const i of sel) { msg.textContent = `Preparando invitaciones… ${body.imagenes.length + 1} de ${n}`; body.imagenes.push(await imagenCorreo({ ...i, invitado: nombre })); } const bn = (await recortesCorreo()).banner; body.banner = bn; msg.textContent = "Mostrando vista previa…";
+      if (!(await previaEnvio({ para: correo, asunto: ASUNTO_INV, resumen: `<b>${n} invitación(es)</b> para <b>${esc(nombre)}</b>; quedarán marcadas como compartidas (no se imprimen).`, html: htmlInvitacion({ saludo: body.saludo, nombre, cargo: "", mensaje: body.mensaje, butaca: "", imgs: body.imagenes, banner: bn }) }))) { msg.textContent = "Envío anulado: no se envió ni se marcó nada."; return; }
+      msg.textContent = "Enviando…"; }
     const r = await apiPost("inv_compartir", body);
     sel.forEach(i => { i.invitado = nombre; i.correo = conCorreo ? correo : ""; i.enviado = r.enviado; });
     msg.innerHTML = `✔ ${n} invitación(es) ${conCorreo ? "enviadas a <b>" + esc(correo) + "</b> y " : ""}marcadas como compartidas con <b>${esc(nombre)}</b>. No las imprimas.`;
@@ -2120,6 +2144,33 @@ function vistaPrevia(para, asunto, vista, textoOk, soloVer) {
     const fin = v => { m.remove(); res(v); }; m.querySelector("[data-n]").onclick = () => fin(false); const y = m.querySelector("[data-y]"); if (y) y.onclick = () => fin(true);
   });
 }
+const ASUNTO_INV = "Invitación a la Licenciatura 2026 · Colegio Marina de Chile";
+/** Ventana con cómo se verá el correo y cuenta regresiva: si no se hace nada, se envía; «Anular» cancela el envío. */
+function previaEnvio({ para, asunto, html, resumen = "", seg = 10 }) {
+  return new Promise(res => {
+    const m = document.createElement("div"); m.id = "mailprev";
+    m.innerHTML = `<div class="mp"><div class="mh"><b>Así se verá el correo</b>${resumen ? "<br>" + resumen : ""}<br>Para: <b>${esc(para)}</b> · Asunto: ${esc(asunto)}</div><div class="cuenta"><i></i></div><iframe sandbox></iframe><div class="mh" data-t style="font-weight:700"></div><div class="row"><button class="sec" data-n style="flex:1">✖ Anular envío</button><button data-y style="flex:2"></button></div></div>`;
+    document.body.appendChild(m); m.querySelector("iframe").srcdoc = `<meta charset="utf-8"><body style="margin:0">${html}</body>`;
+    let s = seg, id; const y = m.querySelector("[data-y]"), bar = m.querySelector(".cuenta i"), tx = m.querySelector("[data-t]");
+    const pinta = () => { y.textContent = `✔ Enviar ahora (${s})`; tx.textContent = `Se enviará automáticamente en ${s} segundo${s === 1 ? "" : "s"} si no haces nada.`; bar.style.width = Math.round(s / seg * 100) + "%"; };
+    const fin = v => { clearInterval(id); m.remove(); res(v); };
+    m.querySelector("[data-n]").onclick = () => fin(false); y.onclick = () => fin(true);
+    pinta(); id = setInterval(() => { s--; if (s <= 0) fin(true); else pinta(); }, 1000);
+  });
+}
+/** Maqueta del correo de invitación (igual al que arma el servidor) para la vista previa. */
+function htmlInvitacion(o) {
+  const F = "Georgia,'Times New Roman',serif", n = o.imgs.length, but = o.butaca ? butacaTxt(o.butaca) : "";
+  return `<div style="background:#e9eef6;padding:18px 10px;font-family:${F}"><div style="max-width:600px;margin:auto;background:#f1f1ef;border:1px solid #d7dfeb;border-radius:16px;overflow:hidden">` +
+    (o.banner ? `<img src="${o.banner}" alt="" style="width:100%;display:block;border:0">` : `<div style="background:#0b1f3a;color:#fff;padding:22px;text-align:center;letter-spacing:3px">COLEGIO MARINA DE CHILE</div>`) +
+    `<div style="padding:4px 28px 0;text-align:center;color:#102744"><div style="letter-spacing:3px;font-size:12px">TE INVITAMOS A CELEBRAR NUESTRA</div><div style="font-size:36px;font-style:italic;margin:4px 0 2px">Licenciatura 2026</div></div>` +
+    `<div style="padding:14px 30px 6px;color:#102744;font-size:15px;line-height:1.6"><p style="margin:0 0 10px">${esc(o.saludo || "Estimado/a")} <b>${esc(o.nombre || "invitado/a")}</b>${o.cargo ? " (" + esc(o.cargo) + ")" : ""},</p>` +
+    `<p style="margin:0 0 10px">El Colegio Marina de Chile tiene el agrado de invitarle a nuestra ceremonia de licenciatura, que se realizará el <b>lunes 23 de noviembre a las 10:30 horas</b> en el <b>Teatro Bío Bío</b> (Avda. Cardenal Raúl Silva Henríquez 477, Concepción).</p>` +
+    (o.mensaje ? `<p style="margin:0 0 10px;background:#e4ecf8;border-left:4px solid #2f5fa7;padding:10px 14px;border-radius:6px">${esc(o.mensaje)}</p>` : "") +
+    `<p style="margin:0 0 6px">${n > 1 ? `Le enviamos <b>${n} invitaciones</b>: cada una tiene su propio código QR, es de <b>uso único</b> y sirve para una persona. Preséntelas desde el teléfono o impresas.` : `Para ingresar, presente el código QR de la invitación, desde su teléfono o impresa. Es de <b>uso único</b> y personal.`}</p>` +
+    (but ? `<p style="margin:12px 0 6px;background:#fff7e0;border:2px solid #e0b24c;border-radius:12px;padding:12px 16px;text-align:center">Su butaca reservada:<br><b style="font-size:19px">${esc(but)}</b></p>` : "") + `</div>` +
+    o.imgs.map(src => `<div style="text-align:center;padding:8px 30px 18px"><img src="${src}" alt="Invitación" style="width:310px;max-width:100%;border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,.25)"></div>`).join("") + `</div></div>`;
+}
 const ASUNTO_AL = "Tu invitación y tu butaca · Licenciatura 2026";
 const opsAlumno = () => ({ persona: $("#aluPersona").value.trim(), extra: $("#aluMsgExtra").value.trim() });
 try { $("#aluPersona").value = localStorage.getItem("personaLista") || ""; } catch {}
@@ -2186,7 +2237,7 @@ function renderAlu() {
       const ops = opsAlumno(); if (!ops.persona) { say("Escribe arriba quién pasa lista al llegar."); return; }
       const correo = rutCorreo(g.rut); if (!correo) { say("Falta el RUT de este alumno."); return; }
       const a = await armaCorreoAlumno(g, ops); say("");
-      if (!(await vistaPrevia(correo, ASUNTO_AL, a.vista, "Enviar a " + correo))) return;
+      if (!(await previaEnvio({ para: correo, asunto: ASUNTO_AL, html: a.vista, resumen: "Correo para el alumno <b>" + esc(g.nombre) + "</b>" }))) { say("Envío anulado: no se envió nada."); return; }
       say("Enviando…"); g.correo = correo; await enviarCorreoAlumno(g, ops); say("✔ Enviado a " + correo); renderAlu();
     });
     box.appendChild(div);
@@ -2239,7 +2290,7 @@ $("#aluEnviar").onclick = async () => {
   let cuota = null; try { cuota = (await api("cuota")).restante; } catch {}
   if (cuota != null && conRut.length > cuota) { out.textContent = `Hoy solo puedes enviar ${cuota} correos más (límite diario de Google). Marca menos alumnos.`; return; }
   const v1 = conRut[0], a1 = v1 === sel[0] ? a : await armaCorreoAlumno(v1, ops);
-  if (!(await vistaPrevia(rutCorreo(v1.rut), ASUNTO_AL, a1.vista, `Enviar a ${conRut.length} alumno${conRut.length > 1 ? "s" : ""}`))) { out.textContent = "Envío cancelado."; return; }
+  if (!(await previaEnvio({ para: rutCorreo(v1.rut), asunto: ASUNTO_AL, html: a1.vista, resumen: `Se enviarán <b>${conRut.length}</b> correo${conRut.length > 1 ? "s" : ""} (uno por alumno). ${conRut.length > 1 ? "Se muestra el primero; los demás tienen el mismo formato." : ""}` }))) { out.textContent = "Envío anulado: no se envió nada."; return; }
   $("#aluEnviar").disabled = true; let ok = 0; const fallos = [];
   for (let k = 0; k < conRut.length; k++) {
     const g = conRut[k]; out.textContent = `Enviando ${k + 1} de ${conRut.length}… ${g.nombre}`; g.correo = rutCorreo(g.rut);
