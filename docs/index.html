@@ -223,18 +223,23 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
 .improw .chk{padding-top:6px}.improw .chk input{width:22px;height:22px;padding:0}
 .warn{color:var(--warn)}
 .asigrow{display:none;margin-top:8px;gap:6px;flex-direction:column}.asigrow.on{display:flex}.asigrow input{padding:9px;font-size:14px}
-.sf{fill:rgba(139,92,246,.2);stroke:#8b5cf6;stroke-dasharray:2 1.2}
-.seat.mk{stroke:#8b5cf6;stroke-width:1.6;stroke-dasharray:2 1.2}
+.sf{fill:rgba(15,157,138,.1);stroke:#0f9d8a;stroke-dasharray:2 1.2}
+.seat.mk{stroke:#0f9d8a;stroke-width:1.6;stroke-dasharray:2 1.2}
 .seat.sel{fill:#16a34a;stroke:#fff;stroke-width:1.6}
-.legend .lg-m{background:rgba(139,92,246,.2);border:2px dashed #8b5cf6}
+.legend .lg-m{background:rgba(15,157,138,.1);border:2px dashed #0f9d8a}
+.legend .lg-C{background:#0f9d8a;border-color:#0a6e61}.legend .lg-E{background:#e0b24c;border-color:#b8862a}.legend .lg-A{background:var(--brand);border-color:#1d4a86}
+.vip.fn{background:rgba(15,157,138,.18);color:#0a6e61}
+#ov .vipbadge.fn{background:linear-gradient(180deg,#5eead4,#0f9d8a);color:#04302a}
 #pickmap{position:fixed;inset:0;z-index:50;background:rgba(8,17,31,.65);display:flex;align-items:flex-end;justify-content:center}
 #pickmap .pm{background:var(--card);width:100%;max-width:640px;max-height:94%;overflow:auto;border-radius:20px 20px 0 0;padding:16px calc(16px + env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom))}
 #pickmap svg{width:100%;height:auto;display:block}
 .wave{fill:none;stroke:var(--ink);stroke-width:1.6;opacity:.85;stroke-linecap:round}
 .stl{font-size:6.5px;letter-spacing:3px;font-weight:700;fill:var(--ink)}
-.sg{fill:rgba(107,122,144,.55);stroke:#6b7a90}
+.sg{fill:#ec4899;stroke:#be185d}
+.sc{fill:rgba(15,157,138,.25);stroke:#0f9d8a}
+.sC{fill:#0f9d8a;stroke:#0a6e61}
 .seat.rsv{stroke:#d9a53a;stroke-width:1.8}
-.legend .lg-g{background:rgba(107,122,144,.55);border-color:#6b7a90}.legend .lg-r{background:transparent;border:2px solid #d9a53a}
+.legend .lg-g{background:#ec4899;border-color:#be185d}.legend .lg-r{background:transparent;border:2px solid #d9a53a}
 .pk{display:flex;gap:6px}.pk select{flex:1;min-width:0;padding:8px;font-size:14px}
 .seatrow{display:none;margin-top:8px;gap:6px;flex-direction:column}.seatrow.on{display:flex}
 #ov .butaca{background:#fff;color:#0b1f3a;border-radius:16px;padding:12px 20px;margin-top:14px;font-size:13px;letter-spacing:2px;box-shadow:0 6px 20px rgba(0,0,0,.3)}
@@ -316,8 +321,8 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
         <div class="row"><button class="sm" id="mkGuardar">Guardar marcas</button><button class="sm sec" id="mkCancel">Cancelar</button></div><span class="muted" id="mkMsg"></span></div>
       <svg id="salaSvg" viewBox="-24 -30 424 190" role="img" aria-label="Mapa de la sala"></svg>
       <div class="infobox" id="salaInfo">Toca un asiento para ver quién se sienta ahí.</div>
-      <div class="legend"><span><i class="lg-E"></i>Especial: ya está</span><span><i class="lg-e"></i>Especial: por llegar</span><span><i class="lg-A"></i>Alumno: ya está</span><span><i class="lg-a"></i>Alumno: por llegar</span><span><i class="lg-g"></i>Alumnos (graduandos)</span><span><i class="lg-r"></i>Butaca reservada</span><span><i class="lg-m"></i>Para funcionarios (sin número)</span></div>
-      <p class="muted" style="margin:8px 0 0;font-size:12px">Simulación referencial: nadie tiene un asiento asignado, salvo quienes tengan una butaca reservada (borde dorado). Las butacas lilas están marcadas para funcionarios sin número específico: los funcionarios del colegio (@andaliensur.cl) se ubican ahí primero. Los alumnos (graduandos) van todos del mismo lado: butacas pares de la 26 hacia la pared, desde la fila A del piso 2 hacia atrás, también en la platea del piso 3 (en gris); los invitados especiales, en los demás puestos de la primera fila y siguientes; después, las invitaciones de los alumnos (familias juntas) en cualquier lugar. Orden de pisos: 2 → 3 → palcos 4, 5 y 6.</p>
+      <div class="legend"><span><i class="lg-C"></i>Funcionarios del colegio</span><span><i class="lg-E"></i>Otros invitados</span><span><i class="lg-A"></i>Invitados de alumnos</span><span><i class="lg-g"></i>Alumnos (graduados)</span><span><i class="lg-r"></i>Butaca reservada</span><span><i class="lg-m"></i>Marcadas p/ funcionarios</span></div><p class="muted" style="margin:6px 0 0;font-size:12px">Color sólido = ya ingresó · color claro = por llegar.</p>
+      <p class="muted" style="margin:8px 0 0;font-size:12px">Simulación referencial: nadie tiene un asiento asignado, salvo quienes tengan una butaca reservada (borde dorado). Las butacas lilas están marcadas para funcionarios sin número específico: los funcionarios del colegio (@andaliensur.cl) se ubican ahí primero. Los alumnos (graduados) ocupan una sola columna del piso 2: las butacas pares desde la 26 hacia la pared, de la fila A hacia atrás (en rosado); los invitados especiales, en los demás puestos de la primera fila y siguientes; después, las invitaciones de los alumnos (invitados de cada alumno juntos) en cualquier lugar. Orden de pisos: 2 → 3 → palcos 4, 5 y 6.</p>
     </div>
     <div class="kpis">
       <div class="kpi g"><div class="n" id="kIng">–</div><div class="t">En el teatro</div></div>
@@ -396,7 +401,28 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
         <p class="muted" id="iMsg" style="margin:8px 0 0">El nombre y el cargo aparecerán en la pantalla del funcionario al escanear. Se agrega al listado y a la base de datos.</p>
       </div>
       <div class="card" id="iNuevas" hidden><h2>Recién creadas</h2><div id="iNuevasList"></div></div>
-      <div class="card"><div class="mini"><h2 style="margin:0">Invitaciones adicionales y especiales</h2><span class="muted" id="iCount"></span></div><input id="iBuscar" placeholder="Buscar por nombre, cargo, correo o código…" style="margin:10px 0" autocomplete="off"><div id="iList"><p class="muted">Cargando…</p></div></div>
+      <div class="card">
+        <h2>Imprimir invitaciones de alumnos</h2>
+        <p class="muted" style="margin:0 0 8px">Descarga las invitaciones de los alumnos en PDF: 2 por hoja (A4 horizontal, 11 × 15 cm) con líneas de corte, listas para imprimir y entregar.</p>
+        <select id="pdfQue"></select>
+        <button id="btnPdfAl" style="width:100%;margin-top:10px">Descargar PDF · 2 por hoja</button>
+        <p class="muted" id="pdfAlMsg" style="margin:8px 0 0"></p>
+      </div>
+      <div class="card">
+        <div class="mini"><h2 style="margin:0">Invitados especiales y extras</h2><span class="muted" id="iCount"></span></div>
+        <div class="seg" id="grpTabs" style="margin:10px 0 8px"><button data-g="func" class="on">Funcionarios</button><button data-g="otros">Otros invitados</button><button data-g="extra">Extras y adicionales</button></div>
+        <div class="row" id="estTabs" style="margin-bottom:8px"><button class="sec sm" data-e="all">Todas</button><button class="sec sm" data-e="pend">Sin enviar</button><button class="sec sm" data-e="env">Enviadas</button></div>
+        <input id="iBuscar" placeholder="Buscar por nombre, cargo, correo o código…" style="margin:2px 0 10px" autocomplete="off">
+        <div class="infobox" id="bulkBar" hidden>
+          <b>Envío masivo por correo</b> · marca las tarjetas (o usa los atajos) y envía todas de una vez.
+          <div class="row" style="flex-wrap:wrap;margin-top:8px"><button class="sec sm" id="selPend">Sin enviar</button><button class="sec sm" id="selTodas">Todas</button><button class="sec sm" id="selNinguna">Ninguna</button></div>
+          <label>Mensaje adicional para todos <span class="muted">(opcional)</span></label><input id="bulkMsg" autocomplete="off">
+          <label style="display:flex;gap:8px;align-items:center;color:var(--ink);margin:8px 0"><input type="checkbox" id="bulkAuto" checked style="width:auto"> Saludo automático (Estimado / Estimada)</label>
+          <div class="row"><button id="bulkSend">Enviar seleccionadas por correo</button><button class="sec sm" id="bulkStop" hidden>Detener</button></div>
+          <p class="muted" id="bulkOut" style="margin:8px 0 0"></p>
+        </div>
+        <div id="iList"><p class="muted">Cargando…</p></div>
+      </div>
     </div>
 
     <div id="paneImp" hidden>
@@ -543,6 +569,8 @@ function demoApi(action, p) {
     if (p.codEst) { const fam = demoDB.inv.filter(z => z.codEst === p.codEst && z !== x && z.tipo !== "ESPECIAL"); if (!fam.length) return { ok: false, error: "No encuentro al alumno" }; x.curso = fam[0].curso; x.codEst = p.codEst; x.numero = Math.max(...fam.map(z => z.numero)) + 1; x.estudiante = fam[0].estudiante; x.tipo = "ADICIONAL"; x.invitado = p.nombre || ""; x.cargo = p.cargo || ""; }
     else { x.curso = "Invitaciones extra"; x.codEst = x.codigo; x.numero = 1; x.estudiante = "Invitación extra"; x.tipo = "EXTRA"; x.invitado = ""; x.cargo = ""; }
     return { ok: true }; }
+  if (action === "cuota") return { ok: true, restante: 100 };
+  if (action === "inv_todas") return { ok: true, invitaciones: demoDB.inv.filter(x => x.tipo !== "ESPECIAL").map(x => ({ codigo: x.codigo, token: x.token, curso: x.curso, ce: x.codEst, nombre: x.estudiante, numero: x.numero, tipo: x.tipo || "", invitado: x.invitado || "" })) };
   if (action === "inv_seat") { const x = demoDB.inv.find(z => z.codigo === norm(p.code)); if (!x) return { ok: false, error: "La invitación no existe" }; const b = String(p.butaca || "").toUpperCase(); const o = b && demoDB.inv.find(z => z !== x && (z.butaca || "").toUpperCase() === b); if (o) return { ok: false, error: "Esa butaca ya está reservada para " + o.codigo }; x.butaca = b; return { ok: true, butaca: b }; }
   if (action === "inv_bulk") {
     const out = [], om = []; let m = Math.max(0, ...demoDB.inv.filter(x => /^V\d+$/.test(x.codigo)).map(x => +x.codigo.slice(1)));
@@ -550,10 +578,10 @@ function demoApi(action, p) {
       const t = { codigo: "V" + String(m).padStart(5, "0"), token: "DEMO1", curso: CURSO_ESPECIAL, numero: 1, estudiante: it.nombre, entro: false, hora: "", oper: "", invitado: it.nombre, cargo: it.cargo || "", correo: c, tipo: "ESPECIAL" }; t.codEst = t.codigo; demoDB.inv.push(t); out.push({ ...t }); });
     return { ok: true, invitaciones: out, omitidas: om };
   }
-  if (action === "inv_mail") { if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(p.correo || ""))) return { ok: false, error: "Correo no válido" }; return { ok: true }; }
+  if (action === "inv_mail") { if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(p.correo || ""))) return { ok: false, error: "Correo no válido" }; const xm = demoDB.inv.find(z => z.codigo === norm(p.code)); if (xm) xm.enviado = nowStr(); return { ok: true }; }
   if (action === "inv_add" || action === "inv_list") {
     if (user.rol !== "admin") return { ok: false, error: "Solo el administrador puede hacer esto" };
-    if (action === "inv_list") return { ok: true, invitaciones: demoDB.inv.filter(x => x.tipo).map(x => ({ codigo: x.codigo, token: x.token, invitado: x.invitado, cargo: x.cargo, correo: x.correo || "", butaca: x.butaca || "", estudiante: x.estudiante, curso: x.curso, numero: x.numero, tipo: x.tipo, entro: x.entro })) };
+    if (action === "inv_list") return { ok: true, invitaciones: demoDB.inv.filter(x => x.tipo).map(x => ({ codigo: x.codigo, token: x.token, invitado: x.invitado, cargo: x.cargo, correo: x.correo || "", butaca: x.butaca || "", enviado: x.enviado || "", estudiante: x.estudiante, curso: x.curso, numero: x.numero, tipo: x.tipo, entro: x.entro })) };
     const tk = () => Array.from({ length: 5 }, () => "23456789ABCDEFGHJKMNPQRSTUVWXYZ"[Math.floor(Math.random() * 31)]).join("");
     const out = [], nombre = String(p.nombre || "").trim(), cargo = String(p.cargo || "").trim();
     if (p.tipo === "EXTRA") { let m = Math.max(0, ...demoDB.inv.filter(x => /^E\d+$/.test(x.codigo)).map(x => +x.codigo.slice(1))); for (let k = 0; k < Math.min(50, +p.cantidad || 1); k++) { m++; const t = { codigo: "E" + String(m).padStart(5, "0"), token: tk(), curso: "Invitaciones extra", numero: 1, estudiante: "Invitación extra", entro: false, hora: "", oper: "", invitado: "", cargo: "", correo: "", tipo: "EXTRA" }; t.codEst = t.codigo; demoDB.inv.push(t); out.push({ ...t }); } return { ok: true, invitaciones: out }; }
@@ -735,7 +763,7 @@ function startSync() {
   state.t2 = setInterval(() => { if (!document.hidden) flushQueue(); }, 4000);
 }
 function resumen(ce) { let total = 0, ing = 0; for (const r of state.inv.values()) if (r.ce === ce) { total++; if (r.used) ing++; } return { total, ingresados: ing }; }
-function recInfo(r) { return { codigo: r.c, curso: r.cu, codEst: r.ce, numero: r.n, estudiante: r.s, invitado: r.i, cargo: r.k, tipo: r.t, butaca: r.b }; }
+function recInfo(r) { return { codigo: r.c, curso: r.cu, codEst: r.ce, numero: r.n, estudiante: r.s, invitado: r.i, cargo: r.k, tipo: r.t, butaca: r.b, func: r.f }; }
 function markLocal(code, hora, oper) { const r = state.inv.get(String(code).toUpperCase()); if (r && !r.used) r.used = { h: hora || nowStr(), o: oper || "" }; return r; }
 
 /* Cola de registros pendientes (se guarda en el teléfono; sobrevive a cortes de señal) */
@@ -769,7 +797,7 @@ function pips(a) {
 function quienBase(t, a) {   // bloque "de quién es la invitación"
   if (t.tipo === "EXTRA") return `<span class="vipbadge" style="background:rgba(255,255,255,.25);color:#fff">INVITACIÓN EXTRA</span><p class="nm">Aún sin asignar a un alumno</p><p>Código ${esc(t.codigo)}</p>`;
   const especial = t.tipo === "ESPECIAL";
-  if (especial) return `<span class="vipbadge">★ INVITADO ESPECIAL</span><p class="nm big">${esc(t.invitado || "Invitado sin nombre")}</p>${t.cargo ? `<div class="cargo">${esc(t.cargo)}</div>` : ""}`;
+  if (especial) return `<span class="vipbadge${t.func ? " fn" : ""}">★ ${t.func ? "FUNCIONARIO DEL COLEGIO" : "INVITADO ESPECIAL"}</span><p class="nm big">${esc(t.invitado || "Invitado sin nombre")}</p>${t.cargo ? `<div class="cargo">${esc(t.cargo)}</div>` : ""}`;
   let h = `<p class="lbl">INVITACIÓN DE</p><p class="nm">${esc(t.estudiante)}</p><p>${esc(t.curso)} · Invitación ${t.numero}${a?.total ? " de " + a.total : ""}</p>`;
   if (t.invitado || t.cargo) h += `<span class="vipbadge">INVITADO</span><p class="nm big" style="margin:2px 0">${esc(t.invitado || "—")}</p>${t.cargo ? `<div class="cargo">${esc(t.cargo)}</div>` : ""}`;
   return h;
@@ -971,7 +999,7 @@ function renderAlumnos() {
   const openIds = new Set($$(".student.open").map(e => e.dataset.id));
   $("#aList").innerHTML = (l.length ? "" : `<p class="muted">Sin resultados.</p>`) + l.map(a => `
     <div class="student ${openIds.has(a.codEst) ? "open" : ""}" data-id="${esc(a.codEst)}">
-      <div class="top"><div><div class="name">${esc(a.nombre)}${a.especial ? '<span class="vip">ESPECIAL</span>' : a.extra ? '<span class="vip">EXTRA</span>' : ""}</div><div class="muted">${a.especial ? esc(a.cargo || "Invitado") + " · " : esc(a.curso) + " · "}${esc(a.codEst)}</div></div><b>${a.ingresados}/${a.total}</b></div>
+      <div class="top"><div><div class="name">${esc(a.nombre)}${a.especial ? (state.inv.get(String(a.invitaciones[0]?.codigo || "").toUpperCase())?.f ? '<span class="vip fn">FUNCIONARIO</span>' : '<span class="vip">INVITADO</span>') : a.extra ? '<span class="vip">EXTRA</span>' : ""}</div><div class="muted">${a.especial ? esc(a.cargo || "Invitado") + " · " : esc(a.curso) + " · "}${esc(a.codEst)}</div></div><b>${a.ingresados}/${a.total}</b></div>
       ${pips(a)}
       <div class="detail"><table>${a.invitaciones.map(i => `<tr><td>N.º ${i.n} · ${esc(i.codigo)}${i.invitado ? `<br><span class="muted">${esc(i.invitado)}${i.cargo ? " · " + esc(i.cargo) : ""}</span>` : ""}</td><td>${i.entro ? "✔ " + esc((i.hora || "").slice(11, 19)) : "—"}</td><td style="text-align:right">${i.entro ? (isAdmin() ? `<button class="sec sm" data-undo="${esc(i.codigo)}">Anular</button>` : "") : `<button class="sec sm" data-in="${esc(i.codigo)}">Marcar ingreso</button>`}</td></tr>`).join("")}</table></div>
     </div>`).join("");
@@ -990,7 +1018,7 @@ setInterval(() => { if (!document.hidden && state.user && $("#s-panel").classLis
 
 /* ───────── Sala del teatro: ocupación simulada (plano real) ───────── */
 const AFORO_REF = 1200;   // capacidad total de referencia del recinto (piso 2: 312 + piso 3: 456 + palcos 4, 5 y 6: 144 c/u)
-const ZONA_ALUMNOS = s => s.piso <= 1 && s.n % 2 === 0 && s.n >= 26;   // alumnos (graduandos): todos del lado par, de la butaca 26 hacia la pared, desde la fila A del piso 2 hacia atrás (piso 2 y platea del piso 3)
+const ZONA_ALUMNOS = s => s.piso === 0 && s.n % 2 === 0 && s.n >= 26;   // alumnos (graduados): una sola columna del piso 2 (lado par, de la butaca 26 hacia la pared, de la fila A hacia atrás)
 const SALA = (() => {
   const DX = 10, DY = 11.5, seats = [], pisos = [];
   const ev = (a, b) => { const r = []; for (let n = a; n >= b; n -= 2) r.push(n); return r; };   // pares, de mayor a menor
@@ -1027,7 +1055,7 @@ const SALA = (() => {
 const butacaTxt = b => { const i = SALA.byKey.get(String(b || "").toUpperCase()); if (i == null) return String(b || ""); const s = SALA.seats[i]; return `${SALA.pisos[s.piso].nombre} · Fila ${s.fila} · Asiento ${s.n}`; };
 const sala = { built: false, els: [], plan: null, piso: 0, edit: false, tmp: null };
 /** Reparto simulado. Alumnos en A32…A2; invitados especiales en los demás puestos de la primera fila y siguientes;
- *  luego las invitaciones de los alumnos (familias juntas). Quien tiene butaca reservada va en ella. Orden de pisos: 2 → 3 → 4 → 5 → 6. */
+ *  luego las invitaciones de los alumnos (invitados de cada alumno juntos). Quien tiene butaca reservada va en ella. Orden de pisos: 2 → 3 → 4 → 5 → 6. */
 function planSala() {
   const recs = [...state.inv.values()], S = SALA.seats, conB = r => r.b && SALA.byKey.has(String(r.b).toUpperCase());
   const marks = [...state.marks].filter(k => SALA.byKey.has(k)).map(k => SALA.byKey.get(k)).sort((a, b) => a - b);
@@ -1095,11 +1123,11 @@ function updateSala(force) {
   const pl = planSala(); sala.plan = pl; let eI = 0, eT = 0, aI = 0, aT = 0;
   pl.occ.forEach((code, i) => {
     const r = code && code[0] !== "#" ? state.inv.get(code) : null, el = sala.els[i], S = SALA.seats[i]; let cls = code === "#ALU" ? "sg" : code === "#FUN" ? "sf" : "s0";
-    if (r) { const esp = r.t === "ESPECIAL"; cls = esp ? (r.used ? "sE" : "se") : (r.used ? "sA" : "sa"); if (esp) { eT++; if (r.used) eI++; } else { aT++; if (r.used) aI++; } }
+    if (r) { const esp = r.t === "ESPECIAL"; cls = esp ? (r.f ? (r.used ? "sC" : "sc") : (r.used ? "sE" : "se")) : (r.used ? "sA" : "sa"); if (esp) { eT++; if (r.used) eI++; } else { aT++; if (r.used) aI++; } }
     const key = cls + (r?.b ? " rsv" : "") + (state.marks.has(S.key) && cls !== "sf" ? " mk" : "");
     if (el.dataset.c !== key) {
       const antes = el.dataset.c || ""; el.setAttribute("class", "seat " + key); el.dataset.c = key;
-      if (!force && antes && /^s[EA]/.test(key) && !/^s[EA]/.test(antes)) el.classList.add("pop");
+      if (!force && antes && /^s[EAC]/.test(key) && !/^s[EAC]/.test(antes)) el.classList.add("pop");
     }
   });
   const dentro = eI + aI, p = pct(dentro, AFORO_REF);
@@ -1117,7 +1145,7 @@ $("#salaSvg").addEventListener("click", e => {
   }
   const code = sala.plan?.occ[i], r = code && code[0] !== "#" ? state.inv.get(code) : null;
   let h = `<b>${SALA.pisos[s.piso].nombre} · Fila ${s.fila} · Asiento ${s.n}</b><br>`;
-  if (code === "#ALU") h += "Zona reservada para los alumnos (graduandos)";
+  if (code === "#ALU") h += "Zona reservada para los alumnos (graduados)";
   else if (code === "#FUN") h += "Marcada para funcionarios del colegio (sin número específico), aún sin asignar";
   else if (!r) h += "Libre (sin invitación asignada)";
   else {
@@ -1376,7 +1404,7 @@ async function invCardHtml(inv, cont) {
   const div = document.createElement("div"); div.className = "invcard"; div.dataset.cod = inv.codigo; div.dataset.q = [inv.invitado, inv.cargo, inv.correo, inv.codigo, inv.estudiante].join(" ").toLowerCase();
   const mini = document.createElement("canvas"); mini.width = 168; mini.height = 237; div.appendChild(mini); lazyThumb(mini, inv);
   const d = document.createElement("div"); d.style.minWidth = 0; d.style.flex = "1";
-  d.innerHTML = `<b>${esc(inv.invitado || (inv.tipo === "ESPECIAL" ? "Invitado especial" : inv.tipo === "EXTRA" ? "Invitación extra" : "Invitación adicional"))}</b>${inv.cargo ? `<div class="muted">${esc(inv.cargo)}</div>` : ""}<div class="muted">${inv.tipo === "ESPECIAL" ? "Invitado especial" : inv.tipo === "EXTRA" ? "Invitación extra · sin asignar" : "De " + esc(inv.estudiante) + " · " + esc(inv.curso)} · <b>${esc(inv.codigo)}</b>${inv.entro ? " · ✔ ya ingresó" : ""}</div>${inv.butaca ? `<div class="muted">🪑 Butaca reservada: <b>${esc(butacaTxt(inv.butaca))}</b></div>` : ""}
+  d.innerHTML = `${grupoDe(inv) !== "extra" ? `<label class="chk" style="display:flex;gap:8px;align-items:center;margin:0 0 4px;color:var(--ink)"><input type="checkbox" data-sel style="width:auto"${selInv.has(inv.codigo) ? " checked" : ""}>Seleccionar</label>` : ""}<b>${esc(inv.invitado || (inv.tipo === "ESPECIAL" ? "Invitado especial" : inv.tipo === "EXTRA" ? "Invitación extra" : "Invitación adicional"))}</b>${inv.cargo ? `<div class="muted">${esc(inv.cargo)}</div>` : ""}<div class="muted">${inv.tipo === "ESPECIAL" ? "Invitado especial" : inv.tipo === "EXTRA" ? "Invitación extra · sin asignar" : "De " + esc(inv.estudiante) + " · " + esc(inv.curso)} · <b>${esc(inv.codigo)}</b>${inv.entro ? " · ✔ ya ingresó" : ""}</div>${inv.butaca ? `<div class="muted">🪑 Butaca reservada: <b>${esc(butacaTxt(inv.butaca))}</b></div>` : ""}${grupoDe(inv) !== "extra" ? `<div class="muted" data-env>${esc(enviadoTxt(inv))}</div>` : ""}
     <div class="acts"><button class="sm" data-a="view">Ver completa</button><button class="sm sec" data-a="png">Digital (imagen)</button><button class="sm sec" data-a="pdf">Imprimir (PDF 11×15)</button><button class="sm sec" data-a="share">Compartir</button>${/^E/.test(inv.codigo) ? `<button class="sm" data-a="asig">${inv.tipo === "EXTRA" ? "Asignar a alumno" : "Reasignar"}</button>` : ""}<button class="sm sec" data-a="seat">Butaca</button><button class="sm sec" data-a="mail">Correo</button><button class="sm danger" data-a="del">Eliminar</button></div>
     <div class="mailrow"><input list="dlSaludo" placeholder="Saludo (Estimado / Estimada)" autocomplete="off"><input placeholder="Nombre del funcionario (editable)" autocomplete="off"><input placeholder="correo@andaliensur.cl (o el dominio que corresponda)" autocomplete="off" autocapitalize="none" inputmode="email"><input placeholder="Mensaje adicional (opcional)" autocomplete="off"><button class="sm" data-a="send">Enviar invitación por correo</button><span class="muted" data-m></span></div>
     <div class="seatrow"><div class="pk"></div><div class="row"><button class="sm" data-a="seat-ok">Reservar esta butaca</button><button class="sm sec" data-a="seat-no">Quitar reserva</button><button class="sm sec" data-a="seat-map">Elegir en el mapa</button></div><span class="muted" data-sm></span></div>
@@ -1389,6 +1417,7 @@ async function invCardHtml(inv, cont) {
   ci.oninput = () => { ci.dataset.edited = "1"; };
   d.querySelector('[data-a="mail"]').onclick = () => { mr.classList.toggle("on"); (ni.value ? ci : ni).focus(); };
   d.querySelector('[data-a="view"]').onclick = () => verInvitacion(inv);
+  d.querySelector("[data-sel]")?.addEventListener("change", e => { e.target.checked ? selInv.add(inv.codigo) : selInv.delete(inv.codigo); updBulk(); });
   const sr = d.querySelector(".seatrow"), getS = pickerInit(sr.querySelector(".pk"), inv.butaca), sm = sr.querySelector("[data-sm]");
   d.querySelector('[data-a="seat"]').onclick = () => sr.classList.toggle("on");
   const ar = d.querySelector(".asigrow");
@@ -1411,9 +1440,9 @@ async function invCardHtml(inv, cont) {
     const correo = correoCompleto(ci.value); if (!correo) { mm.textContent = "Escribe el correo."; return; }
     const b = ev.currentTarget; b.disabled = true; mm.textContent = "Enviando…";
     try {
-      const c = await drawInvitation(inv, false), rc = await recortesCorreo();
-      await apiPost("inv_mail", { code: inv.codigo, correo, nombre: ni.value.trim(), mensaje: gi.value.trim(), imagen: c.toDataURL("image/jpeg", .86), banner: rc.banner, saludo: si.value.trim() });
-      mm.textContent = "✔ Enviada a " + correo;
+      const imagen = await imagenCorreo(inv), rc = await recortesCorreo();
+      await apiPost("inv_mail", { code: inv.codigo, correo, nombre: ni.value.trim(), mensaje: gi.value.trim(), imagen, banner: rc.banner, saludo: si.value.trim() });
+      mm.textContent = "✔ Enviada a " + correo; inv.enviado = nowStr(); marcarEnviada(inv);
     } catch (e) { if (!onAuthFail(e)) mm.textContent = "✖ " + e.message; } finally { b.disabled = false; }
   };
   d.querySelector('[data-a="del"]').onclick = async () => {
@@ -1424,16 +1453,103 @@ async function invCardHtml(inv, cont) {
   };
   div.appendChild(d); cont.appendChild(div);
 }
+let invData = [], selInv = new Set(), grp = "func", est = "all", bulkStop = false;
+const esFunc = i => i.tipo === "ESPECIAL" && /@andaliensur\.cl$/i.test(i.correo || "");
+const grupoDe = i => i.tipo === "ESPECIAL" ? (esFunc(i) ? "func" : "otros") : "extra";
+const enviadoTxt = i => i.enviado ? "✉ Enviada el " + String(i.enviado).slice(0, 16).replace("T", " ") : (i.correo ? "✉ Sin enviar · " + i.correo : "Sin correo registrado");
+function marcarEnviada(i) { $$("#iList .invcard").forEach(el => { if (el.dataset.cod === i.codigo) { const b = el.querySelector("[data-env]"); if (b) b.textContent = enviadoTxt(i); } }); }
 async function loadInv() {
   if (!isAdmin()) return;
-  try {
-    const r = await api("inv_list"), box = $("#iList"); box.innerHTML = "";
-    if (!r.invitaciones.length) { box.innerHTML = `<p class="muted">Aún no hay invitaciones adicionales ni especiales.</p>`; return; }
-    for (const inv of r.invitaciones.slice().reverse()) await invCardHtml(inv, box);
-    $("#iCount").textContent = r.invitaciones.length + " en total"; $("#iBuscar").value = "";
-  } catch (e) { if (!onAuthFail(e)) $("#iList").innerHTML = `<p class="muted">${esc(e.message)}</p>`; }
+  try { const r = await api("inv_list"); invData = r.invitaciones; selInv = new Set([...selInv].filter(c => invData.some(i => i.codigo === c))); await renderInvList(); fillPdfQue(); }
+  catch (e) { if (!onAuthFail(e)) $("#iList").innerHTML = `<p class="muted">${esc(e.message)}</p>`; }
 }
-$$('input[name="tipo"]').forEach(r => r.onchange = () => { const tp = $('input[name="tipo"]:checked').value, ad = tp === "adicional", ex = tp === "extra";
+async function renderInvList() {
+  const nombres = { func: "Funcionarios", otros: "Otros invitados", extra: "Extras y adicionales" }, cnt = { func: 0, otros: 0, extra: 0 };
+  invData.forEach(i => cnt[grupoDe(i)]++);
+  $$("#grpTabs button").forEach(b => { b.classList.toggle("on", b.dataset.g === grp); b.textContent = `${nombres[b.dataset.g]} (${cnt[b.dataset.g]})`; });
+  const enGrupo = invData.filter(i => grupoDe(i) === grp), pend = enGrupo.filter(i => !i.enviado).length;
+  $$("#estTabs button").forEach(b => { b.style.background = b.dataset.e === est ? "var(--line)" : ""; b.textContent = { all: `Todas (${enGrupo.length})`, pend: `Sin enviar (${pend})`, env: `Enviadas (${enGrupo.length - pend})` }[b.dataset.e]; });
+  $("#estTabs").hidden = $("#bulkBar").hidden = grp === "extra";
+  const list = enGrupo.filter(i => est === "all" || (est === "pend" ? !i.enviado : !!i.enviado)); $("#iCount").textContent = `${list.length} de ${enGrupo.length}`;
+  const box = $("#iList"); box.innerHTML = "";
+  if (!list.length) { box.innerHTML = `<p class="muted">No hay invitaciones en esta vista.</p>`; updBulk(); return; }
+  for (const inv of (grp === "extra" ? list.slice().reverse() : list)) await invCardHtml(inv, box);
+  $("#iBuscar").dispatchEvent(new Event("input")); updBulk();
+}
+$$("#grpTabs button").forEach(b => b.onclick = () => { grp = b.dataset.g; est = "all"; renderInvList(); });
+$$("#estTabs button").forEach(b => b.onclick = () => { est = b.dataset.e; renderInvList(); });
+function updBulk() { const n = [...selInv].filter(c => invData.some(i => i.codigo === c && grupoDe(i) === grp)).length; $("#bulkSend").textContent = n ? `Enviar ${n} por correo` : "Enviar seleccionadas por correo"; }
+function marcarSel(fn) { selInv.clear(); invData.filter(i => grupoDe(i) === grp && i.correo && fn(i)).forEach(i => selInv.add(i.codigo)); $$("#iList .invcard").forEach(el => { const c = el.querySelector("[data-sel]"); if (c) c.checked = selInv.has(el.dataset.cod); }); updBulk(); }
+$("#selPend").onclick = () => marcarSel(i => !i.enviado); $("#selTodas").onclick = () => marcarSel(() => true); $("#selNinguna").onclick = () => marcarSel(() => false);
+$("#bulkStop").onclick = () => { bulkStop = true; };
+async function imagenCorreo(inv) {   // invitación reducida (930 px) para que el correo viaje rápido
+  const c = await drawInvitation(inv, false), o = document.createElement("canvas"); o.width = 930; o.height = 1311; o.getContext("2d").drawImage(c, 0, 0, 930, 1311); return o.toDataURL("image/jpeg", .85);
+}
+async function enviarSeleccion() {
+  const out = $("#bulkOut"), sel = invData.filter(i => selInv.has(i.codigo) && grupoDe(i) === grp), ok = sel.filter(i => i.correo);
+  if (!ok.length) { out.textContent = "Marca al menos una invitación con correo."; return; }
+  let cuota = null; try { cuota = (await api("cuota")).restante; } catch {}
+  if (cuota != null && ok.length > cuota) { out.textContent = `Hoy solo puedes enviar ${cuota} correos más (límite diario de Google). Marca menos invitaciones.`; return; }
+  const ya = ok.filter(i => i.enviado).length;
+  if (!confirm(`¿Enviar ${ok.length} invitaciones por correo?` + (ya ? `\n${ya} ya se enviaron antes y se enviarán de nuevo.` : "") + (sel.length > ok.length ? `\n${sel.length - ok.length} sin correo se omiten.` : "") + (cuota != null ? `\nCupo de envíos de hoy: ${cuota}.` : ""))) return;
+  $("#bulkSend").disabled = true; $("#bulkStop").hidden = false; bulkStop = false;
+  const rc = await recortesCorreo(), auto = $("#bulkAuto").checked, msg = $("#bulkMsg").value.trim(); let enviadas = 0; const fallos = [];
+  for (let k = 0; k < ok.length && !bulkStop; k++) {
+    const i = ok[k]; out.textContent = `Enviando ${k + 1} de ${ok.length}… ${i.invitado || i.codigo}`;
+    try { await apiPost("inv_mail", { code: i.codigo, correo: i.correo, nombre: i.invitado, saludo: auto ? saludoPara(i.invitado) : "", mensaje: msg, imagen: await imagenCorreo(i), banner: rc.banner }); i.enviado = nowStr(); enviadas++; marcarEnviada(i); }
+    catch (e) { if (e.auth) { onAuthFail(e); break; } fallos.push((i.invitado || i.codigo) + ": " + e.message); }
+  }
+  out.innerHTML = `✔ <b>${enviadas}</b> enviadas` + (bulkStop ? " (detenido)" : "") + (fallos.length ? `. Fallaron ${fallos.length}: ${esc(fallos.slice(0, 3).join("; "))}` : "");
+  $("#bulkSend").disabled = false; $("#bulkStop").hidden = true; selInv.clear(); await renderInvList();
+}
+$("#bulkSend").onclick = enviarSeleccion;
+
+/* ───────── Invitaciones de alumnos en PDF: 2 por hoja (A4 horizontal, 11 × 15 cm) con líneas de corte ───────── */
+function fillPdfQue() {
+  const s = state.stats; if (!s) return;
+  const cursos = s.cursos.map(c => c.curso).filter(c => c !== CURSO_ESPECIAL && c !== "Invitaciones extra");
+  $("#pdfQue").innerHTML = `<option value="*">Todas las invitaciones de los alumnos</option>` + cursos.map(c => `<option value="c:${esc(c)}">${esc(c)}</option>`).join("") + `<option value="x">Invitaciones extra y adicionales</option>`;
+}
+async function pdfInvitaciones(items, nombre, progreso) {
+  const { jsPDF } = window.jspdf, doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+  const W = 110, H = 150, GAP = 4, PW = 297, PH = 210, BL = 1.2, mx = (PW - 2 * W - GAP) / 2, my = (PH - H) / 2;
+  const img = await loadImg("fondo.jpg"); let bg = null;
+  if (img) { const c = document.createElement("canvas"); c.width = 1240; c.height = 1748; c.getContext("2d").drawImage(img, 0, 0, 1240, 1748); bg = c.toDataURL("image/jpeg", .9); }
+  const cortes = () => { doc.setDrawColor(0, 0, 0); doc.setLineWidth(.25); doc.setLineDashPattern([1.6, 1.1], 0); [mx, mx + W, mx + W + GAP, mx + 2 * W + GAP].forEach(x => doc.line(x, 0, x, PH)); [my, my + H].forEach(y => doc.line(0, y, PW, y)); doc.setLineDashPattern([], 0); };
+  for (let i = 0; i < items.length; i++) {
+    const it = items[i];
+    if (i % 2 === 0 && i > 0) doc.addPage("a4", "landscape");
+    const x = mx + (i % 2) * (W + GAP), y = my;
+    if (bg) {   // fondo con sangrado de 1,2 mm, recortado al borde
+      doc.saveGraphicsState(); doc.rect(x - BL, y - BL, W + 2 * BL, H + 2 * BL, null); doc.clip(); doc.discardPath();
+      const iw = W + 2 * BL, ih = iw * 1748 / 1240; doc.addImage(bg, "JPEG", x - BL, y - BL - (ih - (H + 2 * BL)) / 2, iw, ih, "fondo"); doc.restoreGraphicsState();
+    }
+    const qs = 17, qx0 = x + .042 * W, qy0 = y + .863 * H, pad = 1.8;
+    doc.setFillColor(255, 255, 255); doc.roundedRect(qx0, qy0, qs, qs, 2.5, 2.5, "F");
+    const qr = qrcode(0, "Q"); qr.addData((it.codigo + "-" + it.token).toUpperCase(), "Alphanumeric"); qr.make();
+    const n = qr.getModuleCount(), mod = (qs - 2 * pad) / n; doc.setFillColor(0, 0, 0);
+    for (let r = 0; r < n; r++) for (let c = 0; c < n;) { if (qr.isDark(r, c)) { let e = c; while (e < n && qr.isDark(r, e)) e++; doc.rect(qx0 + pad + c * mod, qy0 + pad + r * mod, (e - c) * mod + .02, mod + .02, "F"); c = e; } else c++; }
+    const lab = it.tipo === "EXTRA" ? "Invitación extra" : it.tipo === "ADICIONAL" ? "Invitación adicional" : "Invitación " + it.numero + " de 5";
+    doc.setTextColor(16, 39, 68); doc.setFont("times", "bold"); doc.setFontSize(9.6); doc.text(lab, x + .235 * W, y + .934 * H + 2.9);
+    doc.setFont("times", "normal"); doc.setFontSize(7.4); doc.text("Código " + it.codigo + " · uso único", x + .235 * W, y + .934 * H + 6.3);
+    if (i % 2 === 1 || i === items.length - 1) cortes();
+    if (i % 15 === 0) { progreso?.(i + 1); await new Promise(r => setTimeout(r)); }
+  }
+  if (window.__PDF_CAPTURE) { window.__PDF_CAPTURE(doc); return; }
+  doc.save("Invitaciones_" + slug(nombre) + "_2_por_hoja.pdf");
+}
+$("#btnPdfAl").onclick = async () => {
+  const msg = $("#pdfAlMsg"), v = $("#pdfQue").value; msg.textContent = "Preparando…"; $("#btnPdfAl").disabled = true;
+  try {
+    if (!window.jspdf) throw new Error("No se pudo cargar la librería de PDF (¿sin internet?)");
+    let items = (await api("inv_todas")).invitaciones;
+    if (v === "x") items = items.filter(i => i.tipo === "EXTRA" || i.tipo === "ADICIONAL"); else { items = items.filter(i => !i.tipo); if (v.startsWith("c:")) items = items.filter(i => i.curso === v.slice(2)); }
+    items.sort((a, b) => a.ce.localeCompare(b.ce) || (a.numero - b.numero) || a.codigo.localeCompare(b.codigo));
+    if (!items.length) { msg.textContent = "No hay invitaciones para esa selección."; return; }
+    await pdfInvitaciones(items, v === "*" ? "todos_los_alumnos" : v === "x" ? "extras" : v.slice(2), k => { msg.textContent = `Generando… ${k} de ${items.length}`; });
+    msg.textContent = `✔ PDF listo: ${items.length} invitaciones en ${Math.ceil(items.length / 2)} hojas.`;
+  } catch (e) { if (!onAuthFail(e)) msg.textContent = "✖ " + e.message; } finally { $("#btnPdfAl").disabled = false; }
+};$$('input[name="tipo"]').forEach(r => r.onchange = () => { const tp = $('input[name="tipo"]:checked').value, ad = tp === "adicional", ex = tp === "extra";
   $("#boxAlumno").hidden = !ad; $("#boxExtra").hidden = !ex; $("#boxOrigen").hidden = ad || ex; $("#boxRsv").hidden = ad || ex;
   [$("#iNom"), $("#iNom").previousElementSibling, $("#iCargo"), $("#iCargo").previousElementSibling].forEach(e => e.hidden = ex);
   if (ad) infoAlumno(); });
