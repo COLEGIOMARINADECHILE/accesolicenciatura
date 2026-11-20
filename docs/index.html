@@ -264,6 +264,9 @@ label.pq{display:flex;gap:10px;align-items:center;margin:6px 0;color:var(--ink);
 #ov button{margin-top:0;padding:12px 28px;font-size:17px}
 #ov button.undo{padding:9px 18px;font-size:15px}
 #ov.info{background:radial-gradient(circle at 50% 30%,#3b82f6,#1e3a8a 72%)}
+.vchips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.vchips button{flex:1 1 auto}
+.guia{margin:10px 0;display:grid;gap:7px}
+.guia div{background:color-mix(in srgb,var(--brand) 8%,var(--card));border-left:4px solid var(--gold);border-radius:10px;padding:8px 10px;font-size:14.5px;line-height:1.35}
 .seat.aqui{fill:#ef4444;stroke:#fff;stroke-width:1.4}
 .seat.zona{stroke:#ef4444;stroke-width:1.8;animation:llego 1s ease-in-out infinite}
 .ringp{fill:none;stroke:#ef4444;stroke-width:2.2;transform-box:fill-box;transform-origin:center;animation:ringp 1.1s ease-out infinite;pointer-events:none}
@@ -314,6 +317,7 @@ button.danger{background-color:var(--card);border-color:rgba(185,28,28,.4)}
 .seg{box-shadow:inset 0 1px 4px rgba(11,31,58,.12);background:linear-gradient(180deg,#d9e5f6,#e5edf9)}
 .seg button.on{font-weight:800;box-shadow:0 2px 8px rgba(11,31,58,.22)}
 nav{border-top:2px solid rgba(47,95,167,.18);box-shadow:0 -6px 22px rgba(11,31,58,.10)}
+nav button{font-size:10.5px;padding-left:1px;padding-right:1px}
 nav button.active{color:var(--brand);font-weight:700;background:linear-gradient(180deg,rgba(47,95,167,.16),transparent)}
 nav button.active::before{height:4px;background:linear-gradient(90deg,#f2cf79,#d9a53a)}
 input,select{background:color-mix(in srgb,var(--card) 80%,var(--bg));border:1px solid rgba(47,95,167,.28)}
@@ -442,9 +446,7 @@ input,select{background:color-mix(in srgb,var(--card) 80%,var(--bg));border:1px 
     <div class="card" id="aList"></div>
   </section>
 
-  <section id="s-func">
-    <div class="seg"><button id="segInv" class="on">Invitaciones</button><button id="segAlu">Alumnos</button><button id="segImp">Importar</button><button id="segTeam">Equipo</button></div>
-
+  <section id="s-inv">
     <div id="paneInv">
       <div class="card">
         <h2>Nueva invitación</h2>
@@ -517,8 +519,12 @@ input,select{background:color-mix(in srgb,var(--card) 80%,var(--bg));border:1px 
         <div id="iList"><p class="muted">Cargando…</p></div>
       </div>
     </div>
+  </section>
 
-    <div id="paneAlu" hidden>
+  <section id="s-func">
+    <div class="seg"><button id="segAlu" class="on">Alumnos</button><button id="segImp">Importar</button><button id="segTeam">Equipo</button></div>
+
+    <div id="paneAlu">
       <div class="card">
         <h2>Alumnos graduados</h2>
         <p class="muted" style="margin:0 0 8px">Cada alumno graduado tiene su propio QR y su butaca. Cuenta como asistente y aparece ocupado en el mapa. Control de acceso y administradores pueden marcar a quien <b>no asiste</b>.</p>
@@ -617,6 +623,7 @@ input,select{background:color-mix(in srgb,var(--card) 80%,var(--bg));border:1px 
   <button data-tab="asist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>Asistencia</button>
   <button data-tab="panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Panel</button>
   <button data-tab="alum"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/></svg>Alumnos</button>
+  <button data-tab="inv" data-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2.5"/></svg>Invitaciones</button>
   <button data-tab="func" data-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M12 9v6M9 12h6"/></svg>Admin</button>
   <button data-tab="ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Yo</button>
 </nav>
@@ -876,7 +883,8 @@ function goTab(t) {
   if (t !== "scan") stopCam();
   if (t === "panel" || t === "alum") refresh(true);
   if (t === "panel") { buildSala(); updateSala(true); }
-  if (t === "func") { loadInv(); }
+  if (t === "func") seg("alu");
+  if (t === "inv") loadInv();
   if (t === "asist") renderAsist();
   try { $("main").scrollTo(0, 0); } catch {}
 }
@@ -1446,50 +1454,95 @@ function mapaButaca(actual, onPick, propio, permitirA) {
   m.querySelector("[data-x]").onclick = () => m.remove(); m.addEventListener("click", e => { if (e.target === m) m.remove(); });
   ok.onclick = () => { onPick(sel); m.remove(); }; pintar();
 }/* Selector de butaca (piso · fila · asiento) para reservar un puesto a un invitado */
-/** Muestra en el mapa dónde se sienta una persona (su butaca numerada o, si no la tiene, su zona) para quien ubica a los invitados. */
+/** Mapa guiado: parte del plano general (con el escenario), se acerca solo al sector y luego a la butaca, y explica cómo llegar. */
 function ubicarEnMapa(c) {
   const r = state.inv.get(String(c).toUpperCase()); if (!r) return;
-  const pl = planSala(), res = reservasPersonas(), g = r.t === "GRADUADO" ? "a" : r.t === "ESPECIAL" ? (r.f ? "f" : "o") : "fam", zona = pl.reg[g] || [];
+  const pl = planSala(), S = SALA.seats, g = r.t === "GRADUADO" ? "a" : r.t === "ESPECIAL" ? (r.f ? "f" : "o") : "fam", zona = pl.reg[g] || [];
   const key = r.b && SALA.byKey.has(String(r.b).toUpperCase()) ? SALA.byKey.get(String(r.b).toUpperCase()) : -1;
-  let piso = key >= 0 ? SALA.seats[key].piso : (zona.length ? SALA.seats[zona[0]].piso : 0);
-  let zoom = true; const quien = r.t === "ESPECIAL" ? (r.i || "Invitado especial") : r.t === "GRADUADO" ? r.s : (r.i || ("Invitado de " + r.s));
+  let piso = key >= 0 ? S[key].piso : (zona.length ? S[zona[0]].piso : 0), runId = 0, vbAct = null, raf = 0;
+  const quien = r.t === "ESPECIAL" ? (r.i || "Invitado especial") : r.t === "GRADUADO" ? r.s : (r.i || ("Invitado de " + r.s));
   const m = document.createElement("div"); m.id = "pickmap";
-  m.innerHTML = `<div class="pm"><div class="mini"><b>📍 ${esc(quien)}</b><span style="display:flex;gap:6px"><button class="sm sec" data-z>Ver todo el piso</button><button class="sm sec" data-x>Cerrar</button></span></div><div class="seg" style="margin:10px 0 6px"></div><svg></svg>
-    <div class="infobox pmi"></div><div class="legend"><span><i class="lg-E" style="background:#ef4444"></i>Su butaca</span><span><i class="lg-g"></i>Alumnos graduados</span><span><i class="lg-m"></i>Funcionarios</span><span><i style="background:rgba(47,95,167,.25);border:1.5px solid var(--brand)"></i>Invitados de alumnos</span></div></div>`;
+  m.innerHTML = `<div class="pm"><div class="mini"><b>📍 ${esc(quien)}</b><button class="sm sec" data-x>Cerrar</button></div>
+    <div class="vchips"><button class="sm" data-v="plano">① Plano general</button><button class="sm sec" data-v="sector">② ${key >= 0 ? "Tu sector" : "Tu zona"}</button>${key >= 0 ? `<button class="sm sec" data-v="butaca">③ Tu butaca</button>` : ""}<button class="sm sec" data-v="repetir">▶ Repetir</button></div>
+    <div class="seg" style="margin:8px 0 6px"></div><svg></svg><div class="guia"></div>
+    <div class="legend"><span><i class="lg-E" style="background:#ef4444"></i>Su butaca</span><span><i class="lg-g"></i>Alumnos graduados</span><span><i class="lg-m"></i>Funcionarios</span><span><i class="lg-E"></i>Otros invitados</span><span><i style="background:rgba(47,95,167,.25);border:1.5px solid var(--brand)"></i>Invitados de alumnos</span></div></div>`;
   document.body.appendChild(m);
-  const svg = m.querySelector("svg"), seg = m.querySelector(".seg"), info = m.querySelector(".pmi"); svg.innerHTML = svgSalaMarkup();
-  const zb = m.querySelector("[data-z]"); zb.onclick = () => { zoom = !zoom; zb.textContent = zoom ? "Ver todo el piso" : "Acercar al sector"; pintar(); };
-  const cajaSector = () => {      // encuadra el SECTOR de la persona (su zona, o las butacas cercanas), no solo su butaca
-    const S = SALA.seats, enP = i => S[i].piso === piso; let pts;
-    if (key >= 0 && S[key].piso === piso) {
-      const ci = pl.cat[key]; pts = ci ? (pl.reg[ci] || []).filter(enP) : [];
-      if (pts.length < 8) { const k0 = S[key]; pts = S.map((s, i) => i).filter(enP).sort((a, b) => Math.hypot(S[a].x - k0.x, S[a].y - k0.y) - Math.hypot(S[b].x - k0.x, S[b].y - k0.y)).slice(0, 110); }
-    } else pts = zona.filter(enP);
+  const svg = m.querySelector("svg"), seg = m.querySelector(".seg"), chips = [...m.querySelectorAll("[data-v]")]; svg.innerHTML = svgSalaMarkup(); const els = [...svg.querySelectorAll(".seat")];
+  seg.innerHTML = SALA.pisos.map((p, pi) => `<button data-p="${pi}">Piso ${p.num}</button>`).join("");
+  const base = { a: "sg", f: "sf", o: "so", fam: "sa" }, parse = s => String(s).split(/\s+/).map(Number), sleep = ms => new Promise(ok => setTimeout(ok, ms));
+  const cxP = p => { const xs = S.filter(s => s.piso === p).map(s => s.x); return (Math.min(...xs) + Math.max(...xs)) / 2; };
+  const caja = (pts, minW) => {
     if (!pts.length) return SALA.pisos[piso].vb;
     let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; pts.forEach(i => { x0 = Math.min(x0, S[i].x); x1 = Math.max(x1, S[i].x); y0 = Math.min(y0, S[i].y); y1 = Math.max(y1, S[i].y); });
     let w = x1 - x0 + 24, h = y1 - y0 + 24; const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
-    if (w < 120) w = 120; if (h < 60) h = 60; if (w / h < 1.8) w = h * 1.8; else if (w / h > 2.6) h = w / 2.6;
+    if (w < minW) w = minW; if (h < minW / 1.8) h = minW / 1.8; if (w / h < 1.8) w = h * 1.8; else if (w / h > 2.6) h = w / 2.6;
     return `${(cx - w / 2).toFixed(1)} ${(cy - h / 2).toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}`;
-  }; const els = [...svg.querySelectorAll(".seat")];
-  seg.innerHTML = SALA.pisos.map((p, pi) => `<button data-p="${pi}">Piso ${p.num}</button>`).join("");
-  const base = { a: "sg", f: "sf", o: "so", fam: "sa" };
+  };
+  const enP = i => S[i].piso === piso, cercanas = n => { const k0 = S[key]; return S.map((s, i) => i).filter(enP).sort((x, y) => Math.hypot(S[x].x - k0.x, S[x].y - k0.y) - Math.hypot(S[y].x - k0.x, S[y].y - k0.y)).slice(0, n); };
+  const vistas = {
+    plano: () => SALA.pisos[piso].vb,
+    sector: () => {
+      if (key >= 0 && S[key].piso === piso) { const ci = pl.cat[key]; let pts = ci ? (pl.reg[ci] || []).filter(enP) : []; if (pts.length < 8) pts = cercanas(110); return caja(pts, 120); }
+      return caja(zona.filter(enP), 120);
+    },
+    butaca: () => (key >= 0 && S[key].piso === piso) ? caja(cercanas(28), 70) : vistas.sector()
+  };
+  const aplica = v => {
+    svg.setAttribute("viewBox", v.map(n => n.toFixed(2)).join(" "));
+    svg.querySelectorAll(".ringp").forEach(c => c.setAttribute("r", Math.max(9, v[2] / 34).toFixed(1)));
+    const q = svg.querySelector(".seat.aqui"); if (q) q.setAttribute("r", Math.max(6.8, v[2] / 50).toFixed(1));
+  };
+  const volar = (dest, ms) => {      // acercamiento suave de la cámara
+    clearInterval(raf); const b = parse(dest), a = vbAct || b;
+    if (ms <= 0) { vbAct = b; aplica(b); return Promise.resolve(); }
+    const n = Math.max(2, Math.round(ms / 16));
+    return new Promise(ok => { let i = 0; raf = setInterval(() => { i++; const k = Math.min(1, i / n), e = k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; vbAct = a.map((v, j) => v + (b[j] - v) * e); aplica(vbAct); if (k >= 1) { clearInterval(raf); ok(); } }, 16); });
+  };
+  const marca = v => chips.forEach(b => b.classList.toggle("sec", b.dataset.v !== v));
   const pintar = () => {
-    svg.querySelectorAll(".gp").forEach(x => { x.style.display = +x.dataset.p === piso ? "" : "none"; }); svg.setAttribute("viewBox", zoom ? cajaSector() : SALA.pisos[piso].vb);
+    svg.querySelectorAll(".gp").forEach(x => { x.style.display = +x.dataset.p === piso ? "" : "none"; });
     seg.querySelectorAll("button").forEach(b => b.classList.toggle("on", +b.dataset.p === piso));
     svg.querySelectorAll(".ringp").forEach(x => x.remove());
     els.forEach((el, i) => { const ci = pl.cat[i]; let cls = base[ci] || "s0"; el.setAttribute("r", "4.3");
-      if (i === key) { cls = "aqui"; el.setAttribute("r", "6.8"); } else if (key < 0 && ci === g) cls += " zona";
+      if (i === key) cls = "aqui"; else if (key < 0 && ci === g) cls += " zona";
       el.setAttribute("class", "seat " + cls); });
-    if (key >= 0 && SALA.seats[key].piso === piso) { const s = SALA.seats[key], gp = svg.querySelector(`.gp[data-p="${piso}"]`); gp?.insertAdjacentHTML("beforeend", `<circle class="ringp" cx="${s.x}" cy="${s.y}" r="9"></circle>`); }
+    if (key >= 0 && S[key].piso === piso) svg.querySelector(`.gp[data-p="${piso}"]`)?.insertAdjacentHTML("beforeend", `<circle class="ringp" cx="${S[key].x}" cy="${S[key].y}" r="9"></circle>`);
+    if (vbAct) aplica(vbAct);
   };
-  seg.querySelectorAll("button").forEach(b => b.onclick = () => { piso = +b.dataset.p; pintar(); });
-  if (key >= 0) info.innerHTML = `Sector: <b>${esc(CAT[g])}</b> · Su butaca: <b>${esc(butacaTxt(r.b))}</b>${r.k ? " · " + esc(r.k) : ""}.`;
-  else if (zona.length) info.innerHTML = `<b>No tiene butaca numerada.</b> Ubícalo en la zona resaltada (<b>${esc(CAT[g])}</b>), de ${esc(butacaTxt(SALA.seats[zona[0]].key))} a ${esc(butacaTxt(SALA.seats[zona[zona.length - 1]].key))}. Cambia de piso con los botones de arriba.`;
-  else info.textContent = "Aún no hay lugar asignado en el mapa para esta persona.";
-  m.querySelector("[data-x]").onclick = () => m.remove(); m.addEventListener("click", e => { if (e.target === m) m.remove(); });
-  pintar();
-}
-document.addEventListener("click", e => { const b = e.target.closest("[data-map]"); if (b) ubicarEnMapa(b.dataset.map); });
+  const recorrido = async () => {      // plano general → sector → butaca
+    const mi = ++runId; marca("plano"); await volar(vistas.plano(), 0); await sleep(1300); if (mi !== runId) return;
+    marca("sector"); await volar(vistas.sector(), 1800); if (mi !== runId) return; await sleep(900); if (mi !== runId) return;
+    if (key >= 0) { marca("butaca"); await volar(vistas.butaca(), 1500); }
+  };
+  chips.forEach(b => b.onclick = () => { const v = b.dataset.v; if (v === "repetir") { recorrido(); return; } runId++; marca(v); volar(vistas[v](), 1100); });
+  seg.querySelectorAll("button").forEach(b => b.onclick = () => { runId++; piso = +b.dataset.p; vbAct = null; pintar(); marca("plano"); volar(vistas.plano(), 0); });
+  // ----- indicaciones para llegar -----
+  const tips = { a: "Los alumnos graduados se sientan juntos, en bloque: allí encontrarás a sus compañeros.", f: "Los funcionarios del colegio se ubican juntos en su sector; busca la zona resaltada.", o: "Los invitados especiales y otros invitados se ubican en las filas delanteras reservadas.", fam: "Los invitados de los alumnos no llevan número: se sientan en cualquier butaca libre de su sector (desde el piso 3 hacia atrás)." };
+  const guia = () => {
+    const out = [], p = key >= 0 ? S[key].piso : (zona.length ? S[zona[0]].piso : piso), P = SALA.pisos[p], cx = cxP(p);
+    out.push(`🚪 Ingresa a <b>${esc(P.nombre)}</b>${p > 0 ? " (sube por escaleras o ascensor)" : ""}.`);
+    out.push(`🎭 Párate mirando al <b>escenario</b>: es la línea ondulada de arriba en el plano. Lo que ves abajo queda a tus espaldas.`);
+    if (key >= 0) {
+      const s = S[key], lado = s.x > cx ? "derecha" : "izquierda", fi = P.rows.findIndex(x => x.fila === s.fila) + 1;
+      const mismos = S.filter(q => q.piso === p && q.fila === s.fila && (q.x > cx) === (s.x > cx)).sort((x, y) => Math.abs(x.x - cx) - Math.abs(y.x - cx)), rk = mismos.indexOf(s) + 1;
+      const par = mismos.every(q => q.n % 2 === 0) ? "pares" : mismos.every(q => q.n % 2 === 1) ? "impares" : "";
+      out.push(`➡️ Tu sector está a la <b>${lado}</b> del pasillo central${par ? ` (asientos ${par})` : ""}.`);
+      out.push(`↕️ Tu fila es la <b>${esc(s.fila)}</b>: la ${fi}ª contando desde el escenario (la A es la más cercana).`);
+      out.push(`💺 Tu asiento es el <b>${s.n}</b>: cuenta <b>${rk}</b> asiento${rk === 1 ? "" : "s"} desde el pasillo central hacia la pared ${lado}.`);
+    } else if (zona.length) {
+      const zs = zona.filter(i => S[i].piso === p), idx = zs.map(i => P.rows.findIndex(x => x.fila === S[i].fila)).filter(i => i >= 0), lados = new Set(zs.map(i => S[i].x > cx));
+      out.push(`➡️ Tu sector (<b>${esc(CAT[g])}</b>) está ${lados.size === 2 ? "a <b>ambos lados</b> del pasillo central" : "a la <b>" + ([...lados][0] ? "derecha" : "izquierda") + "</b>"}.`);
+      if (idx.length) out.push(`↕️ Ocupa desde la fila <b>${esc(P.rows[Math.min(...idx)].fila)}</b> hasta la <b>${esc(P.rows[Math.max(...idx)].fila)}</b> (${zs.length} butacas en este piso).`);
+      const otros = [...new Set(zona.map(i => S[i].piso))].filter(x => x !== p); if (otros.length) out.push(`⬆️ El sector continúa en ${otros.map(x => esc(SALA.pisos[x].nombre)).join(" y ")}.`);
+      out.push(`💺 Esta persona <b>no tiene asiento numerado</b>: puede sentarse en cualquier butaca libre de la zona que parpadea en rojo.`);
+    }
+    out.push(`ℹ️ ${tips[g]}`);
+    return out;
+  };
+  m.querySelector(".guia").innerHTML = guia().map(x => `<div>${x}</div>`).join("");
+  m.querySelector("[data-x]").onclick = () => { runId++; clearInterval(raf); m.remove(); }; m.addEventListener("click", e => { if (e.target === m) { runId++; clearInterval(raf); m.remove(); } });
+  vbAct = parse(vistas.plano()); pintar(); recorrido();
+}document.addEventListener("click", e => { const b = e.target.closest("[data-map]"); if (b) ubicarEnMapa(b.dataset.map); });
 function pickerHtml() { return `<select data-sp="p">${SALA.pisos.map(p => `<option value="${p.num}">Piso ${p.num}</option>`).join("")}</select><select data-sp="f"></select><select data-sp="n"></select>`; }
 function pickerInit(root, valor) {
   root.innerHTML = pickerHtml();
@@ -1857,7 +1910,7 @@ $("#btnPdfAl").onclick = async () => {
     await pdfInvitaciones(items, nombre, k => { msg.textContent = `Generando… ${k} de ${items.length}`; });
     msg.textContent = `✔ PDF listo: ${items.length} invitaciones en ${Math.ceil(items.length / 2)} hojas.`;
   } catch (e) { if (!onAuthFail(e)) msg.textContent = "✖ " + e.message; } finally { $("#btnPdfAl").disabled = false; }
-};function seg(w) { ["Inv", "Alu", "Imp", "Team"].forEach(k => { $("#seg" + k).classList.toggle("on", k.toLowerCase() === w); $("#pane" + k).hidden = k.toLowerCase() !== w; }); if (w === "team") loadFun(); else if (w === "inv") loadInv(); else if (w === "alu") loadAlu(); }
+};function seg(w) { ["Alu", "Imp", "Team"].forEach(k => { $("#seg" + k).classList.toggle("on", k.toLowerCase() === w); $("#pane" + k).hidden = k.toLowerCase() !== w; }); if (w === "team") loadFun(); else if (w === "alu") loadAlu(); }
 /* ───────── Asistencia de alumnos graduados: quién falta, quién está y quién está ausente ───────── */
 const asEstado = r => r.used ? "p" : esAus(r) ? "a" : "f";
 const asOpen = { f: true, a: true, p: false };
@@ -2127,7 +2180,7 @@ $("#aluImpOk").onclick = async () => {
   try { const r = await apiPost("grad_ruts", { items }); out.textContent = `✔ ${r.actualizados} RUT cargados.`; $("#aluImpOk").hidden = true; $("#aluFile").value = ""; await loadCheck(); await loadAlu(); }
   catch (er) { if (!onAuthFail(er)) out.textContent = "✖ " + er.message; } finally { $("#aluImpOk").disabled = false; }
 };$("#segAlu").onclick = () => seg("alu");
-$("#segInv").onclick = () => seg("inv"); $("#segImp").onclick = () => seg("imp"); $("#segTeam").onclick = () => seg("team");
+$("#segImp").onclick = () => seg("imp"); $("#segTeam").onclick = () => seg("team");
 
 /* ───────── Importar listado de funcionarios (Excel / CSV) ───────── */
 const imp = { wb: null, rows: [], dup: 0 };
