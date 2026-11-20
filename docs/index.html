@@ -82,7 +82,7 @@ nav button.active{color:var(--brand)}
 nav button.active::before{content:"";position:absolute;top:0;width:34px;height:3px;border-radius:0 0 4px 4px;background:var(--brand)}
 
 /* escáner: siempre completo y cuadrado dentro de la pantalla */
-.scanwrap{position:relative;border-radius:18px;overflow:hidden;background:#000;aspect-ratio:1/1;width:max(190px,min(100%,calc(var(--vh,100dvh) - 430px)));max-width:100%;margin:0 auto}
+.scanwrap{position:relative;border-radius:18px;overflow:hidden;background:#000;aspect-ratio:1/1;width:max(190px,min(100%,calc(var(--vh,100dvh) - 500px)));max-width:100%;margin:0 auto}
 #reader{position:absolute;inset:0;width:100%;height:100%;background:#000}
 #reader video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 #qbadge{background:#e0b24c;color:#2a1d00;font-size:11px;font-weight:700;border-radius:99px;padding:3px 8px;flex:none}
@@ -263,6 +263,7 @@ label.pq{display:flex;gap:10px;align-items:center;margin:6px 0;color:var(--ink);
 #ov .pip{width:30px;height:30px;font-size:13px}
 #ov button{margin-top:0;padding:12px 28px;font-size:17px}
 #ov button.undo{padding:9px 18px;font-size:15px}
+#ov.info{background:radial-gradient(circle at 50% 30%,#3b82f6,#1e3a8a 72%)}
 .seat.aqui{fill:#ef4444;stroke:#fff;stroke-width:1.4}
 .seat.zona{stroke:#ef4444;stroke-width:1.8;animation:llego 1s ease-in-out infinite}
 .ringp{fill:none;stroke:#ef4444;stroke-width:2.2;transform-box:fill-box;transform-origin:center;animation:ringp 1.1s ease-out infinite;pointer-events:none}
@@ -359,6 +360,7 @@ input,select{background:color-mix(in srgb,var(--card) 80%,var(--bg));border:1px 
   <div id="banner" class="banner" hidden></div>
 
   <section id="s-scan" class="active">
+    <div class="card strip" style="padding:8px 14px;margin-bottom:10px"><div style="flex:none"><h2 style="margin:0 0 2px;font-size:11px">Ingresados</h2><div class="big" id="miniBig" style="font-size:24px">–</div></div><div style="flex:1"><div class="muted" id="miniTxt" style="text-align:right;margin-bottom:4px"></div><div class="bar"><i id="miniBar" style="width:0"></i></div></div></div>
     <div class="card" style="padding:10px">
       <div class="scanwrap">
         <div id="reader"></div>
@@ -377,10 +379,6 @@ input,select{background:color-mix(in srgb,var(--card) 80%,var(--bg));border:1px 
         <button id="btnManual">Registrar</button>
         <button id="btnRevert" class="sec" data-admin>Revertir</button>
       </div>
-    </div>
-    <div class="card strip">
-      <div style="flex:1"><h2 style="margin:0 0 4px">Ingresados</h2><div class="big" id="miniBig">–</div></div>
-      <div style="flex:1.2"><div class="muted" id="miniTxt" style="text-align:right;margin-bottom:6px"></div><div class="bar"><i id="miniBar" style="width:0"></i></div></div>
     </div>
   </section>
 
@@ -823,6 +821,7 @@ function beep(kind) {
     if (navigator.vibrate) navigator.vibrate(kind === "ok" ? 60 : kind === "tick" ? 25 : [120, 70, 120]);
     if (kind === "tick") { tone(1400, 0, .05, "sine", .4); return; }
     if (kind === "ok") { bell(880, 0, .4, 1); bell(1319, .18, .9, 1); setTimeout(() => speak("Aprobado"), 450); }
+    else if (kind === "info") { tone(700, 0, .12, "triangle", .8); tone(900, .14, .16, "triangle", .8); }
     else if (kind === "dup") { tone(587, 0, .2, "triangle", .9); tone(587, .26, .32, "triangle", .9); setTimeout(() => speak("Ya utilizada"), 700); }
     else { tone(330, 0, .75, "triangle", 1, 165); setTimeout(() => speak("No válida"), 800); }
   } catch {}
@@ -906,6 +905,7 @@ async function syncUsed(force) {
   try {
     const r = await api("used"), srv = new Map(r.u.map(x => [String(x.c).toUpperCase(), x])), pend = new Set(state.queue.map(q => q.cod));
     state.hi = r.hi || "";
+    if (r.rol && state.user && r.rol !== state.user.rol) { state.user.rol = r.rol; enterApp(); return; }      // si el administrador cambió tu perfil, se aplica al instante
     const aus = new Set((r.aus || []).map(x => String(x).toUpperCase()));
     for (const [c, rec] of state.inv) { const s = srv.get(c); if (s) rec.used = { h: s.h, o: s.o }; else if (rec.used && !pend.has(c)) rec.used = null; rec.aus = aus.has(c); }
     setConn("on"); renderMini();
@@ -997,7 +997,7 @@ function showResult(r, id, extra = "") {
     const a2 = resumen(r.ticket.codEst);
     body = quien(r.ticket, a2, true) + `<p>Ya ingresó: ${esc(r.usadoEn || "—")}${r.usadoPor ? " · registrada por " + esc(r.usadoPor) : ""}</p>` + (noFam(r.ticket) || !a2.total ? "" : pips(a2));
   } else if (r.status === "consulta") {      // perfil Orden: solo informa, no registra
-    cls = r.ingresado ? "dup" : "ok"; ic = r.ingresado ? "i" : "✔"; title = r.ingresado ? "YA INGRESÓ" : "INVITACIÓN VÁLIDA";
+    cls = "info"; ic = "📍"; title = "INVITACIÓN CONSULTADA";
     body = quien(r.ticket, resumen(r.ticket.codEst), !!r.ingresado) + `<p class="small">Modo consulta: no se registra el ingreso${r.ingresado ? " · ingresó " + esc(r.usadoEn || "") : " · aún no ha ingresado"}</p>`;
   } else {
     cls = "bad"; ic = "✖"; title = "INVITACIÓN NO VÁLIDA"; body = `<p>${esc(r.message || "No se pudo validar")}</p>`;
@@ -1452,16 +1452,29 @@ function ubicarEnMapa(c) {
   const pl = planSala(), res = reservasPersonas(), g = r.t === "GRADUADO" ? "a" : r.t === "ESPECIAL" ? (r.f ? "f" : "o") : "fam", zona = pl.reg[g] || [];
   const key = r.b && SALA.byKey.has(String(r.b).toUpperCase()) ? SALA.byKey.get(String(r.b).toUpperCase()) : -1;
   let piso = key >= 0 ? SALA.seats[key].piso : (zona.length ? SALA.seats[zona[0]].piso : 0);
-  const quien = r.t === "ESPECIAL" ? (r.i || "Invitado especial") : r.t === "GRADUADO" ? r.s : (r.i || ("Invitado de " + r.s));
+  let zoom = true; const quien = r.t === "ESPECIAL" ? (r.i || "Invitado especial") : r.t === "GRADUADO" ? r.s : (r.i || ("Invitado de " + r.s));
   const m = document.createElement("div"); m.id = "pickmap";
-  m.innerHTML = `<div class="pm"><div class="mini"><b>📍 ${esc(quien)}</b><button class="sm sec" data-x>Cerrar</button></div><div class="seg" style="margin:10px 0 6px"></div><svg></svg>
+  m.innerHTML = `<div class="pm"><div class="mini"><b>📍 ${esc(quien)}</b><span style="display:flex;gap:6px"><button class="sm sec" data-z>Ver todo el piso</button><button class="sm sec" data-x>Cerrar</button></span></div><div class="seg" style="margin:10px 0 6px"></div><svg></svg>
     <div class="infobox pmi"></div><div class="legend"><span><i class="lg-E" style="background:#ef4444"></i>Su butaca</span><span><i class="lg-g"></i>Alumnos graduados</span><span><i class="lg-m"></i>Funcionarios</span><span><i style="background:rgba(47,95,167,.25);border:1.5px solid var(--brand)"></i>Invitados de alumnos</span></div></div>`;
   document.body.appendChild(m);
-  const svg = m.querySelector("svg"), seg = m.querySelector(".seg"), info = m.querySelector(".pmi"); svg.innerHTML = svgSalaMarkup(); const els = [...svg.querySelectorAll(".seat")];
+  const svg = m.querySelector("svg"), seg = m.querySelector(".seg"), info = m.querySelector(".pmi"); svg.innerHTML = svgSalaMarkup();
+  const zb = m.querySelector("[data-z]"); zb.onclick = () => { zoom = !zoom; zb.textContent = zoom ? "Ver todo el piso" : "Acercar al sector"; pintar(); };
+  const cajaSector = () => {      // encuadra el SECTOR de la persona (su zona, o las butacas cercanas), no solo su butaca
+    const S = SALA.seats, enP = i => S[i].piso === piso; let pts;
+    if (key >= 0 && S[key].piso === piso) {
+      const ci = pl.cat[key]; pts = ci ? (pl.reg[ci] || []).filter(enP) : [];
+      if (pts.length < 8) { const k0 = S[key]; pts = S.map((s, i) => i).filter(enP).sort((a, b) => Math.hypot(S[a].x - k0.x, S[a].y - k0.y) - Math.hypot(S[b].x - k0.x, S[b].y - k0.y)).slice(0, 110); }
+    } else pts = zona.filter(enP);
+    if (!pts.length) return SALA.pisos[piso].vb;
+    let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; pts.forEach(i => { x0 = Math.min(x0, S[i].x); x1 = Math.max(x1, S[i].x); y0 = Math.min(y0, S[i].y); y1 = Math.max(y1, S[i].y); });
+    let w = x1 - x0 + 24, h = y1 - y0 + 24; const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+    if (w < 120) w = 120; if (h < 60) h = 60; if (w / h < 1.8) w = h * 1.8; else if (w / h > 2.6) h = w / 2.6;
+    return `${(cx - w / 2).toFixed(1)} ${(cy - h / 2).toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}`;
+  }; const els = [...svg.querySelectorAll(".seat")];
   seg.innerHTML = SALA.pisos.map((p, pi) => `<button data-p="${pi}">Piso ${p.num}</button>`).join("");
   const base = { a: "sg", f: "sf", o: "so", fam: "sa" };
   const pintar = () => {
-    svg.querySelectorAll(".gp").forEach(x => { x.style.display = +x.dataset.p === piso ? "" : "none"; }); svg.setAttribute("viewBox", SALA.pisos[piso].vb);
+    svg.querySelectorAll(".gp").forEach(x => { x.style.display = +x.dataset.p === piso ? "" : "none"; }); svg.setAttribute("viewBox", zoom ? cajaSector() : SALA.pisos[piso].vb);
     seg.querySelectorAll("button").forEach(b => b.classList.toggle("on", +b.dataset.p === piso));
     svg.querySelectorAll(".ringp").forEach(x => x.remove());
     els.forEach((el, i) => { const ci = pl.cat[i]; let cls = base[ci] || "s0"; el.setAttribute("r", "4.3");
@@ -1470,7 +1483,7 @@ function ubicarEnMapa(c) {
     if (key >= 0 && SALA.seats[key].piso === piso) { const s = SALA.seats[key], gp = svg.querySelector(`.gp[data-p="${piso}"]`); gp?.insertAdjacentHTML("beforeend", `<circle class="ringp" cx="${s.x}" cy="${s.y}" r="9"></circle>`); }
   };
   seg.querySelectorAll("button").forEach(b => b.onclick = () => { piso = +b.dataset.p; pintar(); });
-  if (key >= 0) info.innerHTML = `Su butaca: <b>${esc(butacaTxt(r.b))}</b>${r.k ? " · " + esc(r.k) : ""}.`;
+  if (key >= 0) info.innerHTML = `Sector: <b>${esc(CAT[g])}</b> · Su butaca: <b>${esc(butacaTxt(r.b))}</b>${r.k ? " · " + esc(r.k) : ""}.`;
   else if (zona.length) info.innerHTML = `<b>No tiene butaca numerada.</b> Ubícalo en la zona resaltada (<b>${esc(CAT[g])}</b>), de ${esc(butacaTxt(SALA.seats[zona[0]].key))} a ${esc(butacaTxt(SALA.seats[zona[zona.length - 1]].key))}. Cambia de piso con los botones de arriba.`;
   else info.textContent = "Aún no hay lugar asignado en el mapa para esta persona.";
   m.querySelector("[data-x]").onclick = () => m.remove(); m.addEventListener("click", e => { if (e.target === m) m.remove(); });
